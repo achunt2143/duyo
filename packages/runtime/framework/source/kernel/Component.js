@@ -153,10 +153,42 @@ enyo.kind({
 		name: ""
 	},
 	//* @protected
+
+	// subclass and publishEvents must live in statics so enyo.kind.statics
+	// handling mixes them onto the constructor before any subkind that declares
+	// events triggers the features loop and calls enyo.Component.subclass.
+	// Defining them as post-hoc patches after the enyo.kind() call is too late
+	// when files are loaded synchronously or bundled.
 	statics: {
 		// for memoizing kind-prefix names in nameComponent
-		_kindPrefixi: {}
+		_kindPrefixi: {},
+
+		subclass: function(ctor, props) {
+			// Note: to reduce API surface area, sub-components are declared only as
+			// 'components' in both kind declarations and instance property-bags
+			// (aka configurations).
+			// However, 'components' from kind declarations must be handled separately
+			// at create-time. By renaming the property here we avoid having
+			// to interrogate the prototype at create-time.
+			if (props.components) {
+				ctor.prototype.kindComponents = props.components;
+				delete ctor.prototype.components;
+			}
+			if (props.events) {
+				this.publishEvents(ctor, props);
+			}
+		},
+		publishEvents: function(ctor, props) {
+			var es = props.events;
+			if (es) {
+				var cp = ctor.prototype;
+				for (var n in es) {
+					this.addEvent(n, es[n], cp);
+				}
+			}
+		}
 	},
+
 	defaultKind: "Component",
 	wantsEvents: true,
 	toString: function() {
@@ -430,32 +462,10 @@ enyo.create = enyo.Component.create = function(inConfig) {
 	return new ctor(inConfig);
 };
 
-enyo.Component.subclass = function(ctor, props) {
-	// Note: to reduce API surface area, sub-components are declared only as
-	// 'components' in both kind declarations and instance property-bags 
-	// (aka configurations).
-	// However, 'components' from kind declarations must be handled separately
-	// at create-time. By renaming the property here we avoid having
-	// to interrogate the prototype at create-time.
-	if (props.components) {
-		ctor.prototype.kindComponents = props.components;
-		delete ctor.prototype.components;
-	}
-	if (props.events) {
-		this.publishEvents(ctor, props);
-	}
-};
-
-enyo.Component.publishEvents = function(ctor, props) {
-	var es = props.events;
-	if (es) {
-		var cp = ctor.prototype;
-		for (var n in es) {
-			this.addEvent(n, es[n], cp);
-		}
-	}
-};
-
+// addEvent, prefixFromKindName, and _kindPrefixi remain as post-hoc patches:
+// they are only ever called from subclass/publishEvents (now in statics),
+// never directly by the features loop, so there is no initialization order
+// hazard here.
 enyo.Component.addEvent = function(inName, inValue, inProto) {
 	var v, fn;
 	if (!enyo.isString(inValue)) {
