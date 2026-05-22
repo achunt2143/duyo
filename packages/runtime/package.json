@@ -1,0 +1,37 @@
+{
+  "name": "@duyo/runtime",
+  "version": "0.1.0",
+  "description": "The Enyo 1.x runtime, packaged for modern Node and browser toolchains.",
+  "license": "Apache-2.0",
+  "author": "achunt2143",
+  "keywords": [
+    "enyo",
+    "duyo",
+    "webos",
+    "component",
+    "framework",
+    "ui"
+  ],
+  "type": "module",
+  "main": "./index.cjs",
+  "module": "./index.js",
+  "exports": {
+    ".": {
+      "import": "./index.js",
+      "require": "./index.cjs"
+    },
+    "./css": "./framework/build/enyo-build.css"
+  },
+  "files": [
+    "index.js",
+    "index.cjs",
+    "framework/build/",
+    "LICENSE-2.0.txt"
+  ],
+  "scripts": {
+    "build": "echo 'Runtime uses pre-built Enyo source — no build step needed yet'"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

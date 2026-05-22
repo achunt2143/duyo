@@ -1,0 +1,19 @@
+{
+  "name": "duyo",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Classic Enyo 1.x apps. Modern web tooling.",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "echo 'Run dev from a specific package for now'",
+    "build": "npm run build --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "license": "Apache-2.0",
+  "author": "achunt2143"
+}
