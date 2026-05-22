@@ -134,7 +134,12 @@ export function duyo(options = {}) {
 
     load(id) {
       if (id === RESOLVED_VIRTUAL_RUNTIME_ID) {
-        const build = readFileSync(ENYO_BUILD_JS, 'utf-8');
+        let build = readFileSync(ENYO_BUILD_JS, 'utf-8');
+
+        build = build.replace(
+  /var b = Tellurium\.enyo\.xhr\.request\(\{[\s\S]*?\}\)\.responseText \|\| "\{\}";\s*Tellurium\.config = Tellurium\.extend\(Tellurium\.config, enyo\.json\.parse\(b\)\)/,
+  `Tellurium.config = Tellurium.extend(Tellurium.config, { enableUserEvents: false })`
+);
 
         const wrappedBuild = `
 (function() {
