@@ -1,28 +1,29 @@
 'use strict';
 
-/**
- * CJS wrapper for @duyo/vite-plugin
- *
- * The real implementation lives in index.js (ESM). This wrapper re-exports
- * everything needed so that tools like Vite's esbuild config bundler —
- * which resolves the "require" export condition — can load the plugin.
- *
- * We use lazy require of the Node built-ins and reproduce just enough of the
- * plugin surface to be loadable synchronously in CJS context.
- */
-
 const fs   = require('fs');
 const path = require('path');
 
-const RUNTIME_ROOT     = path.resolve(__dirname, '../../runtime');
-const ENYO_BUILD_JS    = path.join(RUNTIME_ROOT, 'framework/build/enyo-build.js');
-const ENYO_BUILD_CSS   = path.join(RUNTIME_ROOT, 'framework/build/enyo-build.css');
-const ENYO_PREAMBLE_JS = path.join(RUNTIME_ROOT, 'framework/build/builtin-preamble.js');
+const RUNTIME_ROOT  = path.resolve(__dirname, '../../runtime');
+const ENYO_BUILD_JS  = path.join(RUNTIME_ROOT, 'framework/build/enyo-build.js');
+const ENYO_BUILD_CSS = path.join(RUNTIME_ROOT, 'framework/build/enyo-build.css');
 
-const VIRTUAL_APP_ID            = 'virtual:duyo-app';
-const RESOLVED_VIRTUAL_APP_ID   = '\0virtual:duyo-app';
-const VIRTUAL_RUNTIME_ID        = 'virtual:duyo-runtime';
+const VIRTUAL_APP_ID              = 'virtual:duyo-app';
+const RESOLVED_VIRTUAL_APP_ID     = '\0virtual:duyo-app';
+const VIRTUAL_RUNTIME_ID          = 'virtual:duyo-runtime';
 const RESOLVED_VIRTUAL_RUNTIME_ID = '\0virtual:duyo-runtime';
+
+// Browser-safe preamble — replaces the V8-native builtin-preamble.js
+const BROWSER_PREAMBLE = `
+// @duyo/vite-plugin — browser-safe Enyo bootstrap
+window.enyo = window.enyo || {};
+enyo = window.enyo;
+enyo.isBuiltin = false;
+enyo.args = {};
+enyo.depends = function() {};
+enyo.setPrototype = function(ctor, proto) {
+  ctor.prototype = proto;
+};
+`;
 
 const PALM_STUB = `
 if (typeof PalmSystem === 'undefined') {
@@ -62,13 +63,11 @@ function duyo(options) {
 
     load: function(id) {
       if (id === RESOLVED_VIRTUAL_RUNTIME_ID) {
-        const preamble = fs.readFileSync(ENYO_PREAMBLE_JS, 'utf-8');
-        const build    = fs.readFileSync(ENYO_BUILD_JS,    'utf-8');
+        const build = fs.readFileSync(ENYO_BUILD_JS, 'utf-8');
         return [
           '// @duyo/runtime — Enyo 1.0 pre-built bundle',
           stubPalmSystem ? PALM_STUB : '',
-          '// builtin-preamble.js',
-          preamble,
+          BROWSER_PREAMBLE,
           '// enyo-build.js',
           build,
           'export const enyo = window.enyo;',
