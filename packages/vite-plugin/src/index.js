@@ -19,14 +19,6 @@ const RESOLVED_VIRTUAL_APP_ID = '\0' + VIRTUAL_APP_ID;
 const VIRTUAL_RUNTIME_ID = 'virtual:duyo-runtime';
 const RESOLVED_VIRTUAL_RUNTIME_ID = '\0' + VIRTUAL_RUNTIME_ID;
 
-/**
- * Browser-safe Enyo bootstrap preamble.
- *
- * Sets globalThis.enyo and all properties enyo-build.js expects before it
- * executes. Does NOT define PalmSystem — that is handled by PALM_STUB so
- * that g11n._init() can detect "browser" platform correctly after we force
- * it below in POST_BUILD.
- */
 const BROWSER_PREAMBLE = `
 // @duyo/vite-plugin — browser-safe Enyo bootstrap
 var __duyoGlobal = globalThis;
@@ -45,17 +37,6 @@ if (typeof window !== 'undefined') {
 var enyo = __duyoGlobal.enyo;
 `;
 
-/**
- * Minimal Palm/webOS stubs.
- *
- * Always injected regardless of any option because:
- * - palmGetResource is a bare global called by g11n loadfile on the "device"
- *   platform path — it must exist even if we override the platform below.
- * - PalmSystem methods (stageReady, setWindowOrientation, etc.) are called
- *   during widget boot before our POST_BUILD g11n override fires.
- * - Keeping PalmSystem fully stubbed is safer than removing it because some
- *   Enyo internals guard on typeof PalmSystem after g11n init.
- */
 const PALM_STUB = `
 // @duyo/vite-plugin — Palm/webOS stubs for browser environment
 if (typeof palmGetResource === 'undefined') {
@@ -92,13 +73,17 @@ if (typeof Mojo === 'undefined') {
 `;
 
 /**
- * Post-build override: force enyo.g11n to "browser" platform.
+ * Post-build overrides:
  *
- * enyo.g11n._init() checks typeof PalmSystem to pick the platform.
- * Even with a stub, it may have already run and selected "device".
- * We override _platform and _initialized here so any subsequent call
- * to enyo.g11n.getPlatform() returns "browser" and does not re-enter
- * the webOS-only code paths (palmGetResource, MojoLoader, etc.).
+ * 1. Force enyo.g11n to "browser" platform so webOS-only g11n code paths
+ *    (palmGetResource, MojoLoader, etc.) are never entered.
+ *
+ * 2. Stub Tellurium.setup to skip the synchronous XHR fetch of
+ *    tellurium_config.json from the webOS filesystem. Tellurium is Palm's
+ *    automated testing framework and is not needed in a browser build.
+ *    We hardcode the single config value (enableUserEvents: true) and
+ *    preserve the rest of the setup logic so the object is still safe
+ *    to reference if any app code checks for it.
  */
 const POST_BUILD = `
 // @duyo/vite-plugin — force g11n to browser platform
@@ -106,6 +91,27 @@ if (globalThis.enyo && globalThis.enyo.g11n) {
   globalThis.enyo.g11n._platform = 'browser';
   globalThis.enyo.g11n._enyoAvailable = true;
   globalThis.enyo.g11n._initialized = true;
+}
+
+// @duyo/vite-plugin — stub Tellurium for browser (skip webOS XHR config load)
+if (typeof Tellurium !== 'undefined' && Tellurium.setup) {
+  Tellurium.setup = function(a) {
+    window.Tellurium = Tellurium;
+    Tellurium.enyo = a;
+    Tellurium.extend = Tellurium.enyo.mixin;
+    Tellurium.isActive = false;
+    Tellurium.topSceneName = '';
+    Tellurium.metaDown = false;
+    Tellurium.inVerifyDialog = false;
+    Tellurium.delayedEvents = [];
+    Tellurium.serviceAvailable = false;
+    // Hardcode the config — skips the sync XHR to $palm-tellurium/tellurium_config.json
+    Tellurium.config = { enableUserEvents: true };
+    Tellurium.stageType = 'card';
+    window.addEventListener('unload', Tellurium.cleanup, false);
+    window.addEventListener('resize', Tellurium.handleResize, false);
+    // enableUserEvents intentionally not wired up — Tellurium events are webOS-only
+  };
 }
 `;
 
@@ -143,7 +149,7 @@ export function duyo(options = {}) {
           BROWSER_PREAMBLE,
           '// enyo-build.js (wrapped for real global scope)',
           wrappedBuild,
-          '// post-build platform override',
+          '// post-build platform overrides',
           POST_BUILD,
           'export var enyo = globalThis.enyo;',
           'export default globalThis.enyo;'

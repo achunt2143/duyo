@@ -72,6 +72,27 @@ if (globalThis.enyo && globalThis.enyo.g11n) {
   globalThis.enyo.g11n._enyoAvailable = true;
   globalThis.enyo.g11n._initialized = true;
 }
+
+// @duyo/vite-plugin — stub Tellurium for browser (skip webOS XHR config load)
+if (typeof Tellurium !== 'undefined' && Tellurium.setup) {
+  Tellurium.setup = function(a) {
+    window.Tellurium = Tellurium;
+    Tellurium.enyo = a;
+    Tellurium.extend = Tellurium.enyo.mixin;
+    Tellurium.isActive = false;
+    Tellurium.topSceneName = '';
+    Tellurium.metaDown = false;
+    Tellurium.inVerifyDialog = false;
+    Tellurium.delayedEvents = [];
+    Tellurium.serviceAvailable = false;
+    // Hardcode the config — skips the sync XHR to $palm-tellurium/tellurium_config.json
+    Tellurium.config = { enableUserEvents: true };
+    Tellurium.stageType = 'card';
+    window.addEventListener('unload', Tellurium.cleanup, false);
+    window.addEventListener('resize', Tellurium.handleResize, false);
+    // enableUserEvents intentionally not wired up — Tellurium events are webOS-only
+  };
+}
 `;
 
 function duyo(options) {
@@ -107,7 +128,7 @@ function duyo(options) {
           BROWSER_PREAMBLE,
           '// enyo-build.js (wrapped for real global scope)',
           wrappedBuild,
-          '// post-build platform override',
+          '// post-build platform overrides',
           POST_BUILD,
           'export var enyo = globalThis.enyo;',
           'export default globalThis.enyo;'
