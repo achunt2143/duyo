@@ -10,13 +10,13 @@ import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
-const RUNTIME_ROOT   = resolve(__dirname, '../../runtime');
-const ENYO_BUILD_JS  = resolve(RUNTIME_ROOT, 'framework/build/enyo-build.js');
+const RUNTIME_ROOT = resolve(__dirname, '../../runtime');
+const ENYO_BUILD_JS = resolve(RUNTIME_ROOT, 'framework/build/enyo-build.js');
 const ENYO_BUILD_CSS = resolve(RUNTIME_ROOT, 'framework/build/enyo-build.css');
 
-const VIRTUAL_APP_ID              = 'virtual:duyo-app';
-const RESOLVED_VIRTUAL_APP_ID     = '\0' + VIRTUAL_APP_ID;
-const VIRTUAL_RUNTIME_ID          = 'virtual:duyo-runtime';
+const VIRTUAL_APP_ID = 'virtual:duyo-app';
+const RESOLVED_VIRTUAL_APP_ID = '\0' + VIRTUAL_APP_ID;
+const VIRTUAL_RUNTIME_ID = 'virtual:duyo-runtime';
 const RESOLVED_VIRTUAL_RUNTIME_ID = '\0' + VIRTUAL_RUNTIME_ID;
 
 /**
@@ -32,13 +32,20 @@ const RESOLVED_VIRTUAL_RUNTIME_ID = '\0' + VIRTUAL_RUNTIME_ID;
  */
 const BROWSER_PREAMBLE = `
 // @duyo/vite-plugin — browser-safe Enyo bootstrap
-window.enyo = window.enyo || {};
-window.enyo.isBuiltin = false;
-window.enyo.args = {};
-window.enyo.enyoPath = '';
-window.enyo.depends = function() {};
-window.enyo.setPrototype = function(ctor, proto) { ctor.prototype = proto; };
-var enyo = window.enyo;
+var __duyoGlobal = globalThis;
+__duyoGlobal.enyo = __duyoGlobal.enyo || {};
+__duyoGlobal.enyo.isBuiltin = false;
+__duyoGlobal.enyo.args = __duyoGlobal.enyo.args || {};
+__duyoGlobal.enyo.enyoPath = __duyoGlobal.enyo.enyoPath || '';
+__duyoGlobal.enyo.depends = __duyoGlobal.enyo.depends || function() {};
+__duyoGlobal.enyo.setPrototype = __duyoGlobal.enyo.setPrototype || function(ctor, proto) { ctor.prototype = proto; };
+
+// old Enyo code expects both a free variable and window.enyo
+if (typeof window !== 'undefined') {
+  window.enyo = __duyoGlobal.enyo;
+}
+
+var enyo = __duyoGlobal.enyo;
 `;
 
 const PALM_STUB = `
@@ -62,10 +69,10 @@ if (typeof Mojo === 'undefined') {
 
 export function duyo(options = {}) {
   const {
-    appKind        = null,
-    renderTarget   = 'root',
+    appKind = null,
+    renderTarget = 'root',
     stubPalmSystem = true,
-    injectCss      = true
+    injectCss = true
   } = options;
 
   return {
@@ -73,22 +80,30 @@ export function duyo(options = {}) {
     enforce: 'pre',
 
     resolveId(id) {
-      if (id === VIRTUAL_APP_ID)     return RESOLVED_VIRTUAL_APP_ID;
+      if (id === VIRTUAL_APP_ID) return RESOLVED_VIRTUAL_APP_ID;
       if (id === VIRTUAL_RUNTIME_ID) return RESOLVED_VIRTUAL_RUNTIME_ID;
-      if (id === '@duyo/runtime')    return RESOLVED_VIRTUAL_RUNTIME_ID;
+      if (id === '@duyo/runtime') return RESOLVED_VIRTUAL_RUNTIME_ID;
     },
 
     load(id) {
       if (id === RESOLVED_VIRTUAL_RUNTIME_ID) {
         const build = readFileSync(ENYO_BUILD_JS, 'utf-8');
+
+        const wrappedBuild = `
+(function() {
+  var enyo = globalThis.enyo;
+  (0, eval)(${JSON.stringify(build)});
+}).call(globalThis);
+`;
+
         return [
           '// @duyo/runtime — Enyo 1.0 pre-built bundle',
           stubPalmSystem ? PALM_STUB : '',
           BROWSER_PREAMBLE,
-          '// enyo-build.js',
-          build,
-          'export var enyo = window.enyo;',
-          'export default window.enyo;'
+          '// enyo-build.js (wrapped for real global scope)',
+          wrappedBuild,
+          'export var enyo = globalThis.enyo;',
+          'export default globalThis.enyo;'
         ].join('\n');
       }
 
