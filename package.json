@@ -4,10 +4,11 @@
   "private": true,
   "description": "Classic Enyo 1.x apps. Modern web tooling.",
   "workspaces": [
-    "packages/*"
+    "packages/*",
+    "apps/*"
   ],
   "scripts": {
-    "dev": "echo 'Run dev from a specific package for now'",
+    "dev": "npm run dev --workspace=apps/example",
     "build": "npm run build --workspaces --if-present",
     "test": "npm run test --workspaces --if-present"
   },
