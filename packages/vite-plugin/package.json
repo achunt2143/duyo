@@ -12,23 +12,20 @@
     "webos"
   ],
   "type": "module",
-  "main": "./src/index.js",
-  "module": "./src/index.js",
   "exports": {
     ".": {
-      "import": "./src/index.js"
+      "import": "./src/index.js",
+      "require": "./src/index.cjs"
     },
     "./create-config": {
-      "import": "./src/create-config.js"
+      "import": "./src/create-config.js",
+      "require": "./src/create-config.cjs"
     }
   },
   "files": [
-    "src/",
-    "dist/"
+    "src/"
   ],
-  "scripts": {
-    "build": "node scripts/build.js"
-  },
+  "scripts": {},
   "peerDependencies": {
     "vite": ">=4.0.0"
   },
