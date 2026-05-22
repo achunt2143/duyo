@@ -10,7 +10,7 @@ import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
-const RUNTIME_ROOT  = resolve(__dirname, '../../runtime');
+const RUNTIME_ROOT   = resolve(__dirname, '../../runtime');
 const ENYO_BUILD_JS  = resolve(RUNTIME_ROOT, 'framework/build/enyo-build.js');
 const ENYO_BUILD_CSS = resolve(RUNTIME_ROOT, 'framework/build/enyo-build.css');
 
@@ -22,17 +22,20 @@ const RESOLVED_VIRTUAL_RUNTIME_ID = '\0' + VIRTUAL_RUNTIME_ID;
 /**
  * Browser-safe Enyo bootstrap preamble.
  *
+ * - Sets window.enyo and all properties enyo-build.js expects to already
+ *   exist on the global before it starts patching.
+ * - enyo.enyoPath must be set so g11n/loadfile.js can resolve "$enyo/g11n"
+ *   via enyo.path.rewrite(); without it enyo.Object.subclass / publishEvents
+ *   are never reached because the features-loop throws during g11n init.
  * - Uses `var` so the declaration hoists and doesn't clash with any
- *   lexical `const`/`let enyo` Vite may synthesize in the module wrapper.
- * - Always sets via window.enyo so strict-mode modules can't block it.
- * - Provides enyo.setPrototype using standard JS (replaces the V8-native
- *   %FunctionSetPrototype intrinsic from builtin-preamble.js).
+ *   lexical `const`/`let enyo` Vite may synthesise in the module wrapper.
  */
 const BROWSER_PREAMBLE = `
 // @duyo/vite-plugin — browser-safe Enyo bootstrap
 window.enyo = window.enyo || {};
 window.enyo.isBuiltin = false;
 window.enyo.args = {};
+window.enyo.enyoPath = '';
 window.enyo.depends = function() {};
 window.enyo.setPrototype = function(ctor, proto) { ctor.prototype = proto; };
 var enyo = window.enyo;
