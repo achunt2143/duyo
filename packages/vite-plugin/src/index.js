@@ -2,16 +2,6 @@
  * @duyo/vite-plugin
  *
  * Teaches Vite how to build and serve Duyo (Enyo 1.x) applications.
- *
- * What this plugin does:
- *  1. Injects a browser-safe Enyo bootstrap preamble so `window.enyo`
- *     is available when app modules execute. The original builtin-preamble.js
- *     is intentionally NOT used — it contains V8-native intrinsics (%FunctionSetPrototype)
- *     that only work inside webOS's V8 builtin context, not in a browser.
- *  2. Resolves `@duyo/runtime` imports to the pre-built enyo-build.js.
- *  3. Injects the Enyo stylesheet automatically.
- *  4. Provides a virtual module (`virtual:duyo-app`) for auto-bootstrapping.
- *  5. Stubs out Palm/webOS-only APIs.
  */
 
 import { readFileSync } from 'fs';
@@ -32,29 +22,22 @@ const RESOLVED_VIRTUAL_RUNTIME_ID = '\0' + VIRTUAL_RUNTIME_ID;
 /**
  * Browser-safe Enyo bootstrap preamble.
  *
- * Replaces builtin-preamble.js entirely. That file was written to run inside
- * the webOS V8 builtin context (no window, no document, V8 %intrinsics).
- * In a browser we just need window.enyo to exist before enyo-build.js runs,
- * and enyo.setPrototype to use standard JS prototype assignment.
+ * - Uses `var` so the declaration hoists and doesn't clash with any
+ *   lexical `const`/`let enyo` Vite may synthesize in the module wrapper.
+ * - Always sets via window.enyo so strict-mode modules can't block it.
+ * - Provides enyo.setPrototype using standard JS (replaces the V8-native
+ *   %FunctionSetPrototype intrinsic from builtin-preamble.js).
  */
 const BROWSER_PREAMBLE = `
 // @duyo/vite-plugin — browser-safe Enyo bootstrap
-// Replaces builtin-preamble.js (webOS V8-native only).
 window.enyo = window.enyo || {};
-enyo = window.enyo;
-enyo.isBuiltin = false;
-enyo.args = {};
-enyo.depends = function() {};
-
-// Standard JS prototype setter — replaces the V8-native %FunctionSetPrototype intrinsic
-enyo.setPrototype = function(ctor, proto) {
-  ctor.prototype = proto;
-};
+window.enyo.isBuiltin = false;
+window.enyo.args = {};
+window.enyo.depends = function() {};
+window.enyo.setPrototype = function(ctor, proto) { ctor.prototype = proto; };
+var enyo = window.enyo;
 `;
 
-/**
- * PalmSystem / webOS API stub for browser environments.
- */
 const PALM_STUB = `
 if (typeof PalmSystem === 'undefined') {
   window.PalmSystem = {
@@ -74,15 +57,6 @@ if (typeof Mojo === 'undefined') {
 }
 `;
 
-/**
- * duyo(options)
- *
- * @param {object} options
- * @param {string}  [options.appKind]        - Top-level kind name to render
- * @param {string}  [options.renderTarget]   - DOM element ID (default: 'root')
- * @param {boolean} [options.stubPalmSystem] - Inject PalmSystem stub (default: true)
- * @param {boolean} [options.injectCss]      - Auto-inject enyo-build.css (default: true)
- */
 export function duyo(options = {}) {
   const {
     appKind        = null,
@@ -110,7 +84,7 @@ export function duyo(options = {}) {
           BROWSER_PREAMBLE,
           '// enyo-build.js',
           build,
-          'export const enyo = window.enyo;',
+          'export var enyo = window.enyo;',
           'export default window.enyo;'
         ].join('\n');
       }
@@ -122,7 +96,7 @@ export function duyo(options = {}) {
           `window.addEventListener('load', function() {`,
           `  var target = document.getElementById('${renderTarget}');`,
           `  if (!target) { console.error('[duyo] Render target #${renderTarget} not found.'); return; }`,
-          `  try { var app = enyo.create({ kind: '${appKind}' }); app.renderInto(target); }`,
+          `  try { var app = window.enyo.create({ kind: '${appKind}' }); app.renderInto(target); }`,
           `  catch (e) { console.error('[duyo] Failed to render ${appKind}:', e); }`,
           `});`
         ].join('\n');

@@ -3,7 +3,7 @@
 const fs   = require('fs');
 const path = require('path');
 
-const RUNTIME_ROOT  = path.resolve(__dirname, '../../runtime');
+const RUNTIME_ROOT   = path.resolve(__dirname, '../../runtime');
 const ENYO_BUILD_JS  = path.join(RUNTIME_ROOT, 'framework/build/enyo-build.js');
 const ENYO_BUILD_CSS = path.join(RUNTIME_ROOT, 'framework/build/enyo-build.css');
 
@@ -12,17 +12,14 @@ const RESOLVED_VIRTUAL_APP_ID     = '\0virtual:duyo-app';
 const VIRTUAL_RUNTIME_ID          = 'virtual:duyo-runtime';
 const RESOLVED_VIRTUAL_RUNTIME_ID = '\0virtual:duyo-runtime';
 
-// Browser-safe preamble — replaces the V8-native builtin-preamble.js
 const BROWSER_PREAMBLE = `
 // @duyo/vite-plugin — browser-safe Enyo bootstrap
 window.enyo = window.enyo || {};
-enyo = window.enyo;
-enyo.isBuiltin = false;
-enyo.args = {};
-enyo.depends = function() {};
-enyo.setPrototype = function(ctor, proto) {
-  ctor.prototype = proto;
-};
+window.enyo.isBuiltin = false;
+window.enyo.args = {};
+window.enyo.depends = function() {};
+window.enyo.setPrototype = function(ctor, proto) { ctor.prototype = proto; };
+var enyo = window.enyo;
 `;
 
 const PALM_STUB = `
@@ -70,7 +67,7 @@ function duyo(options) {
           BROWSER_PREAMBLE,
           '// enyo-build.js',
           build,
-          'export const enyo = window.enyo;',
+          'export var enyo = window.enyo;',
           'export default window.enyo;'
         ].join('\n');
       }
@@ -82,7 +79,7 @@ function duyo(options) {
           `window.addEventListener('load', function() {`,
           `  var target = document.getElementById('${renderTarget}');`,
           `  if (!target) { console.error('[duyo] Render target #${renderTarget} not found.'); return; }`,
-          `  try { var app = enyo.create({ kind: '${appKind}' }); app.renderInto(target); }`,
+          `  try { var app = window.enyo.create({ kind: '${appKind}' }); app.renderInto(target); }`,
           `  catch (e) { console.error('[duyo] Failed to render ${appKind}:', e); }`,
           `});`
         ].join('\n');
