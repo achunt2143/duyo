@@ -1,0 +1,39 @@
+{
+  "name": "@duyo/vite-plugin",
+  "version": "0.1.0",
+  "description": "Vite plugin for building Duyo (Enyo 1.x) applications with modern tooling.",
+  "license": "Apache-2.0",
+  "author": "achunt2143",
+  "keywords": [
+    "duyo",
+    "enyo",
+    "vite",
+    "vite-plugin",
+    "webos"
+  ],
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./src/index.js",
+  "exports": {
+    ".": {
+      "import": "./src/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": [
+    "src/",
+    "dist/"
+  ],
+  "scripts": {
+    "build": "node scripts/build.js"
+  },
+  "peerDependencies": {
+    "vite": ">=4.0.0"
+  },
+  "dependencies": {
+    "@duyo/runtime": "*"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
