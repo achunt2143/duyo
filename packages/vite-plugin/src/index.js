@@ -22,13 +22,10 @@ const RESOLVED_VIRTUAL_RUNTIME_ID = '\0' + VIRTUAL_RUNTIME_ID;
 /**
  * Browser-safe Enyo bootstrap preamble.
  *
- * - Sets window.enyo and all properties enyo-build.js expects to already
- *   exist on the global before it starts patching.
- * - enyo.enyoPath must be set so g11n/loadfile.js can resolve "$enyo/g11n"
- *   via enyo.path.rewrite(); without it enyo.Object.subclass / publishEvents
- *   are never reached because the features-loop throws during g11n init.
- * - Uses `var` so the declaration hoists and doesn't clash with any
- *   lexical `const`/`let enyo` Vite may synthesise in the module wrapper.
+ * Sets globalThis.enyo and all properties enyo-build.js expects before it
+ * executes. Does NOT define PalmSystem — that is handled by PALM_STUB so
+ * that g11n._init() can detect "browser" platform correctly after we force
+ * it below in POST_BUILD.
  */
 const BROWSER_PREAMBLE = `
 // @duyo/vite-plugin — browser-safe Enyo bootstrap
@@ -48,7 +45,22 @@ if (typeof window !== 'undefined') {
 var enyo = __duyoGlobal.enyo;
 `;
 
+/**
+ * Minimal Palm/webOS stubs.
+ *
+ * Always injected regardless of any option because:
+ * - palmGetResource is a bare global called by g11n loadfile on the "device"
+ *   platform path — it must exist even if we override the platform below.
+ * - PalmSystem methods (stageReady, setWindowOrientation, etc.) are called
+ *   during widget boot before our POST_BUILD g11n override fires.
+ * - Keeping PalmSystem fully stubbed is safer than removing it because some
+ *   Enyo internals guard on typeof PalmSystem after g11n init.
+ */
 const PALM_STUB = `
+// @duyo/vite-plugin — Palm/webOS stubs for browser environment
+if (typeof palmGetResource === 'undefined') {
+  window.palmGetResource = function() { return undefined; };
+}
 if (typeof PalmSystem === 'undefined') {
   window.PalmSystem = {
     deviceInfo: '{}',
@@ -56,10 +68,22 @@ if (typeof PalmSystem === 'undefined') {
     localeRegion: 'us',
     phoneRegion: 'us',
     timeFormat: 'HH12',
+    timeZone: 'America/New_York',
     useSimulatedMouseClicks: function() {},
     simulateMouseClick: function() {},
     paste: function() {},
-    runTextIndexer: function(t) { return t; }
+    runTextIndexer: function(t) { return t; },
+    setWindowOrientation: function() {},
+    stageReady: function() {},
+    getIdentifier: function() { return ''; },
+    activate: function() {},
+    deactivate: function() {},
+    addBannerMessage: function() {},
+    removeBannerMessage: function() {},
+    clearBannerMessages: function() {},
+    playSoundNotification: function() {},
+    launchApplication: function() {},
+    getResource: function() { return ''; }
   };
 }
 if (typeof Mojo === 'undefined') {
@@ -67,11 +91,28 @@ if (typeof Mojo === 'undefined') {
 }
 `;
 
+/**
+ * Post-build override: force enyo.g11n to "browser" platform.
+ *
+ * enyo.g11n._init() checks typeof PalmSystem to pick the platform.
+ * Even with a stub, it may have already run and selected "device".
+ * We override _platform and _initialized here so any subsequent call
+ * to enyo.g11n.getPlatform() returns "browser" and does not re-enter
+ * the webOS-only code paths (palmGetResource, MojoLoader, etc.).
+ */
+const POST_BUILD = `
+// @duyo/vite-plugin — force g11n to browser platform
+if (globalThis.enyo && globalThis.enyo.g11n) {
+  globalThis.enyo.g11n._platform = 'browser';
+  globalThis.enyo.g11n._enyoAvailable = true;
+  globalThis.enyo.g11n._initialized = true;
+}
+`;
+
 export function duyo(options = {}) {
   const {
     appKind = null,
     renderTarget = 'root',
-    stubPalmSystem = true,
     injectCss = true
   } = options;
 
@@ -98,10 +139,12 @@ export function duyo(options = {}) {
 
         return [
           '// @duyo/runtime — Enyo 1.0 pre-built bundle',
-          stubPalmSystem ? PALM_STUB : '',
+          PALM_STUB,
           BROWSER_PREAMBLE,
           '// enyo-build.js (wrapped for real global scope)',
           wrappedBuild,
+          '// post-build platform override',
+          POST_BUILD,
           'export var enyo = globalThis.enyo;',
           'export default globalThis.enyo;'
         ].join('\n');

@@ -31,6 +31,10 @@ var enyo = __duyoGlobal.enyo;
 `;
 
 const PALM_STUB = `
+// @duyo/vite-plugin — Palm/webOS stubs for browser environment
+if (typeof palmGetResource === 'undefined') {
+  window.palmGetResource = function() { return undefined; };
+}
 if (typeof PalmSystem === 'undefined') {
   window.PalmSystem = {
     deviceInfo: '{}',
@@ -38,10 +42,22 @@ if (typeof PalmSystem === 'undefined') {
     localeRegion: 'us',
     phoneRegion: 'us',
     timeFormat: 'HH12',
+    timeZone: 'America/New_York',
     useSimulatedMouseClicks: function() {},
     simulateMouseClick: function() {},
     paste: function() {},
-    runTextIndexer: function(t) { return t; }
+    runTextIndexer: function(t) { return t; },
+    setWindowOrientation: function() {},
+    stageReady: function() {},
+    getIdentifier: function() { return ''; },
+    activate: function() {},
+    deactivate: function() {},
+    addBannerMessage: function() {},
+    removeBannerMessage: function() {},
+    clearBannerMessages: function() {},
+    playSoundNotification: function() {},
+    launchApplication: function() {},
+    getResource: function() { return ''; }
   };
 }
 if (typeof Mojo === 'undefined') {
@@ -49,11 +65,19 @@ if (typeof Mojo === 'undefined') {
 }
 `;
 
+const POST_BUILD = `
+// @duyo/vite-plugin — force g11n to browser platform
+if (globalThis.enyo && globalThis.enyo.g11n) {
+  globalThis.enyo.g11n._platform = 'browser';
+  globalThis.enyo.g11n._enyoAvailable = true;
+  globalThis.enyo.g11n._initialized = true;
+}
+`;
+
 function duyo(options) {
   options = options || {};
   const appKind = options.appKind || null;
   const renderTarget = options.renderTarget || 'root';
-  const stubPalmSystem = options.stubPalmSystem !== false;
   const injectCss = options.injectCss !== false;
 
   return {
@@ -68,7 +92,7 @@ function duyo(options) {
 
     load: function (id) {
       if (id === RESOLVED_VIRTUAL_RUNTIME_ID) {
-        const build = readFileSync(ENYO_BUILD_JS, 'utf-8');
+        const build = fs.readFileSync(ENYO_BUILD_JS, 'utf-8');
 
         const wrappedBuild = `
 (function() {
@@ -79,10 +103,12 @@ function duyo(options) {
 
         return [
           '// @duyo/runtime — Enyo 1.0 pre-built bundle',
-          stubPalmSystem ? PALM_STUB : '',
+          PALM_STUB,
           BROWSER_PREAMBLE,
           '// enyo-build.js (wrapped for real global scope)',
           wrappedBuild,
+          '// post-build platform override',
+          POST_BUILD,
           'export var enyo = globalThis.enyo;',
           'export default globalThis.enyo;'
         ].join('\n');
