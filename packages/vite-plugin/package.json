@@ -12,12 +12,14 @@
     "webos"
   ],
   "type": "module",
-  "main": "./dist/index.cjs",
+  "main": "./src/index.js",
   "module": "./src/index.js",
   "exports": {
     ".": {
-      "import": "./src/index.js",
-      "require": "./dist/index.cjs"
+      "import": "./src/index.js"
+    },
+    "./create-config": {
+      "import": "./src/create-config.js"
     }
   },
   "files": [
