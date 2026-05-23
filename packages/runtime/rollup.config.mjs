@@ -17,6 +17,7 @@
 
 import { nodeResolve } from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
+import alias from '@rollup/plugin-alias';
 import { existsSync, readdirSync, statSync, readFileSync, writeFileSync, mkdirSync } from 'fs';
 import { join, extname, resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
@@ -86,6 +87,18 @@ export default {
   },
 
   plugins: [
+    // Redirect bare require('enyo') calls — used by every file in framework/src/ —
+    // to our local bootstrap shim that creates and returns window.enyo.
+    // This MUST come before nodeResolve so the alias wins.
+    alias({
+      entries: [
+        {
+          find: 'enyo',
+          replacement: resolve(__dirname, 'framework/src/_enyo-global.js')
+        }
+      ]
+    }),
+
     // Resolve bare `require('...')` paths inside Enyo source
     nodeResolve({ browser: true }),
 
