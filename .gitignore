@@ -2,6 +2,7 @@
 node_modules/
 .pnp
 .pnp.js
+packages\runtime\framework\src
 
 # Build outputs
 dist/
