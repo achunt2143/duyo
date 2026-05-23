@@ -9,22 +9,21 @@
  *
  * Instead, @duyo/runtime builds a single browser-ready IIFE (build/enyo.js)
  * via Rollup. This plugin serves that pre-built file as a classic <script>
- * injected into index.html *before* any module scripts run. Classic scripts
- * execute in sloppy mode — exactly what Enyo needs.
+ * tag injected into index.html *before* any module scripts run.
  *
- * The @duyo/runtime ESM shim (index.js) is a thin wrapper that just
- * re-exports window.enyo after the classic script has populated it.
+ * If build/enyo.js does not exist (e.g. fresh checkout), the plugin runs
+ * the Rollup build automatically from the runtime's rollup.config.mjs so
+ * developers never need a manual build step.
  *
  * Build output expected at:
- *   packages/runtime/build/enyo.js    ← JS bundle (IIFE)
- *   packages/runtime/build/enyo.css   ← CSS bundle
- *
- * Run `npm run build` in packages/runtime to generate these files.
+ *   packages/runtime/build/enyo.js    <- JS bundle (IIFE)
+ *   packages/runtime/build/enyo.css   <- CSS bundle
  */
 
 import { readFileSync, existsSync } from 'fs';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
+import { execFileSync } from 'child_process';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -33,27 +32,43 @@ const BUILD_ROOT   = resolve(RUNTIME_ROOT, 'build');
 const BUILT_JS     = resolve(BUILD_ROOT, 'enyo.js');
 const BUILT_CSS    = resolve(BUILD_ROOT, 'enyo.css');
 
-const VIRTUAL_APP_ID             = 'virtual:duyo-app';
-const RESOLVED_VIRTUAL_APP_ID    = '\0' + VIRTUAL_APP_ID;
-const VIRTUAL_RUNTIME_ID         = 'virtual:duyo-runtime';
+const VIRTUAL_APP_ID              = 'virtual:duyo-app';
+const RESOLVED_VIRTUAL_APP_ID     = '\0' + VIRTUAL_APP_ID;
+const VIRTUAL_RUNTIME_ID          = 'virtual:duyo-runtime';
 const RESOLVED_VIRTUAL_RUNTIME_ID = '\0' + VIRTUAL_RUNTIME_ID;
 
 // ---------------------------------------------------------------------------
-// Helpers
+// Build helpers
 // ---------------------------------------------------------------------------
 
+/**
+ * Run `rollup -c` inside packages/runtime to produce build/enyo.js.
+ * Uses the locally installed rollup binary from the monorepo root.
+ */
+function buildRuntime() {
+  console.log('[duyo] build/enyo.js not found — running rollup build...');
+  const monorepoRoot = resolve(RUNTIME_ROOT, '../..');
+  const rollupBin = resolve(monorepoRoot, 'node_modules/.bin/rollup');
+  const bin = existsSync(rollupBin) ? rollupBin : 'rollup';
+  try {
+    execFileSync(bin, ['-c', 'rollup.config.mjs'], {
+      cwd: RUNTIME_ROOT,
+      stdio: 'inherit',
+    });
+    console.log('[duyo] rollup build complete.');
+  } catch (e) {
+    console.error('[duyo] rollup build failed:', e.message);
+  }
+}
+
 function readBuiltJs() {
+  if (!existsSync(BUILT_JS)) buildRuntime();
   if (!existsSync(BUILT_JS)) {
     return [
-      '// @duyo/runtime — build/enyo.js not found.',
-      '// Run `npm run build` in packages/runtime first.',
-      '// See packages/runtime/ENYO_SETUP.md for full instructions.',
+      '// @duyo/runtime — build/enyo.js not found and auto-build failed.',
+      '// Run `npm run build` manually in packages/runtime.',
       'window.enyo = window.enyo || {};',
-      'console.error(',
-      '  "[duyo] build/enyo.js not found. " +',
-      '  "Run `npm run build` in packages/runtime. " +',
-      '  "See packages/runtime/ENYO_SETUP.md."',
-      ');',
+      'console.error("[duyo] build/enyo.js missing. Run `npm run build` in packages/runtime.");',
     ].join('\n');
   }
   return readFileSync(BUILT_JS, 'utf-8');
@@ -70,9 +85,9 @@ function readBuiltCss() {
 
 export function duyo(options = {}) {
   const {
-    appKind     = null,
+    appKind      = null,
     renderTarget = 'root',
-    injectCss   = true,
+    injectCss    = true,
   } = options;
 
   return {
@@ -83,7 +98,7 @@ export function duyo(options = {}) {
     // Module resolution
     // ------------------------------------------------------------------
     resolveId(id) {
-      if (id === VIRTUAL_APP_ID)    return RESOLVED_VIRTUAL_APP_ID;
+      if (id === VIRTUAL_APP_ID)     return RESOLVED_VIRTUAL_APP_ID;
       if (id === VIRTUAL_RUNTIME_ID) return RESOLVED_VIRTUAL_RUNTIME_ID;
       if (id === '@duyo/runtime')    return RESOLVED_VIRTUAL_RUNTIME_ID;
     },
@@ -126,38 +141,16 @@ export function duyo(options = {}) {
     // ------------------------------------------------------------------
     // Inject <script src="/@duyo/enyo.js"> as the FIRST tag in <head>.
     // It must run before any <script type="module"> so window.enyo is
-    // ready when the module shim captures it.
+    // ready when module scripts execute.
     // ------------------------------------------------------------------
-    transformIndexHtml() {
-  const tags = [
-    {
-      tag: 'script',
-      attrs: { src: '/@duyo/enyo.js' },
-      injectTo: 'head-prepend'
-    }
-  ];
-
-  if (injectCss) {
-    tags.push({
-      tag: 'link',
-      attrs: { rel: 'stylesheet', href: '/@duyo/enyo.css' },
-      injectTo: 'head'
-    });
-  }
-
-  if (appKind) {
-    tags.push({
-      tag: 'script',
-      attrs: { type: 'module', src: '/@id/virtual:duyo-app' },
-      injectTo: 'body'
-    });
-  }
-
-  return { tags };
-},
+    transformIndexHtml(html) {
+      let inject = `\n    <script src="/@duyo/enyo.js"></script>`;
+      if (injectCss) inject += `\n    <link rel="stylesheet" href="/@duyo/enyo.css">`;
+      return html.replace(/(<head[^>]*>)/i, '$1' + inject);
+    },
 
     // ------------------------------------------------------------------
-    // Dev server — serve the pre-built files from build/
+    // Dev server — serve the built files (auto-building if needed)
     // ------------------------------------------------------------------
     configureServer(server) {
       server.middlewares.use('/@duyo/enyo.js', (_req, res) => {
