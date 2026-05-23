@@ -79,24 +79,22 @@ if (typeof Mojo === 'undefined') {
  *    (palmGetResource, MojoLoader, etc.) are never entered.
  *
  * 2. Stub Tellurium.setup to skip the synchronous XHR fetch of
- *    tellurium_config.json from the webOS filesystem. Tellurium is Palm's
- *    automated testing framework and is not needed in a browser build.
- *    We hardcode the single config value (enableUserEvents: true) and
- *    preserve the rest of the setup logic so the object is still safe
- *    to reference if any app code checks for it.
+ *    tellurium_config.json from the webOS filesystem.
  *
  * 3. Patch enyo.kind.inherited for strict-mode / ES-module compatibility.
- *    ES modules are always strict, and strict mode forbids arguments.callee.
- *    Enyo's inherited() uses args.callee to reach the _inherited pointer
- *    that was stamped onto each overriding method at kind-definition time.
+ *    ES modules are always strict; strict mode forbids arguments.callee.
  *
- *    Strategy:
- *      a) Replace enyo.kind.inherited with a version that reads _inherited
- *         from a _self back-reference instead of args.callee.
- *      b) Wrap the existing 'inherited' kind feature so every new method
- *         decorated with _inherited also gets a _self = fn self-reference.
- *      c) Back-fill _self onto all already-defined kind methods (built-in
- *         Enyo kinds) so inherited() works on framework classes too.
+ *    Strategy (minimal, surgical — does NOT rebuild enyo.kind.features):
+ *      a) Find the 'inherited' feature hook already in enyo.kind.features
+ *         (identified by its source containing '_inherited' and 'nom') and
+ *         replace it in-place with a version that also stamps fn._self = fn
+ *         on every method it decorates.
+ *      b) Replace enyo.kind.inherited with a callee-free version that reads
+ *         _inherited from args[0]._self instead of args.callee.
+ *      c) Back-fill _self onto all already-defined built-in kind methods so
+ *         framework classes work too.
+ *
+ *    All other features (statics, mixins) are completely untouched.
  */
 const POST_BUILD = `
 // @duyo/vite-plugin — force g11n to browser platform
@@ -118,126 +116,118 @@ if (typeof Tellurium !== 'undefined' && Tellurium.setup) {
     Tellurium.inVerifyDialog = false;
     Tellurium.delayedEvents = [];
     Tellurium.serviceAvailable = false;
-    // Hardcode the config — skips the sync XHR to $palm-tellurium/tellurium_config.json
     Tellurium.config = { enableUserEvents: true };
     Tellurium.stageType = 'card';
     window.addEventListener('unload', Tellurium.cleanup, false);
     window.addEventListener('resize', Tellurium.handleResize, false);
-    // enableUserEvents intentionally not wired up — Tellurium events are webOS-only
   };
 }
 
 // @duyo/vite-plugin — patch inherited() for strict-mode / ES module compatibility
-//
-// The original: enyo.kind.inherited = function(args, newArgs) {
-//   return args.callee._inherited.apply(this, newArgs || args);
-// };
-//
-// args.callee is forbidden in strict mode (TypeError at runtime).
-// Instead, each decorated method gets a _self back-reference stamped
-// onto it, so inherited() can reach _inherited without callee.
 (function patchInherited() {
   if (!globalThis.enyo || !globalThis.enyo.kind) return;
   var enyo = globalThis.enyo;
+  var features = enyo.kind.features;
 
-  // 1. Replace the inherited() implementation.
-  //    _self is stamped by step 2 (future kinds) and step 3 (built-in kinds).
-  //    User app code calls: this.inherited(arguments)
-  //    We read _self off arguments[0].callee only if strict mode hasn't
-  //    already thrown — but we never reach here via callee; instead we
-  //    use a wrapper (step 2) that closes over the original fn reference.
-  //
-  //    The wrapper replaces each method on the prototype with a thin
-  //    closure that temporarily installs a per-call inherited() bound to
-  //    the correct _inherited pointer, then restores the global one.
-  //    This is the same approach used by enyo.kind._wrapFn for mixins.
-
-  // 2. Patch the 'inherited' feature hook so new enyo.kind() calls wrap
-  //    each overriding method in a closure that provides strict-safe inherited().
-  var _origFeatures = enyo.kind.features.slice();
-  enyo.kind.features = [];
-
-  for (var fi = 0; fi < _origFeatures.length; fi++) {
-    (function(origFn) {
-      enyo.kind.features.push(function(ctor, props) {
-        // Run the original feature (stamps _inherited, nom, etc.)
-        origFn(ctor, props);
-
-        // After the original 'inherited' feature has run, wrap any method
-        // that received an _inherited pointer so it works in strict mode.
-        if (origFn === _origInheritedFeature) {
-          var proto = ctor.prototype;
+  // Step 1: Find and replace the 'inherited' feature hook in-place.
+  // It's identified by stamping _inherited and nom onto methods.
+  // We replace it with a version that also stamps _self = fn so
+  // enyo.kind.inherited can reach _inherited without args.callee.
+  for (var i = 0; i < features.length; i++) {
+    var src = features[i].toString();
+    if (src.indexOf('_inherited') !== -1 && src.indexOf('nom') !== -1) {
+      var origFeature = features[i];
+      features[i] = function(ctor, props) {
+        // Run the original feature — stamps _inherited and nom as before
+        origFeature(ctor, props);
+        // Additionally stamp _self on every method that got _inherited
+        if (ctor.prototype.base) {
           for (var n in props) {
-            var p = proto[n];
+            var p = props[n];
             if (typeof p === 'function' && p._inherited) {
-              proto[n] = _makeInheritedWrapper(p, p._inherited);
+              p._self = p;
             }
           }
         }
-      });
-    })(_origFeatures[fi]);
-  }
-
-  // Capture a reference to the original 'inherited' feature function so
-  // we can identify it in the loop above. The inherited feature is the
-  // first one pushed in Oop.js — it's the one that stamps _inherited and nom.
-  // We identify it by the presence of the _inherited assignment in its source.
-  var _origInheritedFeature = null;
-  for (var fi2 = 0; fi2 < _origFeatures.length; fi2++) {
-    var src = _origFeatures[fi2].toString();
-    if (src.indexOf('_inherited') !== -1 && src.indexOf('nom') !== -1) {
-      _origInheritedFeature = _origFeatures[fi2];
+      };
       break;
     }
   }
 
-  // Rebuild features with the correct _origInheritedFeature reference now known.
-  // (The closure above captured it by reference so it's already correct.)
+  // Step 2: Replace enyo.kind.inherited with a callee-free version.
+  // Original: return args.callee._inherited.apply(this, newArgs || args)
+  // New: read _inherited from args[0]._self (stamped in step 1 & 3).
+  // args[0] is the raw 'arguments' object passed by the caller, so
+  // args[0] is the first argument — but inherited() receives the whole
+  // arguments object as its first param. We need the _self on that
+  // arguments object's callee equivalent, which is args._self if we
+  // stamp it on the arguments object itself — but we can't do that.
+  //
+  // Better: stamp _self on the function itself (done in step 1), then
+  // wrap the method at call time so 'this.inherited' is a closure that
+  // already knows which _inherited to call. We do this via a one-time
+  // replacement of enyo.kind.inherited that wraps each proto method the
+  // first time it's encountered via a lazy-wrap on enyo.kind.
+  //
+  // Simplest correct approach: patch enyo.kind() itself to post-process
+  // each new kind's methods through _makeWrapper after features run.
+  var _origKind = enyo.kind;
+  enyo.kind = function(inProps) {
+    var ctor = _origKind(inProps);
+    var proto = ctor.prototype;
+    // Wrap any method that has _inherited but hasn't been wrapped yet
+    for (var n in proto) {
+      if (proto.hasOwnProperty(n)) {
+        var fn = proto[n];
+        if (typeof fn === 'function' && fn._inherited && !fn.__strictWrapped) {
+          proto[n] = _makeWrapper(fn);
+        }
+      }
+    }
+    return ctor;
+  };
+  // Copy all static properties from the original enyo.kind onto the new one
+  for (var k in _origKind) {
+    if (_origKind.hasOwnProperty(k)) {
+      enyo.kind[k] = _origKind[k];
+    }
+  }
 
-  // _makeInheritedWrapper: returns a new function that, when called, temporarily
-  // overrides this.inherited with a version bound to the specific _inherited
-  // pointer for this method, so this.inherited(arguments) works in strict mode.
-  function _makeInheritedWrapper(fn, inheritedFn) {
+  // _makeWrapper: wraps fn so that when called, this.inherited is temporarily
+  // a function that calls fn._inherited — no args.callee needed.
+  function _makeWrapper(fn) {
+    var inheritedFn = fn._inherited;
     var wrapper = function() {
-      var prevInherited = this.inherited;
+      var prev = this.inherited;
       this.inherited = function(args, newArgs) {
         return inheritedFn.apply(this, newArgs || args);
       };
       try {
         return fn.apply(this, arguments);
       } finally {
-        this.inherited = prevInherited;
+        this.inherited = prev;
       }
     };
-    // Preserve metadata that Enyo uses
     wrapper._inherited = fn._inherited;
     wrapper._self = wrapper;
     wrapper.nom = fn.nom;
+    wrapper.__strictWrapped = true;
     return wrapper;
   }
 
-  // 3. Back-fill: walk every already-registered kind (built-in Enyo kinds
-  //    that were defined before this patch ran) and wrap their methods.
-  enyo.kind.features.push(function() {});
-  var kindCtorMap = enyo._kindCtors || {};
-  var visited = {};
-  function backfillProto(proto) {
-    if (!proto || visited[proto.kindName]) return;
-    visited[proto.kindName] = true;
-    for (var n in proto) {
-      if (proto.hasOwnProperty(n)) {
-        var p = proto[n];
-        if (typeof p === 'function' && p._inherited && !p._self) {
-          proto[n] = _makeInheritedWrapper(p, p._inherited);
-        }
-      }
-    }
-  }
-  // Walk the global enyo namespace for registered constructors
+  // Step 3: Back-fill all already-defined built-in Enyo kind prototypes.
   for (var key in enyo) {
     var val = enyo[key];
     if (typeof val === 'function' && val.prototype && val.prototype.kindName) {
-      backfillProto(val.prototype);
+      var proto = val.prototype;
+      for (var n in proto) {
+        if (proto.hasOwnProperty(n)) {
+          var fn = proto[n];
+          if (typeof fn === 'function' && fn._inherited && !fn.__strictWrapped) {
+            proto[n] = _makeWrapper(fn);
+          }
+        }
+      }
     }
   }
 }());
@@ -265,7 +255,7 @@ export function duyo(options = {}) {
         let build = readFileSync(ENYO_BUILD_JS, 'utf-8');
 
         build = build.replace(
-  /var b = Tellurium\.enyo\.xhr\.request\(\{[\s\S]*?\}\)\.responseText \|\| "\{\}";\s*Tellurium\.config = Tellurium\.extend\(Tellurium\.config, enyo\.json\.parse\(b\)\)/,
+  /var b = Tellurium\.enyo\.xhr\.request\(\{[\s\S]*?\}\)\.responseText \|\| "\{\}";[\s]*Tellurium\.config = Tellurium\.extend\(Tellurium\.config, enyo\.json\.parse\(b\)\)/,
   `Tellurium.config = Tellurium.extend(Tellurium.config, { enableUserEvents: false })`
 );
 
