@@ -135,3 +135,15 @@ enyo.kind({
     this.$.log.setContent('Last change: ' + msg);
   }
 });
+
+// -----------------------------------------------------------------
+// Mount the app
+// -----------------------------------------------------------------
+window.addEventListener('DOMContentLoaded', function() {
+  var target = document.getElementById('root');
+  if (!target) {
+    console.error('[duyo] Render target #root not found.');
+    return;
+  }
+  enyo.create({ kind: 'Example.Application' }).renderInto(target);
+});
