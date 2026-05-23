@@ -69,13 +69,12 @@ export default {
   output: {
     file: 'build/enyo.js',
 
-    // IIFE so everything runs immediately in global scope.
-    // `name: 'enyo'` means Rollup emits:  var enyo = (function() { ... })();
-    // `extend: true`  means it does:      var enyo = window.enyo = (function() { ... })();
-    // That matches Enyo's own expectation of a global `enyo` / `window.enyo`.
+    // Use IIFE format so the code executes immediately in global scope.
+    // Do NOT set `name` or `extend` — Enyo assigns window.enyo itself
+    // internally as a side effect. If Rollup also assigns the IIFE return
+    // value to window.enyo, it overwrites the real object with `undefined`
+    // because Enyo's index.js returns nothing.
     format: 'iife',
-    name: 'enyo',
-    extend: true,
 
     // Do NOT add 'use strict' — Enyo uses arguments.callee and other
     // sloppy-mode-only features.
