@@ -1,9 +1,12 @@
 /**
  * Duyo Example App
  *
- * A smoke-test app for @duyo/runtime + @duyo/vite-plugin.
- * Shows off kind inheritance, published properties, components tree,
- * and event handling — all pure Enyo 1.x idioms.
+ * Smoke-test for @duyo/runtime + @duyo/vite-plugin.
+ * Demonstrates kind inheritance, published properties, component trees,
+ * and event handling — all standard Enyo 2.7 idioms.
+ *
+ * Mounting is handled automatically by @duyo/vite-plugin via the
+ * `appKind` option in vite.config.mjs — no manual renderInto() needed.
  */
 
 import enyo from '@duyo/runtime';
@@ -35,11 +38,15 @@ enyo.kind({
     {
       tag: 'button',
       name: 'decBtn',
-      content: '−',
+      content: '\u2212',
       style: 'width:32px;height:32px;font-size:1.2rem;cursor:pointer;border:1px solid #ccc;border-radius:4px;background:#fff;',
       ontap: 'decrement'
     },
-    { tag: 'span', name: 'countNode', style: 'min-width: 2ch; text-align: center; font-size: 1.1rem;' },
+    {
+      tag: 'span',
+      name: 'countNode',
+      style: 'min-width: 2ch; text-align: center; font-size: 1.1rem;'
+    },
     {
       tag: 'button',
       name: 'incBtn',
