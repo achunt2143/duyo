@@ -1,145 +1,105 @@
 'use strict';
 
-const fs = require('fs');
-const path = require('path');
+/**
+ * @duyo/vite-plugin — CommonJS build
+ *
+ * Mirror of index.js for toolchains that load vite configs via require().
+ */
 
-const RUNTIME_ROOT = path.resolve(__dirname, '../../runtime');
-const ENYO_BUILD_JS = path.join(RUNTIME_ROOT, 'framework/build/enyo-build.js');
-const ENYO_BUILD_CSS = path.join(RUNTIME_ROOT, 'framework/build/enyo-build.css');
+const { readFileSync, existsSync, readdirSync, statSync } = require('fs');
+const { resolve, dirname, join, extname } = require('path');
+
+const RUNTIME_ROOT = resolve(__dirname, '../../runtime');
+const FRAMEWORK_ROOT = resolve(RUNTIME_ROOT, 'framework');
+const SRC_ROOT = resolve(FRAMEWORK_ROOT, 'src');
 
 const VIRTUAL_APP_ID = 'virtual:duyo-app';
-const RESOLVED_VIRTUAL_APP_ID = '\0virtual:duyo-app';
+const RESOLVED_VIRTUAL_APP_ID = '\0' + VIRTUAL_APP_ID;
 const VIRTUAL_RUNTIME_ID = 'virtual:duyo-runtime';
-const RESOLVED_VIRTUAL_RUNTIME_ID = '\0virtual:duyo-runtime';
+const RESOLVED_VIRTUAL_RUNTIME_ID = '\0' + VIRTUAL_RUNTIME_ID;
 
-const BROWSER_PREAMBLE = `
-// @duyo/vite-plugin — browser-safe Enyo bootstrap
-var __duyoGlobal = globalThis;
-__duyoGlobal.enyo = __duyoGlobal.enyo || {};
-__duyoGlobal.enyo.isBuiltin = false;
-__duyoGlobal.enyo.args = __duyoGlobal.enyo.args || {};
-__duyoGlobal.enyo.enyoPath = __duyoGlobal.enyo.enyoPath || '';
-__duyoGlobal.enyo.depends = __duyoGlobal.enyo.depends || function() {};
-__duyoGlobal.enyo.setPrototype = __duyoGlobal.enyo.setPrototype || function(ctor, proto) { ctor.prototype = proto; };
-
-// old Enyo code expects both a free variable and window.enyo
-if (typeof window !== 'undefined') {
-  window.enyo = __duyoGlobal.enyo;
+function collectSrcFiles(dir, files = []) {
+  if (!existsSync(dir)) return files;
+  for (const entry of readdirSync(dir).sort()) {
+    const full = join(dir, entry);
+    const stat = statSync(full);
+    if (stat.isDirectory()) {
+      collectSrcFiles(full, files);
+    } else if (extname(entry) === '.js') {
+      files.push(full);
+    }
+  }
+  return files;
 }
 
-var enyo = __duyoGlobal.enyo;
-`;
+function buildEnyoScript() {
+  const files = collectSrcFiles(SRC_ROOT);
 
-const PALM_STUB = `
-// @duyo/vite-plugin — Palm/webOS stubs for browser environment
-if (typeof palmGetResource === 'undefined') {
-  window.palmGetResource = function() { return undefined; };
-}
-if (typeof PalmSystem === 'undefined') {
-  window.PalmSystem = {
-    deviceInfo: '{}',
-    locale: 'en_us',
-    localeRegion: 'us',
-    phoneRegion: 'us',
-    timeFormat: 'HH12',
-    timeZone: 'America/New_York',
-    useSimulatedMouseClicks: function() {},
-    simulateMouseClick: function() {},
-    paste: function() {},
-    runTextIndexer: function(t) { return t; },
-    setWindowOrientation: function() {},
-    stageReady: function() {},
-    getIdentifier: function() { return ''; },
-    activate: function() {},
-    deactivate: function() {},
-    addBannerMessage: function() {},
-    removeBannerMessage: function() {},
-    clearBannerMessages: function() {},
-    playSoundNotification: function() {},
-    launchApplication: function() {},
-    getResource: function() { return ''; }
-  };
-}
-if (typeof Mojo === 'undefined') {
-  window.Mojo = {};
-}
-`;
+  if (files.length === 0) {
+    return [
+      '// @duyo/runtime — Enyo 2.7 source not found.',
+      '// Run the setup commands in packages/runtime/ENYO_SETUP.md first.',
+      'window.enyo = window.enyo || {};',
+      'console.error("[duyo] Enyo 2.7 source not found. See ENYO_SETUP.md.");',
+    ].join('\n');
+  }
 
-const POST_BUILD = `
-// @duyo/vite-plugin — force g11n to browser platform
-if (globalThis.enyo && globalThis.enyo.g11n) {
-  globalThis.enyo.g11n._platform = 'browser';
-  globalThis.enyo.g11n._enyoAvailable = true;
-  globalThis.enyo.g11n._initialized = true;
+  const parts = [
+    '// @duyo/runtime — Enyo 2.7, served as classic script (non-strict)',
+    '',
+    'window.enyo = window.enyo || {};',
+    'var enyo = window.enyo;',
+    '',
+  ];
+
+  for (const filePath of files) {
+    parts.push(`// === ${filePath.replace(SRC_ROOT, '')} ===`);
+    parts.push(readFileSync(filePath, 'utf-8'));
+    parts.push('');
+  }
+
+  return parts.join('\n');
 }
 
-// @duyo/vite-plugin — stub Tellurium for browser (skip webOS XHR config load)
-if (typeof Tellurium !== 'undefined' && Tellurium.setup) {
-  Tellurium.setup = function(a) {
-    window.Tellurium = Tellurium;
-    Tellurium.enyo = a;
-    Tellurium.extend = Tellurium.enyo.mixin;
-    Tellurium.isActive = false;
-    Tellurium.topSceneName = '';
-    Tellurium.metaDown = false;
-    Tellurium.inVerifyDialog = false;
-    Tellurium.delayedEvents = [];
-    Tellurium.serviceAvailable = false;
-    // Hardcode the config — skips the sync XHR to $palm-tellurium/tellurium_config.json
-    Tellurium.config = { enableUserEvents: true };
-    Tellurium.stageType = 'card';
-    window.addEventListener('unload', Tellurium.cleanup, false);
-    window.addEventListener('resize', Tellurium.handleResize, false);
-    // enableUserEvents intentionally not wired up — Tellurium events are webOS-only
-  };
+function buildEnyoCss() {
+  function collectCss(dir, files = []) {
+    if (!existsSync(dir)) return files;
+    for (const entry of readdirSync(dir).sort()) {
+      const full = join(dir, entry);
+      const stat = statSync(full);
+      if (stat.isDirectory()) collectCss(full, files);
+      else if (extname(entry) === '.css') files.push(full);
+    }
+    return files;
+  }
+  return collectCss(SRC_ROOT).map(f => readFileSync(f, 'utf-8')).join('\n');
 }
-`;
 
-function duyo(options) {
-  options = options || {};
-  const appKind = options.appKind || null;
-  const renderTarget = options.renderTarget || 'root';
-  const injectCss = options.injectCss !== false;
+function duyo(options = {}) {
+  const {
+    appKind = null,
+    renderTarget = 'root',
+    injectCss = true
+  } = options;
 
   return {
     name: 'duyo',
     enforce: 'pre',
 
-    resolveId: function (id) {
+    resolveId(id) {
       if (id === VIRTUAL_APP_ID) return RESOLVED_VIRTUAL_APP_ID;
       if (id === VIRTUAL_RUNTIME_ID) return RESOLVED_VIRTUAL_RUNTIME_ID;
       if (id === '@duyo/runtime') return RESOLVED_VIRTUAL_RUNTIME_ID;
     },
 
-    load: function (id) {
+    load(id) {
       if (id === RESOLVED_VIRTUAL_RUNTIME_ID) {
-        let build = fs.readFileSync(ENYO_BUILD_JS, 'utf-8');
-
-        build = build.replace(
-  /var b = Tellurium\.enyo\.xhr\.request\(\{[\s\S]*?\}\)\.responseText \|\| "\{\}";\s*Tellurium\.config = Tellurium\.extend\(Tellurium\.config, enyo\.json\.parse\(b\)\)/,
-  `Tellurium.config = Tellurium.extend(Tellurium.config, { enableUserEvents: false })`
-);
-
-        const wrappedBuild = `
-(function() {
-  var enyo = globalThis.enyo;
-  (0, eval)(${JSON.stringify(build)});
-}).call(globalThis);
-`;
-
         return [
-          '// @duyo/runtime — Enyo 1.0 pre-built bundle',
-          PALM_STUB,
-          BROWSER_PREAMBLE,
-          '// enyo-build.js (wrapped for real global scope)',
-          wrappedBuild,
-          '// post-build platform overrides',
-          POST_BUILD,
-          'export var enyo = globalThis.enyo;',
-          'export default globalThis.enyo;'
+          '// @duyo/runtime shim — Enyo 2.7 loaded as a classic script',
+          'export var enyo = window.enyo;',
+          'export default window.enyo;',
         ].join('\n');
       }
-
       if (id === RESOLVED_VIRTUAL_APP_ID) {
         if (!appKind) return `import '@duyo/runtime';\nexport {};`;
         return [
@@ -147,25 +107,40 @@ function duyo(options) {
           `window.addEventListener('load', function() {`,
           `  var target = document.getElementById('${renderTarget}');`,
           `  if (!target) { console.error('[duyo] Render target #${renderTarget} not found.'); return; }`,
-          `  try { var app = window.enyo.create({ kind: '${appKind}' }); app.renderInto(target); }`,
-          `  catch (e) { console.error('[duyo] Failed to render ${appKind}:', e); }`,
-          `});`
+          `  try {`,
+          `    var app = window.enyo.create({ kind: '${appKind}' });`,
+          `    app.renderInto(target);`,
+          `  } catch (e) {`,
+          `    console.error('[duyo] Failed to render ${appKind}:', e);`,
+          `  }`,
+          `});`,
         ].join('\n');
       }
     },
 
-    transformIndexHtml: function (html) {
-      if (!injectCss) return html;
-      return html.replace(/(<head[^>]*>)/i, '$1\n    <link rel="stylesheet" href="/@duyo/enyo.css">');
+    transformIndexHtml(html) {
+      let inject = `\n    <script src="/@duyo/enyo.js"></script>`;
+      if (injectCss) inject += `\n    <link rel="stylesheet" href="/@duyo/enyo.css">`;
+      return html.replace(/(<head[^>]*>)/i, '$1' + inject);
     },
 
-    configureServer: function (server) {
-      server.middlewares.use('/@duyo/enyo.css', function (req, res) {
-        const css = fs.readFileSync(ENYO_BUILD_CSS, 'utf-8');
-        res.setHeader('Content-Type', 'text/css');
-        res.end(css);
+    configureServer(server) {
+      server.middlewares.use('/@duyo/enyo.js', (_req, res) => {
+        res.setHeader('Content-Type', 'application/javascript');
+        res.end(buildEnyoScript());
       });
-    }
+      server.middlewares.use('/@duyo/enyo.css', (_req, res) => {
+        res.setHeader('Content-Type', 'text/css');
+        res.end(buildEnyoCss());
+      });
+    },
+
+    generateBundle() {
+      this.emitFile({ type: 'asset', fileName: 'enyo.js', source: buildEnyoScript() });
+      if (injectCss) {
+        this.emitFile({ type: 'asset', fileName: 'enyo.css', source: buildEnyoCss() });
+      }
+    },
   };
 }
 

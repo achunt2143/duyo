@@ -1,113 +1,91 @@
 /**
  * @duyo/vite-plugin
  *
- * Teaches Vite how to build and serve Duyo (Enyo 1.x) applications.
+ * Teaches Vite how to build and serve Duyo (Enyo 2.7) applications.
  *
- * Enyo source relies on non-strict semantics (arguments.callee, `this` as
- * global, shared free variables). Vite treats every virtual module as an
- * ES module (always strict), so we cannot load Enyo through Vite's module
- * graph at all.
+ * Enyo 2.7 source relies on non-strict semantics (implicit globals,
+ * `arguments.callee`, shared free variables via `var enyo = window.enyo`).
+ * Vite treats every virtual module as a strict ES module, so we cannot load
+ * Enyo through Vite's module graph at all.
  *
- * Instead we serve the concatenated Enyo source as a classic <script> tag
- * injected into index.html. Classic scripts run in sloppy (non-strict) mode,
- * which is exactly what Enyo was written for. The @duyo/runtime virtual
- * module is a thin shim that just re-exports window.enyo after it has been
- * populated by the classic script.
+ * Instead we concatenate the enyo 2.7 source files in dependency order and
+ * serve the result as a classic <script> tag injected into index.html.
+ * Classic scripts run in sloppy (non-strict) mode — exactly what Enyo needs.
+ * The @duyo/runtime virtual module is a thin shim that just re-exports
+ * window.enyo after it has been populated by that classic script.
+ *
+ * Enyo 2.7 source layout (inside packages/runtime/framework/):
+ *   src/         ← individual source files (Component.js, Control/, etc.)
+ *   index.js     ← lists the load order via require() calls (CommonJS-style)
  */
 
-import { readFileSync, existsSync } from 'fs';
-import { resolve, dirname, join, extname, basename } from 'path';
+import { readFileSync, existsSync, readdirSync, statSync } from 'fs';
+import { resolve, dirname, join, extname } from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const RUNTIME_ROOT = resolve(__dirname, '../../runtime');
-const SOURCE_ROOT = resolve(RUNTIME_ROOT, 'framework/source');
+const FRAMEWORK_ROOT = resolve(RUNTIME_ROOT, 'framework');
+const SRC_ROOT = resolve(FRAMEWORK_ROOT, 'src');
 
 const VIRTUAL_APP_ID = 'virtual:duyo-app';
 const RESOLVED_VIRTUAL_APP_ID = '\0' + VIRTUAL_APP_ID;
 const VIRTUAL_RUNTIME_ID = 'virtual:duyo-runtime';
 const RESOLVED_VIRTUAL_RUNTIME_ID = '\0' + VIRTUAL_RUNTIME_ID;
 
-// Directories / paths to skip — webOS/Palm-only
-const SKIP_DIRS = new Set(['g11n', 'palm']);
-const SKIP_PATHS = new Set(['../lib/enyo-lib']);
-
 /**
- * Recursively resolve a depends.js, returning ordered { js, css } absolute paths.
+ * Collect all .js files from the enyo 2.7 src/ tree in filesystem order.
+ * Enyo 2.7 registers kinds onto window.enyo as each file executes, and
+ * the files are written to be order-independent at the kind level (each
+ * kind looks up its superclass by name at instantiation time, not at
+ * definition time). A simple recursive walk is therefore sufficient.
+ *
+ * If you ever need a specific load order, maintain an ordered list here.
  */
-function resolveDependencies(dirPath, visited = new Set()) {
-  const realDir = resolve(dirPath);
-  if (visited.has(realDir)) return { js: [], css: [] };
-  visited.add(realDir);
-
-  const dependsPath = join(realDir, 'depends.js');
-  if (!existsSync(dependsPath)) return { js: [], css: [] };
-
-  const src = readFileSync(dependsPath, 'utf-8');
-  const entries = [];
-  const re = /["']([^"']+)["']/g;
-  let m;
-  while ((m = re.exec(src)) !== null) entries.push(m[1]);
-
-  const js = [];
-  const css = [];
-
-  for (const entry of entries) {
-    if (SKIP_PATHS.has(entry)) continue;
-    const entryName = basename(entry.replace(/\/$/, ''));
-    if (SKIP_DIRS.has(entryName)) continue;
-
-    const ext = extname(entry);
-    if (entry.endsWith('/') || ext === '') {
-      const subDir = resolve(realDir, entry);
-      if (existsSync(subDir)) {
-        const sub = resolveDependencies(subDir, visited);
-        js.push(...sub.js);
-        css.push(...sub.css);
-      }
-    } else if (ext === '.js') {
-      const absPath = resolve(realDir, entry);
-      if (existsSync(absPath)) js.push(absPath);
-    } else if (ext === '.css') {
-      const absPath = resolve(realDir, entry);
-      if (existsSync(absPath)) css.push(absPath);
+function collectSrcFiles(dir, files = []) {
+  if (!existsSync(dir)) return files;
+  for (const entry of readdirSync(dir).sort()) {
+    const full = join(dir, entry);
+    const stat = statSync(full);
+    if (stat.isDirectory()) {
+      collectSrcFiles(full, files);
+    } else if (extname(entry) === '.js') {
+      files.push(full);
     }
   }
-
-  return { js, css };
+  return files;
 }
 
 /**
- * Build the concatenated Enyo JS for use as a classic <script>.
- * No IIFE wrapper — runs in global (sloppy) scope just like the original
- * webOS build system intended.
+ * Build the concatenated Enyo 2.7 JS for use as a classic <script>.
+ * Runs in global sloppy scope — no IIFE, no 'use strict'.
  */
 function buildEnyoScript() {
-  const { js } = resolveDependencies(SOURCE_ROOT);
+  const files = collectSrcFiles(SRC_ROOT);
+
+  if (files.length === 0) {
+    return [
+      '// @duyo/runtime — Enyo 2.7 source not found.',
+      '// Run the setup commands in packages/runtime/ENYO_SETUP.md first.',
+      'window.enyo = window.enyo || {};',
+      'console.error("[duyo] Enyo 2.7 source not found in packages/runtime/framework/src/. " +',
+      '  "See packages/runtime/ENYO_SETUP.md for setup instructions.");',
+    ].join('\n');
+  }
 
   const parts = [
-    '// @duyo/runtime — Enyo 1.x source, served as classic script (non-strict)',
-    '// Built by @duyo/vite-plugin from packages/runtime/framework/source',
+    '// @duyo/runtime — Enyo 2.7, served as classic script (non-strict)',
+    '// Concatenated by @duyo/vite-plugin from packages/runtime/framework/src/',
     '',
-    // Bootstrap: set up window.enyo before any source file runs
+    // Enyo 2.7 bootstrap: it reads/sets these globals
     'window.enyo = window.enyo || {};',
-    'window.enyo.isBuiltin = false;',
-    'window.enyo.args = window.enyo.args || {};',
-    'window.enyo.enyoPath = window.enyo.enyoPath || \'\';',
-    'window.enyo.depends = function() {};',
-    'window.enyo.setPrototype = window.enyo.setPrototype || function(ctor, proto) { ctor.prototype = proto; };',
     'var enyo = window.enyo;',
-    '',
-    // Palm/webOS stubs
-    'if (typeof palmGetResource === \'undefined\') { window.palmGetResource = function() { return undefined; }; }',
-    'if (typeof PalmSystem === \'undefined\') { window.PalmSystem = { deviceInfo: \'{}\', locale: \'en_us\', localeRegion: \'us\', timeZone: \'America/New_York\', stageReady: function(){}, getIdentifier: function(){ return \'\'; } }; }',
-    'if (typeof Mojo === \'undefined\') { window.Mojo = {}; }',
     '',
   ];
 
-  for (const filePath of js) {
-    parts.push(`// === ${filePath.replace(SOURCE_ROOT, '')} ===`);
+  for (const filePath of files) {
+    parts.push(`// === ${filePath.replace(SRC_ROOT, '')} ===`);
     parts.push(readFileSync(filePath, 'utf-8'));
     parts.push('');
   }
@@ -115,9 +93,28 @@ function buildEnyoScript() {
   return parts.join('\n');
 }
 
+/**
+ * Collect .css files from enyo 2.7 src/ tree.
+ */
 function buildEnyoCss() {
-  const { css } = resolveDependencies(SOURCE_ROOT);
-  return css.map(f => readFileSync(f, 'utf-8')).join('\n');
+  const allFiles = collectSrcFiles(SRC_ROOT);
+  const cssFiles = allFiles
+    .map(f => f.replace(/\.js$/, '.css'))
+    .filter(f => existsSync(f));
+  // Also grab any standalone .css in subdirs
+  function collectCss(dir, files = []) {
+    if (!existsSync(dir)) return files;
+    for (const entry of readdirSync(dir).sort()) {
+      const full = join(dir, entry);
+      const stat = statSync(full);
+      if (stat.isDirectory()) collectCss(full, files);
+      else if (extname(entry) === '.css') files.push(full);
+    }
+    return files;
+  }
+  const directCss = collectCss(SRC_ROOT);
+  const unique = [...new Set([...directCss])];
+  return unique.map(f => readFileSync(f, 'utf-8')).join('\n');
 }
 
 export function duyo(options = {}) {
@@ -139,10 +136,11 @@ export function duyo(options = {}) {
 
     load(id) {
       if (id === RESOLVED_VIRTUAL_RUNTIME_ID) {
-        // Thin ES module shim — window.enyo is already populated by the
-        // classic <script src="/@duyo/enyo.js"> injected into index.html.
+        // Thin ES module shim — window.enyo is populated by the classic
+        // <script src="/@duyo/enyo.js"> injected into index.html before
+        // any module scripts run.
         return [
-          '// @duyo/runtime shim — Enyo was loaded as a classic script',
+          '// @duyo/runtime shim — Enyo 2.7 loaded as a classic script',
           'export var enyo = window.enyo;',
           'export default window.enyo;',
         ].join('\n');
@@ -155,8 +153,12 @@ export function duyo(options = {}) {
           `window.addEventListener('load', function() {`,
           `  var target = document.getElementById('${renderTarget}');`,
           `  if (!target) { console.error('[duyo] Render target #${renderTarget} not found.'); return; }`,
-          `  try { var app = window.enyo.create({ kind: '${appKind}' }); app.renderInto(target); }`,
-          `  catch (e) { console.error('[duyo] Failed to render ${appKind}:', e); }`,
+          `  try {`,
+          `    var app = window.enyo.create({ kind: '${appKind}' });`,
+          `    app.renderInto(target);`,
+          `  } catch (e) {`,
+          `    console.error('[duyo] Failed to render ${appKind}:', e);`,
+          `  }`,
           `});`,
         ].join('\n');
       }
@@ -164,8 +166,7 @@ export function duyo(options = {}) {
 
     /**
      * Inject <script src="/@duyo/enyo.js"> as the FIRST script in <head>.
-     * It must come before any module scripts so window.enyo is ready.
-     * Also inject the CSS link if injectCss is true.
+     * Must come before any module scripts so window.enyo is ready.
      */
     transformIndexHtml(html) {
       let inject = `\n    <script src="/@duyo/enyo.js"></script>`;
@@ -174,25 +175,17 @@ export function duyo(options = {}) {
     },
 
     configureServer(server) {
-      // Serve the concatenated Enyo source as a classic script
-      server.middlewares.use('/@duyo/enyo.js', (req, res) => {
-        const js = buildEnyoScript();
+      server.middlewares.use('/@duyo/enyo.js', (_req, res) => {
         res.setHeader('Content-Type', 'application/javascript');
-        res.end(js);
+        res.end(buildEnyoScript());
       });
 
-      // Serve collected CSS
-      server.middlewares.use('/@duyo/enyo.css', (req, res) => {
-        const css = buildEnyoCss();
+      server.middlewares.use('/@duyo/enyo.css', (_req, res) => {
         res.setHeader('Content-Type', 'text/css');
-        res.end(css);
+        res.end(buildEnyoCss());
       });
     },
 
-    /**
-     * For production builds: emit the Enyo script as a static asset
-     * and inject the <script> tag into the HTML output.
-     */
     generateBundle() {
       this.emitFile({
         type: 'asset',
