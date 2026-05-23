@@ -8,15 +8,9 @@
  * Mounting is handled automatically by @duyo/vite-plugin via the
  * `appKind` option in vite.config.mjs — no manual renderInto() needed.
  *
- * NOTE: We import '@duyo/runtime' only to ensure the classic <script>
- * injection is triggered by the module graph, but we reference
- * `window.enyo` directly for all kind definitions. The ESM shim captures
- * `window.enyo` at module evaluation time — before the classic script has
- * finished running — so the named/default import is `undefined` by the
- * time this module runs.
+ * window.enyo is injected as a classic <script> by the vite plugin
+ * BEFORE this module runs, so all enyo.* calls below are safe.
  */
-
-import '@duyo/runtime';
 
 // -----------------------------------------------------------------
 // A reusable counter widget
