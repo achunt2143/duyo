@@ -19,5 +19,3 @@ const enyo = (typeof window !== 'undefined') ? window.enyo : undefined;
 
 export { enyo };
 export default enyo;
-export var enyo = window.enyo;
-export default window.enyo;
