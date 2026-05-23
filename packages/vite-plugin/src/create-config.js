@@ -39,14 +39,7 @@ export function createDuyoConfig(options = {}) {
       outDir,
       // Enyo is large — don't warn on chunk size for the runtime bundle
       chunkSizeWarningLimit: 1000,
-      rollupOptions: {
-        output: {
-          // Keep the Enyo runtime as its own named chunk for caching
-          manualChunks: {
-            'enyo-runtime': ['@duyo/runtime']
-          }
-        }
-      }
+      
     },
     optimizeDeps: {
       // Tell Vite not to try to pre-bundle @duyo/runtime through esbuild

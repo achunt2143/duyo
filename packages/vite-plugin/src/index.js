@@ -128,11 +128,33 @@ export function duyo(options = {}) {
     // It must run before any <script type="module"> so window.enyo is
     // ready when the module shim captures it.
     // ------------------------------------------------------------------
-    transformIndexHtml(html) {
-      let inject = `\n    <script src="/@duyo/enyo.js"></script>`;
-      if (injectCss) inject += `\n    <link rel="stylesheet" href="/@duyo/enyo.css">`;
-      return html.replace(/(<head[^>]*>)/i, '$1' + inject);
-    },
+    transformIndexHtml() {
+  const tags = [
+    {
+      tag: 'script',
+      attrs: { src: '/@duyo/enyo.js' },
+      injectTo: 'head-prepend'
+    }
+  ];
+
+  if (injectCss) {
+    tags.push({
+      tag: 'link',
+      attrs: { rel: 'stylesheet', href: '/@duyo/enyo.css' },
+      injectTo: 'head'
+    });
+  }
+
+  if (appKind) {
+    tags.push({
+      tag: 'script',
+      attrs: { type: 'module', src: '/@id/virtual:duyo-app' },
+      injectTo: 'body'
+    });
+  }
+
+  return { tags };
+},
 
     // ------------------------------------------------------------------
     // Dev server — serve the pre-built files from build/

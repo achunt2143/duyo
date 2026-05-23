@@ -9,7 +9,11 @@
  * `appKind` option in vite.config.mjs — no manual renderInto() needed.
  */
 
-import enyo from '@duyo/runtime';
+const enyo = window.enyo;
+
+if (!enyo) {
+  throw new Error('[duyo] window.enyo is not available. Make sure /@duyo/enyo.js loaded first.');
+}
 
 // -----------------------------------------------------------------
 // A reusable counter widget
