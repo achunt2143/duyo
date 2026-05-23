@@ -1,4 +1,4 @@
 'use strict';
 
-exports = module.exports = require('./src/master');
-exports.version = '2.7.0';
+// Side-effect only: boots Enyo and registers window.enyo
+require('./src/master');

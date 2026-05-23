@@ -4,10 +4,6 @@
 
 	var buildEntry = {};
 
-	var framework = {exports: {}};
-
-	var master$1 = {exports: {}};
-
 	var utils$a = {};
 
 	(function (exports) {
@@ -6461,7 +6457,7 @@
 	* @module enyo/master
 	* @private
 	*/
-	var master = master$1.exports = new Component({
+	var master = new Component({
 		name: 'master',
 		notInstanceOwner: true,
 		eventFlags: {showingOnly: true}, // don't waterfall these events into hidden controls
@@ -6484,14 +6480,6 @@
 			}
 		}
 	});
-
-	var masterExports = master$1.exports;
-
-	(function (module, exports) {
-
-		exports = module.exports = masterExports;
-		exports.version = '2.7.0'; 
-	} (framework, framework.exports));
 
 	return buildEntry;
 
