@@ -1,7 +1,7 @@
 {
   "name": "@duyo/runtime",
-  "version": "0.2.0",
-  "description": "The Enyo 2.7 runtime, packaged for modern Node and browser toolchains.",
+  "version": "0.3.0",
+  "description": "The Enyo 2.7 runtime + Duyo custom components, bundled for modern toolchains.",
   "license": "Apache-2.0",
   "author": "achunt2143",
   "keywords": [
@@ -24,11 +24,19 @@
   "files": [
     "index.js",
     "index.cjs",
+    "build/",
     "framework/",
+    "src/",
     "LICENSE-2.0.txt"
   ],
   "scripts": {
-    "build": "echo 'Runtime vendors enyo 2.7 source directly — no build step needed'"
+    "build": "rollup -c rollup.config.mjs",
+    "build:watch": "rollup -c rollup.config.mjs --watch"
+  },
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^26.0.1",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "rollup": "^4.18.0"
   },
   "engines": {
     "node": ">=18.0.0"

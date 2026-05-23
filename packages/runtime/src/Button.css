@@ -1,0 +1,41 @@
+/* Duyo.Button styles */
+.duyo-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 16px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  font-family: sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 150ms ease, border-color 150ms ease;
+}
+
+.duyo-btn--default {
+  background: #f3f0ec;
+  border-color: #d4d1ca;
+  color: #28251d;
+}
+.duyo-btn--default:hover {
+  background: #edeae5;
+}
+
+.duyo-btn--primary {
+  background: #01696f;
+  border-color: #01696f;
+  color: #fff;
+}
+.duyo-btn--primary:hover {
+  background: #0c4e54;
+}
+
+.duyo-btn--danger {
+  background: #a12c7b;
+  border-color: #a12c7b;
+  color: #fff;
+}
+.duyo-btn--danger:hover {
+  background: #7d1e5e;
+}
