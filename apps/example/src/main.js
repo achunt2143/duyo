@@ -6,7 +6,7 @@
  * and event handling — all pure Enyo 1.x idioms.
  */
 
-import '@duyo/runtime';
+import enyo from '@duyo/runtime';
 
 // -----------------------------------------------------------------
 // A reusable counter widget
@@ -17,6 +17,9 @@ enyo.kind({
   published: {
     label: 'Counter',
     step: 1
+  },
+  events: {
+    onChange: ''
   },
   style: [
     'display: inline-flex;',
@@ -48,45 +51,37 @@ enyo.kind({
 
   _value: 0,
 
-  create: function() {
+  create: function () {
     this.inherited(arguments);
     this.labelChanged();
-    this.render();
   },
 
-  rendered: function() {
+  rendered: function () {
     this.inherited(arguments);
     this._update();
   },
 
-  labelChanged: function() {
+  labelChanged: function () {
     this.$.labelNode.setContent(this.label);
   },
 
-  increment: function() {
+  increment: function () {
     this._value += this.step;
     this._update();
     this.doChange({ value: this._value });
   },
 
-  decrement: function() {
+  decrement: function () {
     this._value -= this.step;
     this._update();
     this.doChange({ value: this._value });
   },
 
-  _update: function() {
+  _update: function () {
     this.$.countNode.setContent(String(this._value));
-  },
-
-  events: {
-    onChange: ''
   }
 });
 
-// -----------------------------------------------------------------
-// App shell
-// -----------------------------------------------------------------
 enyo.kind({
   name: 'Example.Application',
   kind: enyo.Control,
@@ -130,20 +125,8 @@ enyo.kind({
     }
   ],
 
-  onCounterChange: function(inSender, inEvent) {
+  onCounterChange: function (inSender, inEvent) {
     var msg = inSender.label + ' changed to ' + inEvent.value;
     this.$.log.setContent('Last change: ' + msg);
   }
-});
-
-// -----------------------------------------------------------------
-// Mount the app
-// -----------------------------------------------------------------
-window.addEventListener('DOMContentLoaded', function() {
-  var target = document.getElementById('root');
-  if (!target) {
-    console.error('[duyo] Render target #root not found.');
-    return;
-  }
-  enyo.create({ kind: 'Example.Application' }).renderInto(target);
 });

@@ -13,4 +13,4 @@
 require('./framework/index.js');
 
 // 2. Duyo custom components
-require('./src/index.js');
+// require('./src/index.js');

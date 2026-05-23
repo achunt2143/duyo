@@ -1,3 +1,0 @@
-enyo.depends(
-    "CropExample.js"
-);
