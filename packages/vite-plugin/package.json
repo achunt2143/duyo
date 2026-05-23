@@ -1,7 +1,7 @@
 {
   "name": "@duyo/vite-plugin",
-  "version": "0.1.0",
-  "description": "Vite plugin for building Duyo (Enyo 1.x) applications with modern tooling.",
+  "version": "0.2.0",
+  "description": "Vite plugin for building Duyo (Enyo 2.7) applications with modern tooling.",
   "license": "Apache-2.0",
   "author": "achunt2143",
   "keywords": [
@@ -13,17 +13,12 @@
   ],
   "type": "module",
   "exports": {
-    ".": {
-      "import": "./src/index.js",
-      "require": "./src/index.cjs"
-    },
-    "./create-config": {
-      "import": "./src/create-config.js",
-      "require": "./src/create-config.cjs"
-    }
+    ".": "./src/index.js",
+    "./create-config": "./src/create-config.js"
   },
   "files": [
-    "src/"
+    "src/index.js",
+    "src/create-config.js"
   ],
   "scripts": {},
   "peerDependencies": {

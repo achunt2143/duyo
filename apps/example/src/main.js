@@ -1,12 +1,15 @@
 /**
  * Duyo Example App
  *
- * A smoke-test app for @duyo/runtime + @duyo/vite-plugin.
- * Shows off kind inheritance, published properties, components tree,
- * and event handling — all pure Enyo 1.x idioms.
+ * Smoke-test for @duyo/runtime + @duyo/vite-plugin.
+ * Demonstrates kind inheritance, published properties, component trees,
+ * and event handling — all standard Enyo 2.7 idioms.
+ *
+ * Mounting is handled automatically by @duyo/vite-plugin via the
+ * `appKind` option in vite.config.mjs — no manual renderInto() needed.
  */
 
-import '@duyo/runtime';
+import enyo from '@duyo/runtime';
 
 // -----------------------------------------------------------------
 // A reusable counter widget
@@ -17,6 +20,9 @@ enyo.kind({
   published: {
     label: 'Counter',
     step: 1
+  },
+  events: {
+    onChange: ''
   },
   style: [
     'display: inline-flex;',
@@ -32,11 +38,15 @@ enyo.kind({
     {
       tag: 'button',
       name: 'decBtn',
-      content: '−',
+      content: '\u2212',
       style: 'width:32px;height:32px;font-size:1.2rem;cursor:pointer;border:1px solid #ccc;border-radius:4px;background:#fff;',
       ontap: 'decrement'
     },
-    { tag: 'span', name: 'countNode', style: 'min-width: 2ch; text-align: center; font-size: 1.1rem;' },
+    {
+      tag: 'span',
+      name: 'countNode',
+      style: 'min-width: 2ch; text-align: center; font-size: 1.1rem;'
+    },
     {
       tag: 'button',
       name: 'incBtn',
@@ -48,39 +58,34 @@ enyo.kind({
 
   _value: 0,
 
-  create: function() {
+  create: function () {
     this.inherited(arguments);
     this.labelChanged();
-    this.render();
   },
 
-  rendered: function() {
+  rendered: function () {
     this.inherited(arguments);
     this._update();
   },
 
-  labelChanged: function() {
+  labelChanged: function () {
     this.$.labelNode.setContent(this.label);
   },
 
-  increment: function() {
+  increment: function () {
     this._value += this.step;
     this._update();
     this.doChange({ value: this._value });
   },
 
-  decrement: function() {
+  decrement: function () {
     this._value -= this.step;
     this._update();
     this.doChange({ value: this._value });
   },
 
-  _update: function() {
+  _update: function () {
     this.$.countNode.setContent(String(this._value));
-  },
-
-  events: {
-    onChange: ''
   }
 });
 
@@ -130,20 +135,8 @@ enyo.kind({
     }
   ],
 
-  onCounterChange: function(inSender, inEvent) {
+  onCounterChange: function (inSender, inEvent) {
     var msg = inSender.label + ' changed to ' + inEvent.value;
     this.$.log.setContent('Last change: ' + msg);
   }
-});
-
-// -----------------------------------------------------------------
-// Mount the app
-// -----------------------------------------------------------------
-window.addEventListener('DOMContentLoaded', function() {
-  var target = document.getElementById('root');
-  if (!target) {
-    console.error('[duyo] Render target #root not found.');
-    return;
-  }
-  enyo.create({ kind: 'Example.Application' }).renderInto(target);
 });
