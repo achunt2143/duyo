@@ -7,13 +7,16 @@
  *
  * Mounting is handled automatically by @duyo/vite-plugin via the
  * `appKind` option in vite.config.mjs — no manual renderInto() needed.
+ *
+ * NOTE: We import '@duyo/runtime' only to ensure the classic <script>
+ * injection is triggered by the module graph, but we reference
+ * `window.enyo` directly for all kind definitions. The ESM shim captures
+ * `window.enyo` at module evaluation time — before the classic script has
+ * finished running — so the named/default import is `undefined` by the
+ * time this module runs.
  */
 
-const enyo = window.enyo;
-
-if (!enyo) {
-  throw new Error('[duyo] window.enyo is not available. Make sure /@duyo/enyo.js loaded first.');
-}
+import '@duyo/runtime';
 
 // -----------------------------------------------------------------
 // A reusable counter widget
@@ -93,6 +96,9 @@ enyo.kind({
   }
 });
 
+// -----------------------------------------------------------------
+// App shell
+// -----------------------------------------------------------------
 enyo.kind({
   name: 'Example.Application',
   kind: enyo.Control,
