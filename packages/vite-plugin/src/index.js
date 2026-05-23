@@ -15,6 +15,13 @@
  * the Rollup build automatically from the runtime's rollup.config.mjs so
  * developers never need a manual build step.
  *
+ * Script injection order (all handled by transformIndexHtml):
+ *   1. <script src="/@duyo/enyo.js">     — classic, sloppy-mode IIFE, sets window.enyo
+ *   2. <script type="module" src="...">  — app entry point (src/main.js or similar)
+ *   3. virtual:duyo-app load listener    — renders appKind into #root on window load
+ *
+ * index.html should contain NO <script> tags — the plugin injects everything.
+ *
  * Build output expected at:
  *   packages/runtime/build/enyo.js    <- JS bundle (IIFE)
  *   packages/runtime/build/enyo.css   <- CSS bundle
@@ -41,12 +48,8 @@ const RESOLVED_VIRTUAL_RUNTIME_ID = '\0' + VIRTUAL_RUNTIME_ID;
 // Build helpers
 // ---------------------------------------------------------------------------
 
-/**
- * Run `rollup -c` inside packages/runtime to produce build/enyo.js.
- * Uses the locally installed rollup binary from the monorepo root.
- */
 function buildRuntime() {
-  console.log('[duyo] build/enyo.js not found — running rollup build...');
+  console.log('[duyo] build/enyo.js not found \u2014 running rollup build...');
   const monorepoRoot = resolve(RUNTIME_ROOT, '../..');
   const rollupBin = resolve(monorepoRoot, 'node_modules/.bin/rollup');
   const bin = existsSync(rollupBin) ? rollupBin : 'rollup';
@@ -65,7 +68,7 @@ function readBuiltJs() {
   if (!existsSync(BUILT_JS)) buildRuntime();
   if (!existsSync(BUILT_JS)) {
     return [
-      '// @duyo/runtime — build/enyo.js not found and auto-build failed.',
+      '// @duyo/runtime \u2014 build/enyo.js not found and auto-build failed.',
       '// Run `npm run build` manually in packages/runtime.',
       'window.enyo = window.enyo || {};',
       'console.error("[duyo] build/enyo.js missing. Run `npm run build` in packages/runtime.");',
@@ -88,6 +91,7 @@ export function duyo(options = {}) {
     appKind      = null,
     renderTarget = 'root',
     injectCss    = true,
+    entry        = '/src/main.js',
   } = options;
 
   return {
@@ -107,21 +111,17 @@ export function duyo(options = {}) {
     // Virtual module bodies
     // ------------------------------------------------------------------
     load(id) {
-      // @duyo/runtime shim — window.enyo is already populated by the
-      // classic <script> that the transformIndexHtml hook injects.
       if (id === RESOLVED_VIRTUAL_RUNTIME_ID) {
         return [
-          '// @duyo/runtime shim — Enyo loaded via classic <script src="/@duyo/enyo.js">',
+          '// @duyo/runtime shim \u2014 window.enyo populated by classic <script src="/@duyo/enyo.js">',
           'export var enyo = window.enyo;',
           'export default window.enyo;',
         ].join('\n');
       }
 
-      // virtual:duyo-app — imports runtime then mounts the root kind
       if (id === RESOLVED_VIRTUAL_APP_ID) {
-        if (!appKind) return `import '@duyo/runtime';\nexport {};`;
+        if (!appKind) return `export {};`;
         return [
-          `import '@duyo/runtime';`,
           `window.addEventListener('load', function () {`,
           `  var target = document.getElementById('${renderTarget}');`,
           `  if (!target) {`,
@@ -139,18 +139,35 @@ export function duyo(options = {}) {
     },
 
     // ------------------------------------------------------------------
-    // Inject <script src="/@duyo/enyo.js"> as the FIRST tag in <head>.
-    // It must run before any <script type="module"> so window.enyo is
-    // ready when module scripts execute.
+    // Inject scripts in guaranteed order:
+    //   1. /@duyo/enyo.css  (link, optional)
+    //   2. /@duyo/enyo.js   (classic script — synchronous, sets window.enyo)
+    //   3. /src/main.js     (classic script — synchronous, defines kinds using window.enyo)
+    //   4. virtual:duyo-app (module script — deferred, renders app on load)
+    //
+    // Everything is classic (no type="module") except the virtual:duyo-app
+    // render listener, which is tiny and has no enyo dependency.
     // ------------------------------------------------------------------
     transformIndexHtml(html) {
-      let inject = `\n    <script src="/@duyo/enyo.js"></script>`;
-      if (injectCss) inject += `\n    <link rel="stylesheet" href="/@duyo/enyo.css">`;
-      return html.replace(/(<head[^>]*>)/i, '$1' + inject);
+      const css    = injectCss ? `\n    <link rel="stylesheet" href="/@duyo/enyo.css">` : '';
+      const enyoJs = `\n    <script src="/@duyo/enyo.js"></script>`;
+      const appJs  = entry ? `\n    <script src="${entry}"></script>` : '';
+      const render = appKind
+        ? `\n    <script type="module">` +
+          `window.addEventListener('load',function(){` +
+          `var t=document.getElementById('${renderTarget}');` +
+          `if(!t){console.error('[duyo] #${renderTarget} not found');return;}` +
+          `try{window.enyo.create({kind:'${appKind}'}).renderInto(t);}` +
+          `catch(e){console.error('[duyo] Failed to render ${appKind}:',e);}` +
+          `});` +
+          `</script>`
+        : '';
+      return html.replace(/(<head[^>]*>)/i, '$1' + css + enyoJs)
+                 .replace(/(<\/body>)/i, appJs + render + '$1');
     },
 
     // ------------------------------------------------------------------
-    // Dev server — serve the built files (auto-building if needed)
+    // Dev server \u2014 serve the built files (auto-building if needed)
     // ------------------------------------------------------------------
     configureServer(server) {
       server.middlewares.use('/@duyo/enyo.js', (_req, res) => {
@@ -165,7 +182,7 @@ export function duyo(options = {}) {
     },
 
     // ------------------------------------------------------------------
-    // Production build — emit enyo.js + enyo.css as static assets
+    // Production build \u2014 emit enyo.js + enyo.css as static assets
     // ------------------------------------------------------------------
     generateBundle() {
       this.emitFile({
