@@ -53,3 +53,15 @@ enyo.kind({
     this.$.countLabel.setContent('Count: ' + this._count);
   }
 });
+
+// -----------------------------------------------------------------
+// Mount the app
+// -----------------------------------------------------------------
+window.addEventListener('DOMContentLoaded', function() {
+  var target = document.getElementById('root');
+  if (!target) {
+    console.error('[duyo] Render target #root not found.');
+    return;
+  }
+  enyo.create({ kind: '{{PROJECT_NAME_PASCAL}}.Application' }).renderInto(target);
+});
