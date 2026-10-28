@@ -1,0 +1,24 @@
+{
+  "name": "@duyo/layout",
+  "version": "0.4.0-alpha.0",
+  "description": "Duyo layout: the Fittable rows/columns contract as a pure resolver plus kind definitions.",
+  "license": "Apache-2.0",
+  "author": "achunt2143",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "files": [
+    "src/"
+  ],
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@duyo/core": "*"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
