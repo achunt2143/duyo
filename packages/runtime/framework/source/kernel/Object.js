@@ -48,6 +48,27 @@ enyo.Object also provides some utility functions for all of its subkinds.
 enyo.kind({
 	name: "enyo.Object",
 	//* @protected
+
+	// subclass and publish must live in statics so enyo.kind.statics handling
+	// mixes them onto the constructor before any subkind (e.g. enyo.Component)
+	// executes its own enyo.kind() feature walk and calls enyo.Object.subclass.
+	// Defining them as post-hoc patches (enyo.Object.subclass = ...) after the
+	// enyo.kind() call is too late when files are loaded synchronously or bundled.
+	statics: {
+		subclass: function(ctor, props) {
+			this.publish(ctor, props);
+		},
+		publish: function(ctor, props) {
+			var pp = props.published;
+			if (pp) {
+				var cp = ctor.prototype;
+				for (var n in pp) {
+					enyo.Object.addGetterSetter(n, pp[n], cp);
+				}
+			}
+		}
+	},
+
 	constructor: function() {
 		enyo._objectCount++;
 	},
@@ -106,20 +127,9 @@ enyo.kind({
 
 enyo._objectCount = 0;
 
-enyo.Object.subclass = function(ctor, props) {
-	this.publish(ctor, props);
-};
-
-enyo.Object.publish = function(ctor, props) {
-	var pp = props.published;
-	if (pp) {
-		var cp = ctor.prototype;
-		for (var n in pp) {
-			enyo.Object.addGetterSetter(n, pp[n], cp);
-		}
-	}
-};
-
+// addGetterSetter remains a post-hoc patch: it is only ever called from
+// enyo.Object.publish (now in statics), never directly by the features loop,
+// so there is no initialization order hazard here.
 enyo.Object.addGetterSetter = function(inName, inValue, inProto) {
 	var priv_n = inName;
 	inProto[priv_n] = inValue;

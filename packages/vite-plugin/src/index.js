@@ -3,186 +3,210 @@
  *
  * Teaches Vite how to build and serve Duyo (Enyo 1.x) applications.
  *
- * What this plugin does:
- *  1. Injects the Enyo global preamble before any app code so `window.enyo`
- *     is available when app modules execute.
- *  2. Resolves `@duyo/runtime` imports to the pre-built enyo-build.js so
- *     Vite does not try to parse the legacy source through its own module
- *     system.
- *  3. Injects the Enyo stylesheet automatically.
- *  4. Provides a virtual module (`virtual:duyo-app`) that bootstraps a
- *     standard Duyo app entry point (calls enyo.kind + renderInto).
- *  5. Stubs out Palm/webOS-only APIs so the browser console stays clean
- *     when running outside webOS.
+ * Enyo source relies on non-strict semantics (arguments.callee, `this` as
+ * global, shared free variables). Vite treats every virtual module as an
+ * ES module (always strict), so we cannot load Enyo through Vite's module
+ * graph at all.
+ *
+ * Instead we serve the concatenated Enyo source as a classic <script> tag
+ * injected into index.html. Classic scripts run in sloppy (non-strict) mode,
+ * which is exactly what Enyo was written for. The @duyo/runtime virtual
+ * module is a thin shim that just re-exports window.enyo after it has been
+ * populated by the classic script.
  */
 
-import { readFileSync } from 'fs';
-import { createRequire } from 'module';
-import { resolve, dirname } from 'path';
+import { readFileSync, existsSync } from 'fs';
+import { resolve, dirname, join, extname, basename } from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
-// Locate the runtime package root so we can resolve paths into it.
 const RUNTIME_ROOT = resolve(__dirname, '../../runtime');
-const ENYO_BUILD_JS = resolve(RUNTIME_ROOT, 'framework/build/enyo-build.js');
-const ENYO_BUILD_CSS = resolve(RUNTIME_ROOT, 'framework/build/enyo-build.css');
-const ENYO_PREAMBLE_JS = resolve(RUNTIME_ROOT, 'framework/build/builtin-preamble.js');
+const SOURCE_ROOT = resolve(RUNTIME_ROOT, 'framework/source');
 
-// Virtual module IDs
 const VIRTUAL_APP_ID = 'virtual:duyo-app';
 const RESOLVED_VIRTUAL_APP_ID = '\0' + VIRTUAL_APP_ID;
-
 const VIRTUAL_RUNTIME_ID = 'virtual:duyo-runtime';
 const RESOLVED_VIRTUAL_RUNTIME_ID = '\0' + VIRTUAL_RUNTIME_ID;
 
-/**
- * The webOS / PalmSystem stub.
- * Prevents "PalmSystem is not defined" errors in browser environments.
- */
-const PALM_STUB = `
-if (typeof PalmSystem === 'undefined') {
-  window.PalmSystem = {
-    deviceInfo: '{}',
-    locale: 'en_us',
-    localeRegion: 'us',
-    phoneRegion: 'us',
-    timeFormat: 'HH12',
-    useSimulatedMouseClicks: function() {},
-    simulateMouseClick: function() {},
-    paste: function() {},
-    runTextIndexer: function(t) { return t; }
-  };
-}
-if (typeof Mojo === 'undefined') {
-  window.Mojo = {};
-}
-`;
+// Directories / paths to skip — webOS/Palm-only
+const SKIP_DIRS = new Set(['g11n', 'palm']);
+const SKIP_PATHS = new Set(['../lib/enyo-lib']);
 
 /**
- * duyo(options)
- *
- * @param {object} options
- * @param {string} [options.appRoot]       - Path to the app root (default: process.cwd())
- * @param {string} [options.appKind]       - Top-level kind name to render (e.g. 'MyApp.Application')
- * @param {string} [options.renderTarget]  - DOM element ID to render into (default: 'root')
- * @param {boolean} [options.stubPalmSystem] - Inject PalmSystem stub (default: true)
- * @param {boolean} [options.injectCss]    - Auto-inject enyo-build.css (default: true)
+ * Recursively resolve a depends.js, returning ordered { js, css } absolute paths.
  */
+function resolveDependencies(dirPath, visited = new Set()) {
+  const realDir = resolve(dirPath);
+  if (visited.has(realDir)) return { js: [], css: [] };
+  visited.add(realDir);
+
+  const dependsPath = join(realDir, 'depends.js');
+  if (!existsSync(dependsPath)) return { js: [], css: [] };
+
+  const src = readFileSync(dependsPath, 'utf-8');
+  const entries = [];
+  const re = /["']([^"']+)["']/g;
+  let m;
+  while ((m = re.exec(src)) !== null) entries.push(m[1]);
+
+  const js = [];
+  const css = [];
+
+  for (const entry of entries) {
+    if (SKIP_PATHS.has(entry)) continue;
+    const entryName = basename(entry.replace(/\/$/, ''));
+    if (SKIP_DIRS.has(entryName)) continue;
+
+    const ext = extname(entry);
+    if (entry.endsWith('/') || ext === '') {
+      const subDir = resolve(realDir, entry);
+      if (existsSync(subDir)) {
+        const sub = resolveDependencies(subDir, visited);
+        js.push(...sub.js);
+        css.push(...sub.css);
+      }
+    } else if (ext === '.js') {
+      const absPath = resolve(realDir, entry);
+      if (existsSync(absPath)) js.push(absPath);
+    } else if (ext === '.css') {
+      const absPath = resolve(realDir, entry);
+      if (existsSync(absPath)) css.push(absPath);
+    }
+  }
+
+  return { js, css };
+}
+
+/**
+ * Build the concatenated Enyo JS for use as a classic <script>.
+ * No IIFE wrapper — runs in global (sloppy) scope just like the original
+ * webOS build system intended.
+ */
+function buildEnyoScript() {
+  const { js } = resolveDependencies(SOURCE_ROOT);
+
+  const parts = [
+    '// @duyo/runtime — Enyo 1.x source, served as classic script (non-strict)',
+    '// Built by @duyo/vite-plugin from packages/runtime/framework/source',
+    '',
+    // Bootstrap: set up window.enyo before any source file runs
+    'window.enyo = window.enyo || {};',
+    'window.enyo.isBuiltin = false;',
+    'window.enyo.args = window.enyo.args || {};',
+    'window.enyo.enyoPath = window.enyo.enyoPath || \'\';',
+    'window.enyo.depends = function() {};',
+    'window.enyo.setPrototype = window.enyo.setPrototype || function(ctor, proto) { ctor.prototype = proto; };',
+    'var enyo = window.enyo;',
+    '',
+    // Palm/webOS stubs
+    'if (typeof palmGetResource === \'undefined\') { window.palmGetResource = function() { return undefined; }; }',
+    'if (typeof PalmSystem === \'undefined\') { window.PalmSystem = { deviceInfo: \'{}\', locale: \'en_us\', localeRegion: \'us\', timeZone: \'America/New_York\', stageReady: function(){}, getIdentifier: function(){ return \'\'; } }; }',
+    'if (typeof Mojo === \'undefined\') { window.Mojo = {}; }',
+    '',
+  ];
+
+  for (const filePath of js) {
+    parts.push(`// === ${filePath.replace(SOURCE_ROOT, '')} ===`);
+    parts.push(readFileSync(filePath, 'utf-8'));
+    parts.push('');
+  }
+
+  return parts.join('\n');
+}
+
+function buildEnyoCss() {
+  const { css } = resolveDependencies(SOURCE_ROOT);
+  return css.map(f => readFileSync(f, 'utf-8')).join('\n');
+}
+
 export function duyo(options = {}) {
   const {
-    appRoot = process.cwd(),
     appKind = null,
     renderTarget = 'root',
-    stubPalmSystem = true,
     injectCss = true
   } = options;
-
-  let viteConfig;
 
   return {
     name: 'duyo',
     enforce: 'pre',
 
-    // ----------------------------------------------------------------
-    // Store vite config for later use
-    // ----------------------------------------------------------------
-    configResolved(config) {
-      viteConfig = config;
-    },
-
-    // ----------------------------------------------------------------
-    // Resolve virtual modules and @duyo/runtime imports
-    // ----------------------------------------------------------------
     resolveId(id) {
       if (id === VIRTUAL_APP_ID) return RESOLVED_VIRTUAL_APP_ID;
       if (id === VIRTUAL_RUNTIME_ID) return RESOLVED_VIRTUAL_RUNTIME_ID;
-
-      // Redirect @duyo/runtime to the pre-built JS so Vite treats it
-      // as an opaque external chunk, not a parsed ES module.
       if (id === '@duyo/runtime') return RESOLVED_VIRTUAL_RUNTIME_ID;
     },
 
-    // ----------------------------------------------------------------
-    // Load virtual module content
-    // ----------------------------------------------------------------
     load(id) {
       if (id === RESOLVED_VIRTUAL_RUNTIME_ID) {
-        // Load the full Enyo build as a self-executing script that
-        // attaches to window.enyo. We wrap it so Vite treats the
-        // entire thing as one module side-effect.
-        const preamble = readFileSync(ENYO_PREAMBLE_JS, 'utf-8');
-        const build = readFileSync(ENYO_BUILD_JS, 'utf-8');
-
+        // Thin ES module shim — window.enyo is already populated by the
+        // classic <script src="/@duyo/enyo.js"> injected into index.html.
         return [
-          '// @duyo/runtime — Enyo 1.0 pre-built bundle',
-          stubPalmSystem ? PALM_STUB : '',
-          '// builtin-preamble.js',
-          preamble,
-          '// enyo-build.js',
-          build,
-          '// Export enyo for ESM consumers',
-          'export const enyo = window.enyo;',
-          'export default window.enyo;'
+          '// @duyo/runtime shim — Enyo was loaded as a classic script',
+          'export var enyo = window.enyo;',
+          'export default window.enyo;',
         ].join('\n');
       }
 
       if (id === RESOLVED_VIRTUAL_APP_ID) {
-        if (!appKind) {
-          // No appKind specified — just import the runtime and leave
-          // bootstrapping to the user's own entry file.
-          return `import '@duyo/runtime';\nexport {};`;
-        }
-
-        // Auto-bootstrap: import runtime, wait for DOM, render.
+        if (!appKind) return `import '@duyo/runtime';\nexport {};`;
         return [
           `import '@duyo/runtime';`,
-          ``,
-          `// Auto-generated by @duyo/vite-plugin`,
-          `// Renders ${appKind} into #${renderTarget}`,
           `window.addEventListener('load', function() {`,
           `  var target = document.getElementById('${renderTarget}');`,
-          `  if (!target) {`,
-          `    console.error('[duyo] Render target #${renderTarget} not found in DOM.');`,
-          `    return;`,
-          `  }`,
-          `  try {`,
-          `    var app = enyo.create({ kind: '${appKind}' });`,
-          `    app.renderInto(target);`,
-          `  } catch (e) {`,
-          `    console.error('[duyo] Failed to render ${appKind}:', e);`,
-          `  }`,
-          `});`
+          `  if (!target) { console.error('[duyo] Render target #${renderTarget} not found.'); return; }`,
+          `  try { var app = window.enyo.create({ kind: '${appKind}' }); app.renderInto(target); }`,
+          `  catch (e) { console.error('[duyo] Failed to render ${appKind}:', e); }`,
+          `});`,
         ].join('\n');
       }
     },
 
-    // ----------------------------------------------------------------
-    // Inject Enyo CSS into the HTML entry point automatically
-    // ----------------------------------------------------------------
+    /**
+     * Inject <script src="/@duyo/enyo.js"> as the FIRST script in <head>.
+     * It must come before any module scripts so window.enyo is ready.
+     * Also inject the CSS link if injectCss is true.
+     */
     transformIndexHtml(html) {
-      if (!injectCss) return html;
-
-      // Vite will handle the CSS file as a static asset.
-      // We add a <link> pointing to the virtual CSS path.
-      const linkTag = `<link rel="stylesheet" href="/@duyo/enyo.css">`;
-
-      return html.replace(
-        /(<head[^>]*>)/i,
-        `$1\n    ${linkTag}`
-      );
+      let inject = `\n    <script src="/@duyo/enyo.js"></script>`;
+      if (injectCss) inject += `\n    <link rel="stylesheet" href="/@duyo/enyo.css">`;
+      return html.replace(/(<head[^>]*>)/i, '$1' + inject);
     },
 
-    // ----------------------------------------------------------------
-    // Serve enyo-build.css as a static asset in dev mode
-    // ----------------------------------------------------------------
     configureServer(server) {
+      // Serve the concatenated Enyo source as a classic script
+      server.middlewares.use('/@duyo/enyo.js', (req, res) => {
+        const js = buildEnyoScript();
+        res.setHeader('Content-Type', 'application/javascript');
+        res.end(js);
+      });
+
+      // Serve collected CSS
       server.middlewares.use('/@duyo/enyo.css', (req, res) => {
-        const css = readFileSync(ENYO_BUILD_CSS, 'utf-8');
+        const css = buildEnyoCss();
         res.setHeader('Content-Type', 'text/css');
         res.end(css);
       });
-    }
+    },
+
+    /**
+     * For production builds: emit the Enyo script as a static asset
+     * and inject the <script> tag into the HTML output.
+     */
+    generateBundle() {
+      this.emitFile({
+        type: 'asset',
+        fileName: 'enyo.js',
+        source: buildEnyoScript(),
+      });
+      if (injectCss) {
+        this.emitFile({
+          type: 'asset',
+          fileName: 'enyo.css',
+          source: buildEnyoCss(),
+        });
+      }
+    },
   };
 }
 
