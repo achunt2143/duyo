@@ -50,7 +50,7 @@ if (existsSync(projectDir)) {
 }
 
 console.log();
-console.log(c.bold(`  Duyo`) + c.gray(' — classic Enyo 1.x apps, modern tooling'));
+console.log(c.bold(`  Duyo`) + c.gray(' — Enyo-style apps, modern tooling'));
 console.log();
 console.log(`  Scaffolding project in ${c.cyan(projectDir)}`);
 console.log();

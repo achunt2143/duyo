@@ -1,5 +1,7 @@
 # duyo-example
 
+> **Archived.** Part of the first Duyo iteration (vendored Enyo 2.7). It is being replaced by a TypeScript runtime and kind packs; see the root [README](../../README.md) and the `archive/enyo-2.7-runtime` tag.
+
 A smoke-test app for `@duyo/runtime` + `@duyo/vite-plugin`.
 
 ## Run it

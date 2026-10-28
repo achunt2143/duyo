@@ -1,6 +1,8 @@
 # @duyo/vite-plugin
 
-Vite plugin for building [Duyo](https://github.com/achunt2143/duyo) (Enyo 1.x) applications with modern tooling.
+> **Archived.** Part of the first Duyo iteration (vendored Enyo 2.7). It is being replaced by a TypeScript runtime and kind packs; see the root [README](../../README.md) and the `archive/enyo-2.7-runtime` tag.
+
+Vite plugin for building [Duyo](https://github.com/achunt2143/duyo) (Enyo 2.7) applications with modern tooling.
 
 ## Install
 
@@ -56,7 +58,7 @@ Your `index.html` just needs a render target:
 </html>
 ```
 
-Your `src/main.js` imports the runtime and defines your app kinds exactly as Enyo 1.x apps always worked:
+Your `src/main.js` imports the runtime and defines your app kinds in the classic Enyo style:
 
 ```js
 import '@duyo/runtime'; // Makes window.enyo available

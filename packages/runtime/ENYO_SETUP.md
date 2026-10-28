@@ -1,7 +1,9 @@
 # Enyo 2.7 Setup
 
-The `framework/` directory is not committed to this repo — you need to vendor
-Enyo 2.7 yourself. Once vendored, run the build step to produce `build/enyo.js`,
+> Archived. Note: `framework/` is in fact committed in this repo (the ignore rules never took effect).
+> The steps below record how it was vendored.
+
+Once vendored, run the build step to produce `build/enyo.js`,
 which is what `@duyo/vite-plugin` serves to the browser.
 
 ## 1. Vendor Enyo 2.7 source

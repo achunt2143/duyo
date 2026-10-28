@@ -1,7 +1,7 @@
 {
   "name": "create-duyo",
   "version": "0.1.0",
-  "description": "Scaffold a new Duyo (Enyo 1.x) app — npm create duyo@latest my-app",
+  "description": "Scaffold a new Duyo (Enyo 2.7, archived) app — npm create duyo@latest my-app",
   "license": "Apache-2.0",
   "author": "achunt2143",
   "keywords": ["duyo", "enyo", "create", "scaffolder", "webos"],

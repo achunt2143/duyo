@@ -1,6 +1,6 @@
 # {{PROJECT_NAME}}
 
-A [Duyo](https://github.com/achunt2143/duyo) app — classic Enyo 1.x components, built with Vite.
+A [Duyo](https://github.com/achunt2143/duyo) app — Enyo 2.7 components, built with Vite.
 
 ## Getting started
 
@@ -31,7 +31,7 @@ Open [http://localhost:5173](http://localhost:5173).
 
 ## Writing components
 
-Write components exactly as you would in Enyo 1.x:
+Write components as you would in classic Enyo:
 
 ```js
 enyo.kind({
