@@ -8,15 +8,27 @@
     "apps/*"
   ],
   "scripts": {
-    "dev": "npm run dev --workspace=apps/example",
+    "dev": "npm run dev --workspace=apps/sampler",
     "build": "npm run build --workspaces --if-present",
     "test": "npm run test --workspaces --if-present",
     "build:runtime": "npm run build --workspace=packages/runtime",
-    "dev:sample": "npm run build:runtime && npm run dev --workspace=apps/example"
+    "dev:sample": "npm run build:runtime && npm run dev --workspace=apps/example",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "sampler": "npm run dev --workspace=apps/sampler"
   },
   "engines": {
     "node": ">=18.0.0"
   },
   "license": "Apache-2.0",
-  "author": "achunt2143"
+  "author": "achunt2143",
+  "devDependencies": {
+    "@testing-library/react": "^14.3.1",
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "jsdom": "^24.1.1",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "typescript": "^5.5.4",
+    "vitest": "^1.6.0"
+  }
 }
