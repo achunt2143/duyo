@@ -1,3 +1,0 @@
-enyo.depends(
-	"PagedVirtualList.js"
-);

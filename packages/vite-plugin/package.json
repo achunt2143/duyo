@@ -1,0 +1,33 @@
+{
+  "name": "@duyo/vite-plugin",
+  "version": "0.2.0",
+  "description": "Vite plugin for building Duyo (Enyo 2.7) applications with modern tooling.",
+  "license": "Apache-2.0",
+  "author": "achunt2143",
+  "keywords": [
+    "duyo",
+    "enyo",
+    "vite",
+    "vite-plugin",
+    "webos"
+  ],
+  "type": "module",
+  "exports": {
+    ".": "./src/index.js",
+    "./create-config": "./src/create-config.js"
+  },
+  "files": [
+    "src/index.js",
+    "src/create-config.js"
+  ],
+  "scripts": {},
+  "peerDependencies": {
+    "vite": ">=4.0.0"
+  },
+  "dependencies": {
+    "@duyo/runtime": "*"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "name": "@duyo/core",
+  "version": "0.4.0-alpha.0",
+  "description": "Duyo core: Enyo-style kinds, component ownership, published props and event bubbling. No DOM, no React.",
+  "license": "Apache-2.0",
+  "author": "achunt2143",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "files": [
+    "src/"
+  ],
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
