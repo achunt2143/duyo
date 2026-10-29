@@ -15,6 +15,9 @@ export const samePath = (a: Path | undefined, b: Path | undefined) =>
   a !== undefined && b !== undefined && a.length === b.length && a.every((v, i) => v === b[i]);
 
 export const pathKey = (path: Path) => path.join('.');
+
+/** `inner` is `outer` or somewhere beneath it. */
+export const isWithin = (inner: Path, outer: Path) => inner.length >= outer.length && outer.every((v, i) => v === inner[i]);
 export const parsePath = (key: string): Path => (key === '' ? [] : key.split('.').map(Number));
 
 const clone = <T>(value: T): T => structuredClone(value);
@@ -196,6 +199,78 @@ export class ViewDocument {
       host['components'] = [...childrenOf(host), moved!];
     });
     return [...target, newIndex];
+  }
+
+  /**
+   * Moves a component to child `index` of `parent`, as dropping it there would. `index` is
+   * counted before the move. Refuses to move a component into itself or its own children.
+   */
+  moveTo(from: Path, parent: Path, index: number): Path | undefined {
+    if (from.length === 0 || isWithin(parent, from)) return undefined;
+    const fromParent = from.slice(0, -1);
+    const fromIndex = from[from.length - 1]!;
+    const host = nodeAt(this.#spec, parent);
+    if (!host) return undefined;
+    // Removing the component first shifts later siblings, and any path that runs through them.
+    let target = [...parent];
+    let at = index;
+    if (samePath(fromParent, parent) && fromIndex < index) at -= 1;
+    else if (isWithin(parent, fromParent) && parent.length > fromParent.length && parent[fromParent.length]! > fromIndex) {
+      target[fromParent.length] = parent[fromParent.length]! - 1;
+    }
+    if (samePath(fromParent, parent) && at === fromIndex) return from;
+    const changed = this.#change((draft) => {
+      const source = nodeAt(draft, fromParent)!;
+      const siblings = childrenOf(source);
+      const [moved] = siblings.splice(fromIndex, 1);
+      if (siblings.length === 0) delete source['components'];
+      const destination = nodeAt(draft, target)!;
+      const list = childrenOf(destination);
+      list.splice(Math.max(0, Math.min(at, list.length)), 0, moved!);
+      destination['components'] = list;
+    });
+    if (!changed) return undefined;
+    const placed = Math.max(0, Math.min(at, childrenOf(nodeAt(this.#spec, target)!).length - 1));
+    return [...target, placed];
+  }
+
+  /**
+   * Inserts copies of components, renaming any name already used in the view (`ok` ->
+   * `ok2`), as pasting does. Returns the path of the first.
+   */
+  paste(parent: Path, components: readonly Json[], index?: number): Path | undefined {
+    if (components.length === 0) return undefined;
+    const host = nodeAt(this.#spec, parent);
+    if (!host) return undefined;
+    const used = namesIn(this.#spec);
+    const rename = (node: Json): Json => {
+      const copy: Json = { ...node };
+      if (typeof copy['name'] === 'string') {
+        const base = copy['name'].replace(/\d+$/, '') || 'component';
+        let name = copy['name'];
+        for (let n = 2; used.has(name); n++) name = `${base}${n}`;
+        used.add(name);
+        copy['name'] = name;
+      }
+      if (Array.isArray(node['components'])) copy['components'] = (node['components'] as Json[]).map(rename);
+      return copy;
+    };
+    const at = Math.max(0, Math.min(index ?? childrenOf(host).length, childrenOf(host).length));
+    this.#change((draft) => {
+      const node = nodeAt(draft, parent)!;
+      const list = childrenOf(node);
+      list.splice(at, 0, ...components.map(rename));
+      node['components'] = list;
+    });
+    return [...parent, at];
+  }
+
+  /** Replaces the whole spec, as editing its JSON does. Undo brings the previous one back. */
+  replace(spec: Json): boolean {
+    return this.#change((draft) => {
+      for (const key of Object.keys(draft)) delete draft[key];
+      Object.assign(draft, clone(spec));
+    });
   }
 
   /** Moves a component out of its parent, to just after it. */

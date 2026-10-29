@@ -12,42 +12,116 @@
         {
           "kind": "duyo.FittableColumns",
           "align": "center",
-          "gap": "md",
-          "padding": "md",
+          "gap": "sm",
+          "padding": "sm",
+          "style": "border-bottom: 1px solid rgba(127,127,127,0.3); flex-wrap: wrap;",
           "components": [
-            { "kind": "mochi.Header", "content": "Duyo Designer" },
-            { "kind": "mochi.Dropdown", "name": "files", "placeholder": "Open a view", "maxHeight": 400, "onChange": "openFile" },
-            { "kind": "mochi.Button", "name": "newButton", "content": "New", "ontap": "newView" },
+            { "kind": "mochi.Header", "content": "Duyo Designer", "style": "margin-right: 12px;" },
             { "kind": "mochi.Button", "name": "saveButton", "content": "Save", "variant": "affirmative", "ontap": "save" },
+            { "kind": "mochi.Button", "name": "saveAllButton", "content": "Save all", "ontap": "saveAll" },
             { "kind": "mochi.Button", "name": "undoButton", "content": "Undo", "ontap": "undo" },
             { "kind": "mochi.Button", "name": "redoButton", "content": "Redo", "ontap": "redo" },
-            { "tag": "span", "name": "status", "fit": true, "style": "opacity: 0.8; text-align: right;" }
+            { "kind": "mochi.Button", "name": "cutButton", "content": "Cut", "ontap": "cut" },
+            { "kind": "mochi.Button", "name": "copyButton", "content": "Copy", "ontap": "copy" },
+            { "kind": "mochi.Button", "name": "pasteButton", "content": "Paste", "ontap": "paste" },
+            {
+              "tag": "span",
+              "name": "status",
+              "fit": true,
+              "style": "opacity: 0.8; text-align: right; font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"
+            },
+            { "kind": "mochi.Button", "content": "Help", "ontap": "help" }
           ]
         },
         {
           "kind": "duyo.FittableColumns",
           "fit": true,
+          "style": "min-height: 0;",
           "components": [
             {
               "kind": "duyo.FittableRows",
               "gap": "sm",
-              "padding": "md",
-              "style": "width: 230px; min-height: 0; overflow: hidden; border-right: 1px solid rgba(127,127,127,0.3);",
+              "padding": "sm",
+              "style": "width: 250px; flex: none; min-height: 0; overflow: hidden; border-right: 1px solid rgba(127,127,127,0.3);",
               "components": [
-                { "kind": "mochi.Subheader", "content": "Palette" },
-                { "kind": "mochi.Input", "name": "filter", "placeholder": "Filter kinds", "oninput": "filterPalette" },
-                { "name": "palette", "fit": true, "style": "overflow-y: auto; min-height: 0;" }
+                {
+                  "kind": "mochi.ViewSelectButton",
+                  "name": "leftTabs",
+                  "items": [{ "content": "Files", "value": "files" }, { "content": "Palette", "value": "palette" }],
+                  "onSelect": "leftTabChanged"
+                },
+                {
+                  "kind": "Designer.Files",
+                  "name": "files",
+                  "fit": true,
+                  "style": "min-height: 0;",
+                  "onOpen": "fileOpened",
+                  "onNewView": "newView",
+                  "onNewFolder": "newFolder",
+                  "onRename": "renameFile",
+                  "onDelete": "deleteFile"
+                },
+                { "kind": "Designer.Palette", "name": "palette", "fit": true, "showing": false, "style": "min-height: 0;", "onAdd": "paletteAdd" }
               ]
             },
-            { "kind": "Designer.Canvas", "name": "canvas", "fit": true, "style": "min-height: 0;", "onPick": "picked" },
+            {
+              "kind": "duyo.FittableRows",
+              "fit": true,
+              "style": "min-width: 0; min-height: 0;",
+              "components": [
+                {
+                  "kind": "Designer.Tabs",
+                  "name": "tabs",
+                  "style": "border-bottom: 1px solid rgba(127,127,127,0.3);",
+                  "onActivate": "tabActivated",
+                  "onClose": "tabClosed"
+                },
+                {
+                  "kind": "duyo.FittableColumns",
+                  "align": "center",
+                  "gap": "sm",
+                  "padding": "sm",
+                  "components": [
+                    {
+                      "kind": "mochi.ViewSelectButton",
+                      "name": "modes",
+                      "items": [
+                        { "content": "Design", "value": "design" },
+                        { "content": "Code", "value": "code" },
+                        { "content": "JSON", "value": "json" },
+                        { "content": "Run", "value": "run" }
+                      ],
+                      "onSelect": "modeChanged"
+                    },
+                    { "fit": true },
+                    { "kind": "mochi.Dropdown", "name": "device", "maxHeight": 320, "onChange": "deviceChanged" },
+                    { "kind": "mochi.Button", "name": "rotateButton", "content": "Rotate", "ontap": "rotate" },
+                    { "kind": "mochi.Dropdown", "name": "zoom", "maxHeight": 320, "onChange": "zoomChanged" },
+                    { "kind": "mochi.Button", "name": "reloadButton", "content": "Reload", "showing": false, "ontap": "reloadRun" },
+                    { "kind": "mochi.Button", "name": "windowButton", "content": "Open in window", "showing": false, "ontap": "openRunWindow" }
+                  ]
+                },
+                { "kind": "Designer.Canvas", "name": "canvas", "fit": true, "onPick": "picked", "onDropAt": "canvasDrop" },
+                { "kind": "Designer.Code", "name": "code", "fit": true, "showing": false, "onEdit": "codeEdited" },
+                { "kind": "Designer.Code", "name": "json", "language": "json", "fit": true, "showing": false, "onEdit": "jsonEdited" },
+                { "kind": "Designer.Run", "name": "run", "fit": true, "showing": false }
+              ]
+            },
             {
               "kind": "duyo.FittableRows",
               "gap": "sm",
-              "padding": "md",
-              "style": "width: 360px; min-height: 0; border-left: 1px solid rgba(127,127,127,0.3);",
+              "padding": "sm",
+              "style": "width: 380px; flex: none; min-height: 0; overflow: hidden; border-left: 1px solid rgba(127,127,127,0.3);",
               "components": [
                 { "kind": "mochi.Subheader", "content": "Components" },
-                { "name": "tree", "style": "max-height: 38%; overflow-y: auto; flex: none;" },
+                {
+                  "kind": "Designer.Tree",
+                  "name": "tree",
+                  "style": "max-height: 36%; overflow-y: auto; flex: none;",
+                  "onSelect": "treeSelected",
+                  "onMove": "treeMoved",
+                  "onDropKind": "treeDroppedKind"
+                },
                 {
                   "kind": "duyo.FittableColumns",
                   "gap": "sm",
@@ -57,11 +131,21 @@
                     { "kind": "mochi.Button", "content": "Down", "ontap": "moveDown" },
                     { "kind": "mochi.Button", "content": "In", "ontap": "indent" },
                     { "kind": "mochi.Button", "content": "Out", "ontap": "outdent" },
-                    { "kind": "mochi.Button", "content": "Copy", "ontap": "duplicate" },
+                    { "kind": "mochi.Button", "content": "Duplicate", "ontap": "duplicate" },
                     { "kind": "mochi.Button", "content": "Delete", "variant": "warning", "ontap": "remove" }
                   ]
                 },
-                { "kind": "mochi.Subheader", "content": "Properties" },
+                {
+                  "kind": "mochi.ViewSelectButton",
+                  "name": "inspectorTabs",
+                  "items": [
+                    { "content": "Properties", "value": "properties" },
+                    { "content": "Layout", "value": "layout" },
+                    { "content": "Events", "value": "events" },
+                    { "content": "View", "value": "view" }
+                  ],
+                  "onSelect": "inspectorTabChanged"
+                },
                 { "name": "inspector", "fit": true, "style": "overflow-y: auto; overflow-x: hidden; min-height: 0;" }
               ]
             }
@@ -70,7 +154,7 @@
         {
           "tag": "footer",
           "name": "problems",
-          "style": "font: 12px/1.5 ui-monospace, monospace; padding: 8px 16px; min-height: 4.5em; max-height: 9em; overflow-y: auto; white-space: pre-wrap; border-top: 1px solid rgba(127,127,127,0.3);"
+          "style": "font: 12px/1.5 ui-monospace, monospace; padding: 6px 16px; min-height: 3em; max-height: 8em; overflow-y: auto; white-space: pre-wrap; border-top: 1px solid rgba(127,127,127,0.3);"
         }
       ]
     }

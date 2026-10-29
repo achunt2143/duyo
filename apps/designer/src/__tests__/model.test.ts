@@ -109,6 +109,48 @@ describe('ViewDocument', () => {
     expect([...namesIn(doc.spec)]).toEqual(['row', 'ok']);
   });
 
+  it('moveTo reorders among siblings, counting the index before the move', () => {
+    const doc = new ViewDocument(spec());
+    expect(doc.moveTo([0], [], 3)).toEqual([2]);
+    expect(outline(doc.spec).slice(1).map((o) => o.node['content'] ?? o.node['name'])).toEqual(['row', 'OK', 'Last', 'Title']);
+    expect(doc.moveTo([2], [], 0)).toEqual([0]);
+    expect(nodeAt(doc.spec, [0])!['content']).toBe('Title');
+  });
+
+  it('moveTo reparents, in and out, and keeps paths through shifted siblings right', () => {
+    const doc = new ViewDocument(spec());
+    expect(doc.moveTo([0], [1], 0)).toEqual([0, 0]);
+    expect(nodeAt(doc.spec, [0, 0])!['content']).toBe('Title');
+    expect(doc.moveTo([0, 1], [], 0)).toEqual([0]);
+    expect(nodeAt(doc.spec, [0])!['name']).toBe('ok');
+    expect(nodeAt(doc.spec, [1, 0])!['content']).toBe('Title');
+  });
+
+  it('moveTo refuses to put a component inside itself', () => {
+    const doc = new ViewDocument(spec());
+    expect(doc.moveTo([1], [1, 0], 0)).toBeUndefined();
+    expect(doc.moveTo([1], [1], 0)).toBeUndefined();
+    expect(doc.canUndo).toBe(false);
+  });
+
+  it('pastes copies and renames names already in use', () => {
+    const doc = new ViewDocument(spec());
+    const copied = [nodeAt(doc.spec, [1])!];
+    expect(doc.paste([], copied, 3)).toEqual([3]);
+    expect(nodeAt(doc.spec, [3])!['name']).toBe('row2');
+    expect(nodeAt(doc.spec, [3, 0])!['name']).toBe('ok2');
+    doc.paste([], copied);
+    expect(nodeAt(doc.spec, [4])!['name']).toBe('row3');
+  });
+
+  it('replace swaps the whole spec, with undo', () => {
+    const doc = new ViewDocument(spec());
+    doc.replace({ name: 'App.Y', components: [] });
+    expect(doc.spec).toEqual({ name: 'App.Y', components: [] });
+    doc.undo();
+    expect(doc.spec['name']).toBe('App.X');
+  });
+
   it('markSaved makes the current state clean', () => {
     const doc = new ViewDocument(spec());
     doc.setProperty([0], 'content', 'A');

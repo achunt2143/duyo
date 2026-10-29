@@ -184,11 +184,13 @@ raw HTML from a property would not be, so do not allow it.
 
 ## The designer
 
-`npm run designer` opens [apps/designer](../apps/designer), a visual editor for the design half
-of a view: a palette of every registered kind, a live canvas you click to select in, a component
-tree, and an inspector generated from each kind's published properties and events. It saves in
-the format above and regenerates the view's types, so the code-behind is checked against every
-change. It is itself a view.
+`npm run designer` opens [apps/designer](../apps/designer), a visual editor for views, as Ares
+was for Enyo. The design is edited on a live canvas, with drag and drop, a component tree and
+an inspector generated from each kind's published properties and events; the code-behind is
+edited beside it, and → on an event writes its handler. Run mode runs the view for real at a
+chosen device size. Saves use the format above and regenerate the view's types, so the
+code-behind is checked against every change. The designer is itself a view. Its README has
+the full comparison with Ares.
 
 ## Not built yet
 

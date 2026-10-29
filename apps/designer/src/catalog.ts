@@ -30,6 +30,9 @@ export interface KindInfo {
   container: boolean;
 }
 
+/** Shown on the inspector's Layout tab rather than Properties. */
+export const LAYOUT_PROPERTIES = new Set(['fit', 'gap', 'padding', 'align', 'justify', 'fill', 'noStretch', 'showing', 'tag', 'style', 'classes']);
+
 const BASE_KINDS = new Set(['duyo.Component', 'duyo.Control']);
 const CONTAINERS = new Set(['duyo.FittableRows', 'duyo.FittableColumns']);
 

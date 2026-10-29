@@ -3,26 +3,54 @@ import type { Component, ComponentEvent, Instance, ViewComponent } from '@duyo/c
 
 /** `this.$` in the code-behind: every named component in the spec. */
 export type Named = {
-  /** mochi.Dropdown */
-  files: Instance<"mochi.Dropdown">;
-  /** mochi.Button */
-  newButton: Instance<"mochi.Button">;
   /** mochi.Button */
   saveButton: Instance<"mochi.Button">;
+  /** mochi.Button */
+  saveAllButton: Instance<"mochi.Button">;
   /** mochi.Button */
   undoButton: Instance<"mochi.Button">;
   /** mochi.Button */
   redoButton: Instance<"mochi.Button">;
+  /** mochi.Button */
+  cutButton: Instance<"mochi.Button">;
+  /** mochi.Button */
+  copyButton: Instance<"mochi.Button">;
+  /** mochi.Button */
+  pasteButton: Instance<"mochi.Button">;
   /** duyo.Control */
   status: Instance<"duyo.Control">;
-  /** mochi.Input */
-  filter: Instance<"mochi.Input">;
-  /** duyo.Control */
-  palette: Instance<"duyo.Control">;
+  /** mochi.ViewSelectButton */
+  leftTabs: Instance<"mochi.ViewSelectButton">;
+  /** Designer.Files */
+  files: Instance<"Designer.Files">;
+  /** Designer.Palette */
+  palette: Instance<"Designer.Palette">;
+  /** Designer.Tabs */
+  tabs: Instance<"Designer.Tabs">;
+  /** mochi.ViewSelectButton */
+  modes: Instance<"mochi.ViewSelectButton">;
+  /** mochi.Dropdown */
+  device: Instance<"mochi.Dropdown">;
+  /** mochi.Button */
+  rotateButton: Instance<"mochi.Button">;
+  /** mochi.Dropdown */
+  zoom: Instance<"mochi.Dropdown">;
+  /** mochi.Button */
+  reloadButton: Instance<"mochi.Button">;
+  /** mochi.Button */
+  windowButton: Instance<"mochi.Button">;
   /** Designer.Canvas */
   canvas: Instance<"Designer.Canvas">;
-  /** duyo.Control */
-  tree: Instance<"duyo.Control">;
+  /** Designer.Code */
+  code: Instance<"Designer.Code">;
+  /** Designer.Code */
+  json: Instance<"Designer.Code">;
+  /** Designer.Run */
+  run: Instance<"Designer.Run">;
+  /** Designer.Tree */
+  tree: Instance<"Designer.Tree">;
+  /** mochi.ViewSelectButton */
+  inspectorTabs: Instance<"mochi.ViewSelectButton">;
   /** duyo.Control */
   inspector: Instance<"duyo.Control">;
   /** duyo.Control */
@@ -30,7 +58,7 @@ export type Named = {
 };
 
 /** Handlers the spec names. The code-behind must implement every one. */
-export type Handlers = 'duplicate' | 'filterPalette' | 'indent' | 'moveDown' | 'moveUp' | 'newView' | 'openFile' | 'outdent' | 'picked' | 'redo' | 'remove' | 'save' | 'undo';
+export type Handlers = 'canvasDrop' | 'codeEdited' | 'copy' | 'cut' | 'deleteFile' | 'deviceChanged' | 'duplicate' | 'fileOpened' | 'help' | 'indent' | 'inspectorTabChanged' | 'jsonEdited' | 'leftTabChanged' | 'modeChanged' | 'moveDown' | 'moveUp' | 'newFolder' | 'newView' | 'openRunWindow' | 'outdent' | 'paletteAdd' | 'paste' | 'picked' | 'redo' | 'reloadRun' | 'remove' | 'renameFile' | 'rotate' | 'save' | 'saveAll' | 'tabActivated' | 'tabClosed' | 'treeDroppedKind' | 'treeMoved' | 'treeSelected' | 'undo' | 'zoomChanged';
 
 /** `this` inside the code-behind. */
 export type Self = ViewComponent<Named>;
