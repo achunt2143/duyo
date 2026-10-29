@@ -5,6 +5,8 @@ import type { ReactNode } from 'react';
 import { mochiEntries, wizardStepKind } from './entries.js';
 
 export { mochiEntries, wizardStepKind } from './entries.js';
+/** Types of every mochi kind, and the registration that types `this.$.name` in views. */
+export type * from './kinds.gen.js';
 /** For hand-written bindings that need Remochi's theme. */
 export { useTheme, DARK_THEME_COLORS, LIGHT_THEME_COLORS } from 'remochi';
 

@@ -87,6 +87,41 @@ contract.
 Validation needs only the spec. Whether a kind or property exists is reported by the runtime,
 as diagnostics, when the view is created.
 
+## Typed properties
+
+`this.$.wifi` is typed by the kind the spec declares it with. A pack describes its kinds once,
+and every view that uses them benefits:
+
+```ts
+this.$.wifi.value            // boolean
+this.$.wifi.setValue('yes')  // error: string is not assignable to boolean
+this.$.big.setVariant('x')   // error: not one of "normal" | "warning" | ...
+```
+
+The types come from the kinds themselves: published properties with their `getX` / `setX`
+(the `allowed` values become a union), event helpers (`doChange`) and methods.
+`@duyo/mochi` ships its own as `kinds.gen.ts`. For your own pack, generate them from a
+registry that has the pack installed:
+
+```ts
+import { generateKindTypes } from '@duyo/views';
+
+const registry = new KindRegistry();
+installPack(registry, myPack);
+writeFileSync('src/kinds.gen.ts', generateKindTypes(registry, myPack.kinds.map((k) => k.name), {
+  source: 'acme-pack',
+  bases: { 'duyo.Control': 'ControlMembers' },
+}));
+```
+
+then `export type * from './kinds.gen.js'` from the pack's entry point so TypeScript loads
+the `declare module '@duyo/core'` registration. Add a test that regenerates and compares, as
+`@duyo/mochi` does, so the file cannot go stale. Kinds nobody has described are plain
+`Component`s.
+
+Limit: a component keeps its open index signature, so a misspelled *property* on a typed
+instance (`wifi.valeu`) is still `any`; wrong *types* are caught, unknown *names* are not.
+
 ## Conventions
 
 - Any `on…` property holding a string is an event handler. Packs must not publish properties
@@ -98,6 +133,5 @@ as diagnostics, when the view is created.
 
 ## Not built yet
 
-- Typed properties per kind (`this.$.wifi.value` is `any` today).
 - Loading specs from a server, with a trust level and stricter validation for untrusted data.
 - A visual designer that edits `.view.json` files.

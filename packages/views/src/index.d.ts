@@ -32,3 +32,18 @@ export declare function syncViewTypes(
   options?: { check?: boolean; source?: string },
 ): { viewFile: string; typesFile: string; diagnostics: ViewDiagnostic[]; changed: boolean };
 export declare function formatDiagnostic(diagnostic: ViewDiagnostic, file: string): string;
+
+export declare function publishedType(declaration: { default?: unknown; allowed?: readonly unknown[] }): string;
+export declare function generateKindTypes(
+  registry: {
+    resolve(name: string): {
+      name: string;
+      ancestry: readonly string[];
+      published: ReadonlyMap<string, { default?: unknown; allowed?: readonly unknown[] }>;
+      methods: ReadonlyMap<string, unknown>;
+      events: ReadonlySet<string>;
+    };
+  },
+  kinds: readonly string[],
+  options: { source: string; module?: string; bases?: Readonly<Record<string, string>>; augment?: boolean; names?: Readonly<Record<string, string>> },
+): string;

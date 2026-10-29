@@ -21,7 +21,8 @@
   ],
   "scripts": {
     "typecheck": "tsc -p tsconfig.json",
-    "test": "vitest run"
+    "test": "vitest run",
+    "gen:kinds": "vite-node scripts/generate.ts"
   },
   "dependencies": {
     "@duyo/core": "*",
@@ -33,7 +34,8 @@
     "remochi": "^0.4.0"
   },
   "devDependencies": {
-    "remochi": "0.4.0"
+    "remochi": "0.4.0",
+    "@duyo/views": "*"
   },
   "engines": {
     "node": ">=18.0.0"
