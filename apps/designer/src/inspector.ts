@@ -30,10 +30,12 @@ const labelStyle = (set: boolean) =>
 
 const small = 'cursor: pointer; padding: 0 6px; opacity: 0.75; user-select: none;';
 
-export const heading = (text: string): ComponentDefinition => ({
-  tag: 'div',
-  content: text,
-  style: 'margin: 12px 0 4px; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.6;',
+/** A group of rows under a Remochi `Collapsable`, open to start with. */
+export const section = (title: string, rows: ComponentDefinition[], expanded = true): ComponentDefinition => ({
+  kind: 'remochi.Collapsable',
+  title,
+  expanded,
+  components: rows,
 });
 
 const note = (text: string): ComponentDefinition => ({ tag: 'div', content: text, style: 'font-size: 12px; opacity: 0.7; margin: 4px 0;' });
@@ -164,13 +166,15 @@ function undeclared(input: InspectorInput): ComponentDefinition[] {
   const keys = Object.keys(node).filter((key) => !known.has(key) && !(isRoot && RESERVED_ROOT.includes(key)) && !/^on[A-Za-z]/.test(key));
   if (keys.length === 0) return [];
   return [
-    heading('Not declared by this kind'),
-    ...keys.map((key) =>
-      row(key, { tag: 'span', content: JSON.stringify(node[key]), style: 'font-size: 12px; overflow: hidden; text-overflow: ellipsis;' }, true, {
-        name: `reset:${key}`,
-        content: '×',
-        handler: 'propReset',
-      }),
+    section(
+      'Not declared by this kind',
+      keys.map((key) =>
+        row(key, { tag: 'span', content: JSON.stringify(node[key]), style: 'font-size: 12px; overflow: hidden; text-overflow: ellipsis;' }, true, {
+          name: `reset:${key}`,
+          content: '×',
+          handler: 'propReset',
+        }),
+      ),
     ),
   ];
 }
@@ -186,7 +190,7 @@ function eventRows(input: InspectorInput): ComponentDefinition[] {
       const missing = typeof value === 'string' && methods !== undefined && !value.includes('.') && !methods.includes(value);
       return row(
         event,
-        text(`event:${event}`, typeof value === 'string' ? value : undefined, missing ? '' : 'method or action', 'eventChanged', missing ? { style: 'outline: 1px solid #e0a800; border-radius: 8px;' } : {}),
+        text(`event:${event}`, typeof value === 'string' ? value : undefined, missing ? '' : 'method or action', 'eventChanged', missing ? { style: 'outline: 1px solid var(--mochi-selected); border-radius: 8px;' } : {}),
         value !== undefined,
         { name: `goto:${event}`, content: '→', handler: 'gotoHandler', title: 'Go to the handler' },
       );
@@ -197,12 +201,13 @@ function eventRows(input: InspectorInput): ComponentDefinition[] {
 function handlerRows(node: Json): ComponentDefinition[] {
   const handlers = (node['handlers'] && typeof node['handlers'] === 'object' ? node['handlers'] : {}) as Record<string, unknown>;
   return [
-    heading('Handlers: events from inside the view'),
-    note('Runs a method of the view when a component inside raises the event, before its own handler.'),
-    ...Object.entries(handlers).map(([event, method]) =>
-      row(event, text(`handler:${event}`, method, 'method', 'handlerChanged'), true, { name: `handlerdel:${event}`, content: '×', handler: 'handlerRemoved' }),
-    ),
-    row('add', text('handleradd', undefined, 'onSomething: method', 'handlerAdded'), false),
+    section('Handlers: events from inside the view', [
+      note('Runs a method of the view when a component inside raises the event, before its own handler.'),
+      ...Object.entries(handlers).map(([event, method]) =>
+        row(event, text(`handler:${event}`, method, 'method', 'handlerChanged'), true, { name: `handlerdel:${event}`, content: '×', handler: 'handlerRemoved' }),
+      ),
+      row('add', text('handleradd', undefined, 'onSomething: method', 'handlerAdded'), false),
+    ]),
   ];
 }
 
@@ -215,20 +220,22 @@ function viewRows(node: Json): ComponentDefinition[] {
       : { default: value };
 
   return [
-    heading('Published properties'),
-    note('Properties of this view that its users can set. A default, and optionally the allowed values, comma separated.'),
-    ...Object.entries(published).flatMap(([name, value]) => {
-      const d = declaration(value);
-      return [
-        row(name, text(`pubdefault:${name}`, d.default, 'default', 'publishedChanged'), true, { name: `pubdel:${name}`, content: '×', handler: 'publishedRemoved' }),
-        row('', text(`puballowed:${name}`, d.allowed?.map((v) => (typeof v === 'string' ? v : JSON.stringify(v))).join(', '), 'allowed values (optional)', 'publishedChanged'), false),
-      ];
-    }),
-    row('add', text('pubadd', undefined, 'property name', 'publishedAdded'), false),
-    heading('Events this view raises'),
-    note('Each one gives the view a do… method, as in Enyo: onSaved -> doSaved().'),
-    ...Object.keys(events).map((name) => row(name, { tag: 'span', content: `do${name.replace(/^on/, '')}()`, style: 'font-size: 12px; opacity: 0.8;' }, true, { name: `evtdel:${name}`, content: '×', handler: 'declaredEventRemoved' })),
-    row('add', text('evtadd', undefined, 'onSomething', 'declaredEventAdded'), false),
+    section('Published properties', [
+      note('Properties of this view that its users can set. A default, and optionally the allowed values, comma separated.'),
+      ...Object.entries(published).flatMap(([name, value]) => {
+        const d = declaration(value);
+        return [
+          row(name, text(`pubdefault:${name}`, d.default, 'default', 'publishedChanged'), true, { name: `pubdel:${name}`, content: '×', handler: 'publishedRemoved' }),
+          row('', text(`puballowed:${name}`, d.allowed?.map((v) => (typeof v === 'string' ? v : JSON.stringify(v))).join(', '), 'allowed values (optional)', 'publishedChanged'), false),
+        ];
+      }),
+      row('add', text('pubadd', undefined, 'property name', 'publishedAdded'), false),
+    ]),
+    section('Events this view raises', [
+      note('Each one gives the view a do… method, as in Enyo: onSaved -> doSaved().'),
+      ...Object.keys(events).map((name) => row(name, { tag: 'span', content: `do${name.replace(/^on/, '')}()`, style: 'font-size: 12px; opacity: 0.8;' }, true, { name: `evtdel:${name}`, content: '×', handler: 'declaredEventRemoved' })),
+      row('add', text('evtadd', undefined, 'onSomething', 'declaredEventAdded'), false),
+    ]),
   ];
 }
 
@@ -243,18 +250,18 @@ export function inspectorContents(input: InspectorInput): ComponentDefinition[] 
       const shared = (p: PropertyInfo) => !LAYOUT_PROPERTIES.has(p.name) && p.inherited;
       const ownRows = propertyRows(input, own);
       const sharedRows = propertyRows(input, shared);
-      if (ownRows.length > 0) defs.push(heading('Properties'), ...ownRows);
-      if (sharedRows.length > 0) defs.push(heading('Every control'), ...sharedRows);
+      if (ownRows.length > 0) defs.push(section('Properties', ownRows));
+      if (sharedRows.length > 0) defs.push(section('Every control', sharedRows));
       defs.push(...undeclared(input));
       break;
     }
     case 'layout': {
       const rows = propertyRows(input, (p) => LAYOUT_PROPERTIES.has(p.name));
-      defs.push(heading('Layout'), ...(rows.length > 0 ? rows : [note('This kind has no layout properties.')]));
+      defs.push(section('Layout', rows.length > 0 ? rows : [note('This kind has no layout properties.')]));
       break;
     }
     case 'events':
-      defs.push(heading('Events'), ...eventRows(input));
+      defs.push(section('Events', eventRows(input)));
       if (isRoot) defs.push(...handlerRows(input.node));
       break;
     case 'view':

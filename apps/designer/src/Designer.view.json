@@ -141,11 +141,7 @@
                     { "kind": "remochi.NubbinDivider", "nubbin": "down", "style": "width: 100%;" }
                   ]
                 },
-                {
-                  "tag": "div",
-                  "content": "Components",
-                  "style": "font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.6; padding: 0 4px;"
-                },
+                { "kind": "remochi.Subheader", "content": "Components" },
                 {
                   "kind": "Designer.Tree",
                   "name": "tree",

@@ -24,7 +24,8 @@
     "codemirror": "^6.0.2",
     "fflate": "^0.8.3",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "remochi": "^0.4.0"
   },
   "devDependencies": {
     "vite": "^6.0.0"

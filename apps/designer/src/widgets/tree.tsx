@@ -1,16 +1,20 @@
 import type { KindDefinition } from '@duyo/core';
 import type { BindingProps, RendererBinding } from '@duyo/react';
+import { Item, List } from './remochi.js';
 import { useEffect, useRef, useState, type DragEvent } from 'react';
 
-import { DRAG_KIND, DRAG_PATH, accent, iconButton, placeFor, rowStyle, type DropPlace } from './shared.js';
+import { ActionsMenu, type MenuAction } from './menu.js';
+import { DRAG_KIND, DRAG_PATH, accent, accentSoft, placeFor, type DropPlace } from './shared.js';
 
 /**
- * `Designer.Tree`: the view's components as an outline. Click to select; drag a row to move
- * it before, after or into another; drop a kind from the palette to add one.
+ * `Designer.Tree`: the view's components as an outline, in a Remochi `List` of `Item`s. Click
+ * to select; drag a row to move it before, after or into another; drop a kind from the palette
+ * to add one. The structure commands are a Remochi `Button` that opens a `PopupPanel`, also on
+ * a right-click.
  *
  * Events carry spec paths as keys (`'1.0'`, `''` for the view):
  *   onSelect { key }   onMove { from, parent, index }   onDropKind { kind, parent, index }
- *   onAction { action }: a structure action from its toolbar (moveUp, cut, paste, remove, ...)
+ *   onAction { action }: a command from the menu (moveUp, cut, paste, remove, ...)
  */
 export interface TreeRow {
   key: string;
@@ -22,23 +26,20 @@ export interface TreeRow {
 export const treeKind: KindDefinition = {
   name: 'Designer.Tree',
   kind: 'duyo.Control',
-  published: { revision: 0, selectedKey: '' },
+  published: { revision: 0, selectedKey: '', canPaste: false },
   events: { onSelect: '', onMove: '', onDropKind: '', onAction: '' },
 };
 
-/** The structure actions, as a compact row above the outline. `|` separates groups. */
-const ACTIONS: Array<'|' | { name: string; icon: string; title: string; needsSelection: boolean }> = [
-  { name: 'moveUp', icon: '↑', title: 'Move up', needsSelection: true },
-  { name: 'moveDown', icon: '↓', title: 'Move down', needsSelection: true },
-  { name: 'indent', icon: '→', title: 'Into the component above', needsSelection: true },
-  { name: 'outdent', icon: '←', title: 'Out of its parent', needsSelection: true },
-  '|',
-  { name: 'cut', icon: '✂', title: 'Cut (Ctrl+X)', needsSelection: true },
-  { name: 'copy', icon: '⧉', title: 'Copy (Ctrl+C)', needsSelection: true },
-  { name: 'paste', icon: '⎘', title: 'Paste (Ctrl+V)', needsSelection: false },
-  { name: 'duplicate', icon: '⊕', title: 'Duplicate (Ctrl+D)', needsSelection: true },
-  '|',
-  { name: 'remove', icon: '✕', title: 'Delete (Delete)', needsSelection: true },
+const MENU: MenuAction[] = [
+  { label: 'Move up', action: 'moveUp' },
+  { label: 'Move down', action: 'moveDown' },
+  { label: 'Into the component above', action: 'indent' },
+  { label: 'Out of its parent', action: 'outdent' },
+  { label: 'Cut', action: 'cut' },
+  { label: 'Copy', action: 'copy' },
+  { label: 'Paste', action: 'paste' },
+  { label: 'Duplicate', action: 'duplicate' },
+  { label: 'Delete', action: 'remove', type: 'warning' },
 ];
 
 const parentKey = (key: string) => (key.includes('.') ? key.slice(0, key.lastIndexOf('.')) : '');
@@ -49,12 +50,18 @@ const childCount = (rows: TreeRow[], key: string) =>
 function Tree({ node, hostProps, bubble }: BindingProps) {
   const rows = (node['rows'] as TreeRow[] | undefined) ?? [];
   const selectedKey = String(node.get('selectedKey') ?? '');
+  const canPaste = node.get('canPaste') === true;
   const [drop, setDrop] = useState<{ key: string; place: DropPlace } | null>(null);
+  const [menuAt, setMenuAt] = useState<{ x: number; y: number } | null>(null);
   const selectedRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     selectedRef.current?.scrollIntoView({ block: 'nearest' });
   }, [selectedKey]);
+
+  // Only what can be done now is offered.
+  const hasSelection = selectedKey !== '';
+  const actions = MENU.filter((a) => (a.action === 'paste' ? canPaste : hasSelection));
 
   /** Where a drop on `row` puts the component: its parent and index there. */
   const targetOf = (row: TreeRow, place: DropPlace) =>
@@ -84,63 +91,62 @@ function Tree({ node, hostProps, bubble }: BindingProps) {
   const { onClick: _tap, ...host } = hostProps;
   return (
     <div {...host} style={{ ...hostProps.style, minHeight: 0 }}>
-      <div style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0 }}>
-      <div role="toolbar" aria-label="Component actions" style={{ display: 'flex', alignItems: 'center', gap: 0, padding: '2px 0 6px', flex: 'none' }}>
-        {ACTIONS.map((action, index) =>
-          action === '|' ? (
-            <span key={`gap-${index}`} style={{ width: 1, height: 16, margin: '0 4px', background: 'rgba(127,127,127,0.4)' }} />
-          ) : (
-            <button
-              key={action.name}
-              type="button"
-              title={action.title}
-              aria-label={action.title}
-              disabled={action.needsSelection && selectedKey === ''}
-              style={{ ...iconButton, fontSize: 14, minWidth: 23, padding: '2px 3px', opacity: action.needsSelection && selectedKey === '' ? 0.3 : 0.85 }}
-              onClick={() => bubble('onAction', { action: action.name })}
-            >
-              {action.icon}
-            </button>
-          ),
-        )}
-      </div>
       <div
-        role="tree"
-        aria-label="Components"
-        style={{ flex: 1, minHeight: 0, overflowY: 'auto' }}
-        onDragLeave={(e) => !e.currentTarget.contains(e.relatedTarget as Node) && setDrop(null)}
+        style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0 }}
+        onContextMenu={(event) => {
+          event.preventDefault();
+          setMenuAt({ x: event.clientX, y: event.clientY });
+        }}
       >
-      {rows.map((row) => {
-        const selected = row.key === selectedKey;
-        const marker = drop?.key === row.key ? drop.place : undefined;
-        return (
-          <div
-            key={row.key}
-            ref={selected ? selectedRef : undefined}
-            role="treeitem"
-            aria-selected={selected}
-            data-key={row.key}
-            draggable={row.key !== ''}
-            style={{
-              ...rowStyle(selected, row.depth),
-              boxShadow:
-                marker === 'before' ? `inset 0 2px 0 ${accent}` : marker === 'after' ? `inset 0 -2px 0 ${accent}` : undefined,
-              outline: marker === 'inside' ? `1px dashed ${accent}` : undefined,
-            }}
-            onClick={() => bubble('onSelect', { key: row.key })}
-            onDragStart={(event) => {
-              event.dataTransfer.setData(DRAG_PATH, row.key);
-              event.dataTransfer.effectAllowed = 'move';
-            }}
-            onDragOver={(event) => over(event, row)}
-            onDrop={(event) => dropped(event, row)}
-            onDragEnd={() => setDrop(null)}
-          >
-            {row.label}
-          </div>
-        );
-      })}
-      </div>
+        <div style={{ flex: 'none', marginBottom: 6 }}>
+          <ActionsMenu
+            label="Edit"
+            title="Components"
+            actions={actions}
+            onAction={(action) => bubble('onAction', { action })}
+            at={menuAt}
+            onAtClosed={() => setMenuAt(null)}
+            disabled={actions.length === 0}
+          />
+        </div>
+        <div
+          role="tree"
+          aria-label="Components"
+          style={{ flex: 1, minHeight: 0 }}
+          onDragLeave={(e) => !e.currentTarget.contains(e.relatedTarget as Node) && setDrop(null)}
+        >
+          <List>
+            {rows.map((row) => {
+              const selected = row.key === selectedKey;
+              const marker = drop?.key === row.key ? drop.place : undefined;
+              return (
+                <div
+                  key={row.key}
+                  ref={selected ? selectedRef : undefined}
+                  role="treeitem"
+                  aria-selected={selected}
+                  data-key={row.key}
+                  draggable={row.key !== ''}
+                  style={{
+                    paddingLeft: row.depth * 14,
+                    boxShadow: marker === 'before' ? `inset 0 2px 0 ${accent}` : marker === 'after' ? `inset 0 -2px 0 ${accent}` : undefined,
+                    background: marker === 'inside' ? accentSoft : undefined,
+                    outline: marker === 'inside' ? `1px dashed ${accent}` : undefined,
+                  }}
+                  onDragStart={(event) => {
+                    event.dataTransfer.setData(DRAG_PATH, row.key);
+                    event.dataTransfer.effectAllowed = 'move';
+                  }}
+                  onDragOver={(event) => over(event, row)}
+                  onDrop={(event) => dropped(event, row)}
+                  onDragEnd={() => setDrop(null)}
+                >
+                  <Item variant="compact" title={row.label} selected={selected} onClick={() => bubble('onSelect', { key: row.key })} />
+                </div>
+              );
+            })}
+          </List>
+        </div>
       </div>
     </div>
   );

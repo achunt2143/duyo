@@ -682,6 +682,7 @@ function drawTree(self: Component) {
     : [];
   self.$.tree['rows'] = rows;
   self.$.tree.setSelectedKey(doc ? pathKey(doc.selected) : '');
+  self.$.tree.setCanPaste(!!doc?.view && st(self).clipboard.length > 0);
   self.$.tree.setRevision(Number(self.$.tree.revision) + 1);
 }
 
@@ -750,6 +751,7 @@ function updateToolbar(self: Component) {
   self.$.redoButton.setDisabled(!doc?.view?.canRedo);
   self.$.saveButton.setDisabled(!doc || !dirty(doc));
   self.$.saveAllButton.setDisabled(!state.docs.some(dirty));
+  self.$.tree.setCanPaste(!!doc?.view && state.clipboard.length > 0);
   document.title = `${doc && dirty(doc) ? '• ' : ''}${doc ? fileName(doc.key) : 'Duyo Designer'}`;
 }
 

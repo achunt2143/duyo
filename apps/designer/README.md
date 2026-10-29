@@ -55,8 +55,9 @@ checked as untrusted input: nothing is written outside the new folder, and size 
 
 Three columns between a toolbar and a problems strip, built from Remochi's own pieces:
 
-- **Explorer**, on the left: Files or the Palette above, the Components tree below, with its
-  move, cut, copy, paste, duplicate and delete actions in a compact row.
+- **Explorer**, on the left: Files, Palette or Changes above, the Components tree below. Each has
+  one dropdown button (File, Edit, Git) that opens a menu of its commands; the same menu opens on
+  a right-click.
 - **Workspace**, in the middle: open documents as tabs; Design, Code, JSON and Run; the
   device size and zoom.
 - **Inspector**, on the right, at full height: Properties, Layout, Events and View.
@@ -67,6 +68,26 @@ nubbin divider in the explorer to share it between Files and Components; double-
 reset. Sizes are remembered in the browser. The problems strip appears only when there is a
 problem. Questions (new view, new folder, rename, delete, closing unsaved work) are Remochi
 dialogs.
+
+### Made of Remochi
+
+Every control in the designer is a Remochi component, so it follows the theme and looks like
+the rest of a Remochi app:
+
+| | Remochi component |
+| --- | --- |
+| Files, Components, Changes, folder and repository pickers | `List` of compact `Item`s |
+| Palette groups, inspector sections | `Collapsable` |
+| Git statuses, project, git and repository badges | `Badge` |
+| File, Edit and Git commands | dropdown `Button` opening a `PopupPanel` |
+| Document tabs, mode, inspector and explorer tabs | `ViewSelectButton` |
+| Fields | `Input`, `Dropdown`, `Checkbox`, `TextArea` |
+| Questions | `Dialog` |
+| Titles and separators | `Subheader`, `Divider`, `NubbinDivider` |
+
+Colours (the selection outline, drop markers) come from the theme's variables. What is not
+Remochi: the design canvas and its device frame, the code editor (CodeMirror), the drag handles
+that make dividers resizable, and the small × and → in the inspector's rows.
 
 ## Against Ares
 

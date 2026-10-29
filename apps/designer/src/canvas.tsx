@@ -8,7 +8,7 @@ import { changesBinding, changesKind } from './widgets/changes.js';
 import { paletteBinding, paletteKind } from './widgets/palette.js';
 import { pickerBinding, pickerKind } from './widgets/picker.js';
 import { splitterBinding, splitterKind } from './widgets/splitter.js';
-import { DRAG_KIND, DRAG_PATH, accent, placeFor, type DropPlace } from './widgets/shared.js';
+import { DRAG_KIND, DRAG_PATH, accent, accentSoft, accentStrong, placeFor, type DropPlace } from './widgets/shared.js';
 import { tabsBinding, tabsKind } from './widgets/tabs.js';
 import { treeBinding, treeKind } from './widgets/tree.js';
 
@@ -82,7 +82,7 @@ function DeviceFrame(props: {
   const sized = width > 0 && height > 0;
   const { onClick: _tap, ...host } = hostProps;
   const screen: CSSProperties = sized
-    ? { width, height, zoom, overflow: 'auto', boxShadow: '0 0 0 1px rgba(127,127,127,0.5), 0 8px 30px rgba(0,0,0,0.35)', borderRadius: 6 }
+    ? { width, height, zoom, overflow: 'auto', boxShadow: '0 0 0 1px var(--mochi-border, rgba(127,127,127,0.5)), 0 8px 30px var(--mochi-shadow, rgba(0,0,0,0.35))', borderRadius: 6 }
     : { height: '100%', zoom };
   return (
     <div {...host} style={{ ...hostProps.style, overflow: 'auto', position: 'relative', minHeight: 0 }}>
@@ -255,7 +255,7 @@ function CanvasView({ node, hostProps, bubble }: BindingProps) {
 }
 
 function Outline({ box, solid }: { box: Box; solid: boolean }) {
-  const colour = solid ? accent : 'rgba(63, 169, 245, 0.5)';
+  const colour = solid ? accent : accentStrong;
   return (
     <div
       style={{
@@ -278,7 +278,7 @@ function Outline({ box, solid }: { box: Box; solid: boolean }) {
             font: '11px/18px ui-monospace, monospace',
             padding: '0 6px',
             background: colour,
-            color: '#fff',
+            color: 'var(--mochi-button-text, #000)',
             whiteSpace: 'nowrap',
           }}
         >
@@ -294,7 +294,7 @@ function DropMarker({ box, place, horizontal }: { box: Omit<Box, 'label'>; place
   if (place === 'inside') {
     return (
       <div
-        style={{ ...base, background: 'rgba(63, 169, 245, 0.15)', outline: `2px dashed ${accent}`, top: box.top, left: box.left, width: box.width, height: box.height }}
+        style={{ ...base, background: accentSoft, outline: `2px dashed ${accent}`, top: box.top, left: box.left, width: box.width, height: box.height }}
       />
     );
   }
