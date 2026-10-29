@@ -45,6 +45,9 @@ is the copy vendored in `packages/runtime/framework/src` (Enyo 2.7), mainly
 - **No DOM in core.** Rendering is a separate package. A renderer is a *kind pack*: kinds
   plus bindings (plus an optional wrapper). The base pack draws plain DOM; Remochi will be a
   pack.
+- **Views.** A kind may be split into a JSON spec (its `components`) and a code-behind (its
+  methods), checked against each other by generated types. See [views.md](views.md). Inline
+  kinds remain the Enyo way and are unchanged.
 - **Layout** adds `gap`, `padding`, `align`, `justify` and `fill` to the Fittable kinds,
   expressed as flexbox rather than Enyo's CSS classes.
 

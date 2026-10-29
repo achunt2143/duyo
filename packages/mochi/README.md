@@ -83,6 +83,7 @@ control writes back to: `value`, `checked`, `selected`, `expanded`, `open`, `act
 | `Dialog.type` | `dialogType` |
 | `isOpen` (Dialog, PopupPanel, SlidingMenu, Collapsable) | `open` (`expanded` on Collapsable) |
 | `SlidingMenuItem.isActive` | `active` |
+| `Toggle.onContent`, `Toggle.offContent` | `labelOn`, `labelOff` (an `on…` property is an event delegate) |
 | `Radio.name` | `group` (`name` is the Duyo component's identity) |
 
 **React nodes and refs become Duyo children or component names**, so definitions stay

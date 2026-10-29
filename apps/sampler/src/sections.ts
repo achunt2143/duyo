@@ -1,5 +1,9 @@
 import { kind, type Component, type ComponentDefinition, type ComponentEvent } from '@duyo/core';
 
+// Sampler.Buttons is written as a view: views/Buttons.view.json is the design and
+// views/Buttons.ts the behaviour. The other sections are inline kinds, for comparison.
+import './views/Buttons.js';
+
 /**
  * One kind per sampler section. Each extends Sampler.Section, whose `log()` bubbles an
  * `onLog` event up to the shell, so every interaction shows in the event log.
@@ -50,66 +54,6 @@ kind({
 });
 
 // ---------------------------------------------------------------------------
-
-kind({
-  name: 'Sampler.Buttons',
-  kind: 'Sampler.Section',
-  components: [
-    caption('Button variants'),
-    row([
-      { kind: 'mochi.Button', content: 'Normal', ontap: 'tapped' },
-      { kind: 'mochi.Button', content: 'Affirmative', variant: 'affirmative', ontap: 'tapped' },
-      { kind: 'mochi.Button', content: 'Warning', variant: 'warning', ontap: 'tapped' },
-      { kind: 'mochi.Button', content: 'Blue', variant: 'blue', ontap: 'tapped' },
-      { kind: 'mochi.Button', content: 'Dropdown', variant: 'dropdown', ontap: 'tapped' },
-      { kind: 'mochi.Button', content: 'Disabled', disabled: true, ontap: 'tapped' },
-    ]),
-    caption('ViewSelectButton'),
-    {
-      kind: 'mochi.ViewSelectButton',
-      items: [
-        { content: 'Grid', value: 'grid' },
-        { content: 'List', value: 'list' },
-        { content: 'Cards', value: 'cards' },
-      ],
-      onSelect: 'viewSelected',
-    },
-    caption('Toggle and Checkbox'),
-    row([
-      { kind: 'mochi.Toggle', name: 'wifi', onChange: 'switched' },
-      text('Wi-Fi'),
-      { kind: 'mochi.Checkbox', name: 'agree', onChange: 'switched' },
-      text('I agree'),
-      { kind: 'mochi.Button', content: 'Flip both from code', ontap: 'flipFromCode' },
-    ]),
-    caption('Radio'),
-    row([
-      { kind: 'mochi.Radio', name: 'small', group: 'size', value: 'S', content: 'Small', onChange: 'sized' },
-      { kind: 'mochi.Radio', name: 'medium', group: 'size', value: 'M', content: 'Medium', checked: true, onChange: 'sized' },
-      { kind: 'mochi.Radio', name: 'large', group: 'size', value: 'L', content: 'Large', onChange: 'sized' },
-    ]),
-  ],
-  tapped(sender: Component) {
-    this.log(`ontap: ${sender.content}`);
-  },
-  viewSelected(_sender: Component, event: ComponentEvent) {
-    this.log(`onSelect: ${value(event)} (index ${event['index']})`);
-  },
-  switched(sender: Component, event: ComponentEvent) {
-    this.log(`onChange: ${sender.name} = ${value(event)}`);
-  },
-  flipFromCode() {
-    this.$.wifi!.setValue(!this.$.wifi!.value);
-    this.$.agree!.setChecked(!this.$.agree!.checked);
-    this.log(`set from code: wifi = ${this.$.wifi!.value}, agree = ${this.$.agree!.checked}`);
-  },
-  sized(sender: Component) {
-    for (const name of ['small', 'medium', 'large']) {
-      if (this.$[name] !== sender) this.$[name]!.setChecked(false);
-    }
-    this.log(`onChange: size = ${sender.value}`);
-  },
-});
 
 // ---------------------------------------------------------------------------
 

@@ -32,12 +32,13 @@ The 2.7 iteration does not work as shipped (the built bundle never exposes `enyo
 | `@duyo/layout` | `FittableRows` / `FittableColumns` as a pure resolver plus kind definitions. |
 | `@duyo/react` | Kind-pack interface, `adapt()` for porting any React component library, `RuntimeView` / `renderInto`, and a plain-DOM base pack. |
 | `@duyo/mochi` | An optional pack: every [Remochi](https://www.npmjs.com/package/remochi) component as a `mochi.*` kind. Built with the same public API anyone can use. |
+| `@duyo/views` | Views: a screen's design in a `.view.json` spec and its behaviour in a code-behind, checked against each other through generated types. CLI and Vite plugin. |
 
-`npm run sampler` starts [apps/sampler](apps/sampler), which shows every `mochi.*` kind in dark and light.
+`npm run sampler` starts [apps/sampler](apps/sampler), which shows every `mochi.*` kind in dark and light. Its Buttons section is written as a view; see [docs/views.md](docs/views.md).
 
 UI libraries plug in as *packs*, as Onyx and Mochi did for Enyo. The framework knows none of them; see [docs/writing-a-pack.md](docs/writing-a-pack.md) to add your own.
 
-Not built yet: a Vite plugin and scaffolder on the new runtime, and the visual designer. The `runtime`, `vite-plugin` and `create-duyo` packages and `apps/example` are the archived Enyo 2.7 iteration.
+Not built yet: a scaffolder on the new runtime, and the visual designer. The `runtime`, `vite-plugin` and `create-duyo` packages and `apps/example` are the archived Enyo 2.7 iteration.
 
 The API follows Enyo's closely so that Enyo knowledge carries over; see [docs/enyo-alignment.md](docs/enyo-alignment.md) for what maps and what deliberately differs.
 
@@ -77,6 +78,7 @@ duyo/
 │   ├── layout/         # Fittable layout
 │   ├── react/          # React host, kind packs, adapt()
 │   ├── mochi/          # optional pack over Remochi
+│   ├── views/          # .view.json specs + code-behind: validation, types, CLI, Vite plugin
 │   ├── runtime/        # ARCHIVED: vendored Enyo 2.7 + Rollup build
 │   ├── vite-plugin/    # ARCHIVED: injects the Enyo bundle as a classic script
 │   └── create-duyo/    # ARCHIVED: scaffolder for the above

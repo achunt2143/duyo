@@ -1,0 +1,57 @@
+{
+  "name": "Sampler.Buttons",
+  "kind": "Sampler.Section",
+  "components": [
+    { "kind": "mochi.Subheader", "content": "Button variants" },
+    {
+      "kind": "duyo.FittableColumns",
+      "align": "center",
+      "gap": "md",
+      "components": [
+        { "kind": "mochi.Button", "content": "Normal", "ontap": "tapped" },
+        { "kind": "mochi.Button", "content": "Affirmative", "variant": "affirmative", "ontap": "tapped" },
+        { "kind": "mochi.Button", "content": "Warning", "variant": "warning", "ontap": "tapped" },
+        { "kind": "mochi.Button", "content": "Blue", "variant": "blue", "ontap": "tapped" },
+        { "kind": "mochi.Button", "content": "Dropdown", "variant": "dropdown", "ontap": "tapped" },
+        { "kind": "mochi.Button", "content": "Disabled", "disabled": true, "ontap": "tapped" }
+      ]
+    },
+
+    { "kind": "mochi.Subheader", "content": "ViewSelectButton" },
+    {
+      "kind": "mochi.ViewSelectButton",
+      "items": [
+        { "content": "Grid", "value": "grid" },
+        { "content": "List", "value": "list" },
+        { "content": "Cards", "value": "cards" }
+      ],
+      "onSelect": "viewSelected"
+    },
+
+    { "kind": "mochi.Subheader", "content": "Toggle and Checkbox" },
+    {
+      "kind": "duyo.FittableColumns",
+      "align": "center",
+      "gap": "md",
+      "components": [
+        { "kind": "mochi.Toggle", "name": "wifi", "onChange": "switched" },
+        { "tag": "span", "content": "Wi-Fi" },
+        { "kind": "mochi.Checkbox", "name": "agree", "onChange": "switched" },
+        { "tag": "span", "content": "I agree" },
+        { "kind": "mochi.Button", "content": "Flip both from code", "ontap": "flipFromCode" }
+      ]
+    },
+
+    { "kind": "mochi.Subheader", "content": "Radio" },
+    {
+      "kind": "duyo.FittableColumns",
+      "align": "center",
+      "gap": "md",
+      "components": [
+        { "kind": "mochi.Radio", "name": "small", "group": "size", "value": "S", "content": "Small", "onChange": "sized" },
+        { "kind": "mochi.Radio", "name": "medium", "group": "size", "value": "M", "content": "Medium", "checked": true, "onChange": "sized" },
+        { "kind": "mochi.Radio", "name": "large", "group": "size", "value": "L", "content": "Large", "onChange": "sized" }
+      ]
+    }
+  ]
+}
