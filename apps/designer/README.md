@@ -26,11 +26,19 @@ folder inside a project opens the project.
 
 | | |
 | --- | --- |
-| **Open a folder** | Any project on this computer. Recent projects are in the same menu. |
-| **Clone from GitHub** | Paste the repository's URL. It is cloned into `~/DuyoProjects` with your own git, so it uses the GitHub login you already have; the designer never asks for or keeps a token. |
+| **Open a folder** | A folder browser: click a folder to walk into it, `..` to go up, or type a path and press Enter. Projects (folders with a `package.json` or `duyo.config.json`) are marked. Recent projects are in the same menu. |
+| **Clone from GitHub** | Pick from your own repositories (private ones included, with a filter box), or choose *Paste a URL…*. It is cloned into `~/DuyoProjects` with your own git. |
 | **Changes** tab | The project's branch and the files changed in it. Commit (it offers to save first), push (it then offers to open a pull request on GitHub), pull, start a branch, or start a repository. Commits take only the project's folder, even in a larger repository; the tab shows which repository and branch they go to. |
 | **Import a zip** | A zipped project, such as GitHub's *Download ZIP*, unpacked into `~/DuyoProjects`. |
 | **Download as a zip** | The project's saved files, without `node_modules`, build output or `.git`: the way to hand work off without git. |
+
+**How the repository list gets your login.** The designer asks the `git` on this computer for the
+GitHub login it already holds (`git credential fill`, the call `git clone` itself makes), and uses
+it for one read-only request to GitHub's API to list repositories. The token is kept in memory
+for that request; it is not written anywhere, logged, or sent to the page, and the designer never
+asks you to type or paste one. If git holds no GitHub login, the picker says so and *Paste a URL…*
+still works. The folder browser lists folder *names* on this computer, and only to the
+designer's own page.
 
 The designer's API answers only its own page: the dev server puts a key in the page and
 refuses requests without it, so other sites open in the same browser cannot use it. Zips are
@@ -41,6 +49,7 @@ checked as untrusted input: nothing is written outside the new folder, and size 
 | `DUYO_DESIGNER_ROOT` | Start on this project instead of the last one. |
 | `DUYO_DESIGNER_WORKSPACE` | Where clones and imports go. Default `~/DuyoProjects`. |
 | `DUYO_DESIGNER_HOME` | Where the designer remembers projects. Default `~/.duyo-designer`. |
+| `DUYO_DESIGNER_GITHUB_API` | GitHub's API address. Default `https://api.github.com`; for GitHub Enterprise or tests. |
 
 ## Layout
 
@@ -101,3 +110,4 @@ pack gets that pack's kinds in the palette and inspector.
 | `src/run.ts`, `run.html` | Run mode. |
 | `server/files.ts`, `server/paths.ts` | Dev-server API: file routes stay in the project's views folder, take only views and code, and never write generated files. |
 | `server/project.ts`, `server/git.ts`, `server/zip.ts` | The current project and its config, git through the local `git`, and zips in and out. |
+| `server/folders.ts`, `server/github.ts` | Folder browsing, and listing repositories with git's own login. |

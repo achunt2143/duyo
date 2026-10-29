@@ -83,10 +83,12 @@ export type Named = {
   dialog: Instance<"remochi.Dialog">;
   /** duyo.Control */
   dialogMessage: Instance<"duyo.Control">;
+  /** Designer.Picker */
+  picker: Instance<"Designer.Picker">;
 };
 
 /** Handlers the spec names. The code-behind must implement every one. */
-export type Handlers = 'browseResized' | 'canvasDrop' | 'codeEdited' | 'commitChanges' | 'deleteFile' | 'deviceChanged' | 'dialogAction' | 'dialogCancelled' | 'dialogClosed' | 'dialogConfirmed' | 'explorerResized' | 'fileOpened' | 'gitAction' | 'help' | 'inspectorResized' | 'inspectorTabChanged' | 'jsonEdited' | 'leftTabChanged' | 'modeChanged' | 'newFolder' | 'newView' | 'openRunWindow' | 'paletteAdd' | 'picked' | 'projectAction' | 'projectMenu' | 'projectMenuClosed' | 'pushChanges' | 'redo' | 'reloadRun' | 'renameFile' | 'rotate' | 'save' | 'saveAll' | 'tabActivated' | 'tabClosed' | 'treeAction' | 'treeDroppedKind' | 'treeMoved' | 'treeSelected' | 'undo' | 'zoomChanged';
+export type Handlers = 'browseResized' | 'canvasDrop' | 'codeEdited' | 'commitChanges' | 'deleteFile' | 'deviceChanged' | 'dialogAction' | 'dialogCancelled' | 'dialogClosed' | 'dialogConfirmed' | 'explorerResized' | 'fileOpened' | 'gitAction' | 'help' | 'inspectorResized' | 'inspectorTabChanged' | 'jsonEdited' | 'leftTabChanged' | 'modeChanged' | 'newFolder' | 'newView' | 'openRunWindow' | 'paletteAdd' | 'picked' | 'pickerChose' | 'pickerDoubled' | 'pickerWent' | 'projectAction' | 'projectMenu' | 'projectMenuClosed' | 'pushChanges' | 'redo' | 'reloadRun' | 'renameFile' | 'rotate' | 'save' | 'saveAll' | 'tabActivated' | 'tabClosed' | 'treeAction' | 'treeDroppedKind' | 'treeMoved' | 'treeSelected' | 'undo' | 'zoomChanged';
 
 /** `this` inside the code-behind. */
 export type Self = ViewComponent<Named>;

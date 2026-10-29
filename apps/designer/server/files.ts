@@ -6,6 +6,8 @@ import { basename, dirname, join, relative, resolve, sep } from 'node:path';
 import type { Plugin, ViteDevServer } from 'vite';
 
 import { codeBehindCandidates, codeBehindTemplate, renameImports, viewBase } from '../src/codebehind.js';
+import { listFolders } from './folders.js';
+import { GithubError, githubToken, listRepos } from './github.js';
 import { clone, cloneSource, commitAll, init, newBranch, pull, push, repoInfo, repoName, validBranch } from './git.js';
 import { folderPath, kindOfFile, readableFile, writableFile } from './paths.js';
 import { describe, freshFolder, isFolder, recentProjects, remember, startingProject, writeConfig, WORKSPACE, type ProjectInfo } from './project.js';
@@ -26,6 +28,8 @@ import { nameInZip, unzipProject, zipProject } from './zip.js';
  *   POST /__designer/project/clone   { url, name? }
  *   POST /__designer/project/import?name=      (body: a zip)
  *   GET  /__designer/project/export.zip
+ *   GET  /__designer/fs/list?path=             -> the folders in a folder ('' lists places to start)
+ *   GET  /__designer/github/repos              -> the signed-in user's repositories, via git's login
  *   GET  /__designer/git                       -> branch, remote, changes
  *   POST /__designer/git/commit { message } | push | pull | branch { name } | init
  *
@@ -345,6 +349,20 @@ export function designerFiles(options: { root: string }): Plugin {
               response.setHeader('content-type', 'application/zip');
               response.setHeader('content-disposition', `attachment; filename="${name.replace(/[^\w.-]/g, '_')}.zip"`);
               return response.end(Buffer.from(zip));
+            }
+
+            // --- Folders and GitHub ----------------------------------------------------------
+
+            case 'GET /fs/list':
+              return send(response, 200, listFolders(url.searchParams.get('path') ?? '', WORKSPACE));
+
+            case 'GET /github/repos': {
+              try {
+                return send(response, 200, { repos: await listRepos(await githubToken()) });
+              } catch (error) {
+                const status = error instanceof GithubError ? 200 : 502;
+                return send(response, status, { repos: [], error: error instanceof Error ? error.message : String(error) });
+              }
             }
 
             // --- Git --------------------------------------------------------------------

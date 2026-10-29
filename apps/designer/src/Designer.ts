@@ -3,6 +3,7 @@ import { loadSpec } from '@duyo/views/load';
 import { formatSpec, handlersOf } from '@duyo/views/spec';
 
 import { kindInfo, newComponent, paletteKinds, type KindInfo } from './catalog.js';
+import type { PickerItem } from './widgets/picker.js';
 import { addHandler, codeBehindTemplate, isGenerated, methodsIn, viewBase } from './codebehind.js';
 import type { CodeBehind } from './Designer.view.gen.js';
 import spec from './Designer.view.json';
@@ -19,9 +20,12 @@ import {
   gitPush,
   gitState,
   importProject,
+  listFolders,
+  listRepos,
   openProject,
   type GitState,
   type Project,
+  type Repo,
   deleteView,
   listTree,
   makeFolder,
@@ -104,6 +108,7 @@ const SIZES_KEY = 'duyo-designer-sizes';
 interface Answer {
   result: string;
   value?: string;
+  [extra: string]: string | undefined;
 }
 
 interface Question {
@@ -115,6 +120,8 @@ interface Question {
   confirmType?: 'normal' | 'warning' | 'affirmative' | 'blue';
   /** Buttons of its own instead of OK / Cancel: `{ label, action, type }`. */
   actions?: Array<{ label: string; action: string; type?: string }>;
+  /** Shows the picker widget under the message; the host fills it before or after asking. */
+  picker?: boolean;
 }
 
 const DEVICES: Array<{ value: string; label: string; width: number; height: number }> = [
@@ -178,9 +185,10 @@ function ask(self: Component, question: Question): Promise<Answer> {
   dialog.setConfirmType(question.confirmType ?? 'affirmative');
   dialog.setPromptValue(question.value ?? '');
   dialog.setActions(question.actions);
-  dialog.setSize(question.actions ? 'medium' : 'small');
   self.$.dialogMessage.setContent(question.message ?? '');
   self.$.dialogMessage.setShowing(!!question.message);
+  self.$.picker.setShowing(question.picker === true);
+  dialog.setSize(question.picker ? 'large' : question.actions ? 'medium' : 'small');
   dialog.setOpen(true);
   return new Promise((resolve) => {
     state.answer = (answer) => {
@@ -208,6 +216,124 @@ async function askText(self: Component, question: Omit<Question, 'value'> & { va
   const answer = await ask(self, question);
   const text = answer.result === 'confirm' ? String(answer.value ?? '').trim() : '';
   return text || undefined;
+}
+
+// --- Choosing a folder or a repository ------------------------------------------------------
+
+interface PickerState {
+  /** What a click on each row means: a folder to enter, or a repository to pick. */
+  kind: 'folders' | 'repos';
+  repos: Repo[];
+  /** The folder being shown. */
+  folder: string;
+  parent: string | undefined;
+}
+
+const pickers = new WeakMap<Component, PickerState>();
+
+function showItems(self: Component, items: PickerItem[], message = '') {
+  const picker = self.$.picker;
+  picker['items'] = items;
+  picker['message'] = message;
+  picker.setBusy(false);
+  picker.setRevision(Number(picker.revision ?? 0) + 1);
+}
+
+/** Shows a folder in the picker; `''` shows the places to start from. */
+async function goToFolder(self: Component, path: string) {
+  const picker = self.$.picker;
+  picker.setBusy(true);
+  try {
+    const listing = await listFolders(path);
+    const state = pickers.get(self);
+    if (!state || state.kind !== 'folders') return;
+    state.folder = listing.path;
+    state.parent = listing.parent;
+    picker.setLocation(listing.path);
+    picker.setSelectedKey('');
+    const up: PickerItem[] = listing.parent !== undefined ? [{ key: 'up:' + listing.parent, title: '..', subtitle: listing.parent === '' ? 'places' : 'up one folder' }] : [];
+    showItems(
+      self,
+      [
+        ...up,
+        ...listing.entries.map((e) => ({
+          key: e.path,
+          title: e.name,
+          ...(e.project ? { badge: 'project' } : e.git ? { badge: 'git' } : {}),
+        })),
+      ],
+      listing.error ?? '',
+    );
+  } catch (error) {
+    showItems(self, [], `Could not list folders: ${error instanceof Error ? error.message : String(error)}`);
+  }
+}
+
+/** Lets the user walk to a folder. Resolves with its path, or undefined if cancelled. */
+async function chooseFolder(self: Component, start: string, title: string, message: string, confirmText: string): Promise<string | undefined> {
+  pickers.set(self, { kind: 'folders', repos: [], folder: start, parent: undefined });
+  const picker = self.$.picker;
+  picker.setPathBar(true);
+  picker.setSelectedKey('');
+  showItems(self, []);
+  void goToFolder(self, start);
+  const answer = await ask(self, { title, message, picker: true, confirmText });
+  pickers.delete(self);
+  if (answer.result !== 'confirm') return undefined;
+  return String(answer['folder'] ?? '') || undefined;
+}
+
+/** Lets the user pick one of their GitHub repositories, or fall back to pasting a URL. */
+async function chooseRepo(self: Component): Promise<string | undefined> {
+  const state: PickerState = { kind: 'repos', repos: [], folder: '', parent: undefined };
+  pickers.set(self, state);
+  const picker = self.$.picker;
+  picker.setPathBar(false);
+  picker.setSelectedKey('');
+  picker.setLocation('');
+  showItems(self, []);
+  picker.setBusy(true);
+
+  void listRepos()
+    .then((result) => {
+      if (pickers.get(self) !== state) return;
+      state.repos = result.repos;
+      showItems(
+        self,
+        result.repos.map((r) => ({
+          key: r.cloneUrl,
+          title: r.fullName,
+          ...(r.private ? { badge: 'private' } : {}),
+          subtitle: r.description || (r.fork ? 'fork' : ''),
+        })),
+        result.error ?? (result.repos.length === 0 ? 'No repositories were found for this login.' : ''),
+      );
+    })
+    .catch((error: unknown) => {
+      if (pickers.get(self) === state) showItems(self, [], `Could not reach GitHub: ${error instanceof Error ? error.message : String(error)}`);
+    });
+
+  const answer = await ask(self, {
+    title: 'Clone from GitHub',
+    message: 'Pick one of your repositories. It is cloned with your own git login.',
+    picker: true,
+    actions: [
+      { label: 'Cancel', action: 'cancel' },
+      { label: 'Paste a URL…', action: 'url' },
+      { label: 'Clone', action: 'clone', type: 'affirmative' },
+    ],
+  });
+  pickers.delete(self);
+
+  if (answer.result === 'url') {
+    return askText(self, {
+      title: 'Clone from GitHub',
+      message: "The repository's URL, as GitHub's Code button shows it.",
+      value: 'https://github.com/',
+      confirmText: 'Clone',
+    });
+  }
+  return answer.result === 'clone' ? String(answer['repo'] ?? '') || undefined : undefined;
 }
 
 // --- Projects ----------------------------------------------------------------------------
@@ -857,7 +983,10 @@ export default view(
     },
 
     dialogConfirmed(_sender, event) {
-      st(this).answer?.({ result: 'confirm', value: typeof event['value'] === 'string' ? event['value'] : String(this.$.dialog.promptValue ?? '') });
+      const picker = pickers.get(this);
+      const answer: Answer = { result: 'confirm', value: typeof event['value'] === 'string' ? event['value'] : String(this.$.dialog.promptValue ?? '') };
+      if (picker?.kind === 'folders') answer['folder'] = picker.folder;
+      st(this).answer?.(answer);
     },
 
     dialogCancelled() {
@@ -869,7 +998,34 @@ export default view(
     },
 
     dialogAction(_sender, event) {
-      st(this).answer?.({ result: String(event['action']) });
+      const picker = pickers.get(this);
+      const answer: Answer = { result: String(event['action']) };
+      if (picker?.kind === 'repos') answer['repo'] = String(this.$.picker.selectedKey ?? '');
+      st(this).answer?.(answer);
+    },
+
+    pickerChose(_sender, event) {
+      const picker = pickers.get(this);
+      const key = String(event['key']);
+      if (!picker) return;
+      if (picker.kind === 'folders') {
+        // Clicking a folder walks into it; the path bar and Open then mean "this one".
+        void goToFolder(this, key.startsWith('up:') ? key.slice(3) : key);
+      } else {
+        this.$.picker.setSelectedKey(key);
+      }
+    },
+
+    pickerDoubled(_sender, event) {
+      const picker = pickers.get(this);
+      if (picker?.kind === 'repos') {
+        this.$.picker.setSelectedKey(String(event['key']));
+        st(this).answer?.({ result: 'clone', repo: String(event['key']) });
+      }
+    },
+
+    pickerWent(_sender, event) {
+      if (pickers.get(this)?.kind === 'folders') void goToFolder(this, String(event['text'] ?? '').trim());
     },
 
     explorerResized(_sender, event) {
@@ -953,22 +1109,18 @@ export default view(
       }
       switch (action) {
         case 'open': {
-          const path = await askText(this, {
-            title: 'Open a project',
-            message: 'A folder on this computer that holds a Duyo app, such as the folder with its package.json.',
-            value: project ? project.root.replace(/[\\/][^\\/]+$/, '') : '',
-            confirmText: 'Open',
-          });
+          const path = await chooseFolder(
+            this,
+            project ? project.root.replace(/[\\/][^\\/]+$/, '') : '',
+            'Open a project',
+            'Walk to the project\'s folder, or type its path, then Open. Folders marked "project" hold a package.json or duyo.config.json.',
+            'Open',
+          );
           if (path) await switchProject(this, () => openProject(path), `Opening ${path}…`);
           return;
         }
         case 'clone': {
-          const url = await askText(this, {
-            title: 'Clone from GitHub',
-            message: `The repository's URL, as GitHub's Code button shows it. It is cloned into ${project?.workspace ?? 'your DuyoProjects folder'} with your own git login.`,
-            value: 'https://github.com/',
-            confirmText: 'Clone',
-          });
+          const url = await chooseRepo(this);
           if (url) await switchProject(this, () => cloneProject(url), `Cloning ${url}…`);
           return;
         }

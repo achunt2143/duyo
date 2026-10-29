@@ -281,7 +281,15 @@
           "onClose": "dialogClosed",
           "onAction": "dialogAction",
           "components": [
-            { "tag": "p", "name": "dialogMessage", "style": "margin: 0 0 8px; white-space: pre-wrap;" }
+            { "tag": "p", "name": "dialogMessage", "style": "margin: 0 0 8px; white-space: pre-wrap;" },
+            {
+              "kind": "Designer.Picker",
+              "name": "picker",
+              "showing": false,
+              "onChoose": "pickerChose",
+              "onGo": "pickerWent",
+              "onDouble": "pickerDoubled"
+            }
           ]
         }
       ]

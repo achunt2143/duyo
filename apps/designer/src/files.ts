@@ -152,3 +152,33 @@ export const gitCommit = (message: string) => gitCall('commit', { message });
 export const gitPush = () => gitCall('push');
 export const gitPull = () => gitCall('pull');
 export const gitBranch = (name: string) => gitCall('branch', { name });
+
+// --- Folders and GitHub repositories --------------------------------------------------------
+
+export interface FolderEntry {
+  name: string;
+  path: string;
+  project: boolean;
+  git: boolean;
+}
+
+export interface FolderListing {
+  path: string;
+  /** Empty means "the places to start from"; undefined, there is nowhere further up. */
+  parent: string | undefined;
+  entries: FolderEntry[];
+  error?: string;
+}
+
+export const listFolders = (path: string) => send(`${BASE}/fs/list?path=${encodeURIComponent(path)}`).then(call<FolderListing>);
+
+export interface Repo {
+  fullName: string;
+  description: string;
+  private: boolean;
+  fork: boolean;
+  pushedAt: string;
+  cloneUrl: string;
+}
+
+export const listRepos = () => send(`${BASE}/github/repos`).then(call<{ repos: Repo[]; error?: string }>);
