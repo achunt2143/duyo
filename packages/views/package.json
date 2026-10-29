@@ -1,0 +1,40 @@
+{
+  "name": "@duyo/views",
+  "version": "0.4.0-alpha.0",
+  "description": "Duyo views: the design as a JSON spec, the behaviour as a code-behind. Spec validation, generated types, a CLI and a Vite plugin.",
+  "license": "Apache-2.0",
+  "author": "achunt2143",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./src/index.d.ts",
+      "default": "./src/index.js"
+    },
+    "./vite": {
+      "types": "./src/vite.d.ts",
+      "default": "./src/vite.js"
+    }
+  },
+  "bin": {
+    "duyo-views": "./bin/duyo-views.js"
+  },
+  "files": [
+    "src/",
+    "bin/"
+  ],
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run"
+  },
+  "peerDependencies": {
+    "vite": ">=5.0.0"
+  },
+  "peerDependenciesMeta": {
+    "vite": {
+      "optional": true
+    }
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
