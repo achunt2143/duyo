@@ -56,3 +56,6 @@ export declare function generateKindTypes(
   kinds: readonly string[],
   options: { source: string; module?: string; bases?: Readonly<Record<string, string>>; augment?: boolean; names?: Readonly<Record<string, string>> },
 ): string;
+
+/** The spec as JSON text in the hand-written style: one component per line when it fits. */
+export declare function formatSpec(spec: unknown): string;

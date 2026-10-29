@@ -10,13 +10,17 @@
       "types": "./src/index.d.ts",
       "default": "./src/index.js"
     },
-    "./vite": {
-      "types": "./src/vite.d.ts",
-      "default": "./src/vite.js"
+    "./spec": {
+      "types": "./src/browser.d.ts",
+      "default": "./src/browser.js"
     },
     "./load": {
       "types": "./src/load.d.ts",
       "default": "./src/load.js"
+    },
+    "./vite": {
+      "types": "./src/vite.d.ts",
+      "default": "./src/vite.js"
     }
   },
   "bin": {

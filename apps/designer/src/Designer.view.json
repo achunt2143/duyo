@@ -1,0 +1,78 @@
+{
+  "name": "Designer.App",
+  "kind": "mochi.ThemeWrapper",
+  "theme": "dark",
+  "syncHtml": true,
+  "style": "height: 100%;",
+  "components": [
+    {
+      "kind": "duyo.FittableRows",
+      "fill": true,
+      "components": [
+        {
+          "kind": "duyo.FittableColumns",
+          "align": "center",
+          "gap": "md",
+          "padding": "md",
+          "components": [
+            { "kind": "mochi.Header", "content": "Duyo Designer" },
+            { "kind": "mochi.Dropdown", "name": "files", "placeholder": "Open a view", "maxHeight": 400, "onChange": "openFile" },
+            { "kind": "mochi.Button", "name": "newButton", "content": "New", "ontap": "newView" },
+            { "kind": "mochi.Button", "name": "saveButton", "content": "Save", "variant": "affirmative", "ontap": "save" },
+            { "kind": "mochi.Button", "name": "undoButton", "content": "Undo", "ontap": "undo" },
+            { "kind": "mochi.Button", "name": "redoButton", "content": "Redo", "ontap": "redo" },
+            { "tag": "span", "name": "status", "fit": true, "style": "opacity: 0.8; text-align: right;" }
+          ]
+        },
+        {
+          "kind": "duyo.FittableColumns",
+          "fit": true,
+          "components": [
+            {
+              "kind": "duyo.FittableRows",
+              "gap": "sm",
+              "padding": "md",
+              "style": "width: 230px; min-height: 0; overflow: hidden; border-right: 1px solid rgba(127,127,127,0.3);",
+              "components": [
+                { "kind": "mochi.Subheader", "content": "Palette" },
+                { "kind": "mochi.Input", "name": "filter", "placeholder": "Filter kinds", "oninput": "filterPalette" },
+                { "name": "palette", "fit": true, "style": "overflow-y: auto; min-height: 0;" }
+              ]
+            },
+            { "kind": "Designer.Canvas", "name": "canvas", "fit": true, "style": "min-height: 0;", "onPick": "picked" },
+            {
+              "kind": "duyo.FittableRows",
+              "gap": "sm",
+              "padding": "md",
+              "style": "width: 360px; min-height: 0; border-left: 1px solid rgba(127,127,127,0.3);",
+              "components": [
+                { "kind": "mochi.Subheader", "content": "Components" },
+                { "name": "tree", "style": "max-height: 38%; overflow-y: auto; flex: none;" },
+                {
+                  "kind": "duyo.FittableColumns",
+                  "gap": "sm",
+                  "style": "flex-wrap: wrap;",
+                  "components": [
+                    { "kind": "mochi.Button", "content": "Up", "ontap": "moveUp" },
+                    { "kind": "mochi.Button", "content": "Down", "ontap": "moveDown" },
+                    { "kind": "mochi.Button", "content": "In", "ontap": "indent" },
+                    { "kind": "mochi.Button", "content": "Out", "ontap": "outdent" },
+                    { "kind": "mochi.Button", "content": "Copy", "ontap": "duplicate" },
+                    { "kind": "mochi.Button", "content": "Delete", "variant": "warning", "ontap": "remove" }
+                  ]
+                },
+                { "kind": "mochi.Subheader", "content": "Properties" },
+                { "name": "inspector", "fit": true, "style": "overflow-y: auto; overflow-x: hidden; min-height: 0;" }
+              ]
+            }
+          ]
+        },
+        {
+          "tag": "footer",
+          "name": "problems",
+          "style": "font: 12px/1.5 ui-monospace, monospace; padding: 8px 16px; min-height: 4.5em; max-height: 9em; overflow-y: auto; white-space: pre-wrap; border-top: 1px solid rgba(127,127,127,0.3);"
+        }
+      ]
+    }
+  ]
+}

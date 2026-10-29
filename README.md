@@ -22,7 +22,7 @@ The 2.7 iteration does not work as shipped (the built bundle never exposes `enyo
 - **A TypeScript runtime**, not a vendored one. Kinds are resolved as data (not prototype chains), with owner/parent trees, published props, lifecycle, event bubbling, an action registry, and Fittable layout. Definitions can be plain JSON.
 - **Pluggable kind packs.** The runtime does not know about any particular design system; a pack supplies kinds, layout metadata and React bindings.
 - **[Remochi](../remochi) as the first-party pack** (`@duyo/mochi`): the Mochi look and webOS-style panels, menus and popups, on React.
-- **Tooling after that**: Vite plugin, `create-duyo`, and eventually a visual designer.
+- **Tooling after that**: Vite plugin, `create-duyo`, and a visual designer (begun: `apps/designer`).
 
 ### What exists
 
@@ -36,9 +36,11 @@ The 2.7 iteration does not work as shipped (the built bundle never exposes `enyo
 
 `npm run sampler` starts [apps/sampler](apps/sampler), which shows every `mochi.*` kind in dark and light. Its Buttons and Loaded specs sections are written as views; see [docs/views.md](docs/views.md).
 
+`npm run designer` starts [apps/designer](apps/designer), a visual editor for `.view.json` files with a live preview, as Ares was for Enyo.
+
 UI libraries plug in as *packs*, as Onyx and Mochi did for Enyo. The framework knows none of them; see [docs/writing-a-pack.md](docs/writing-a-pack.md) to add your own.
 
-Not built yet: a scaffolder on the new runtime, and the visual designer. The `runtime`, `vite-plugin` and `create-duyo` packages and `apps/example` are the archived Enyo 2.7 iteration.
+Not built yet: a scaffolder on the new runtime. The `runtime`, `vite-plugin` and `create-duyo` packages and `apps/example` are the archived Enyo 2.7 iteration.
 
 The API follows Enyo's closely so that Enyo knowledge carries over; see [docs/enyo-alignment.md](docs/enyo-alignment.md) for what maps and what deliberately differs.
 
@@ -82,6 +84,8 @@ duyo/
 │   ├── runtime/        # ARCHIVED: vendored Enyo 2.7 + Rollup build
 │   ├── vite-plugin/    # ARCHIVED: injects the Enyo bundle as a classic script
 │   └── create-duyo/    # ARCHIVED: scaffolder for the above
+├── apps/sampler/       # every mochi kind, two sections written as views
+├── apps/designer/      # visual editor for .view.json files
 └── apps/example/       # ARCHIVED: smoke test for the above
 ```
 

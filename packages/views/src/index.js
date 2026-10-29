@@ -10,7 +10,7 @@
 import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { basename, join } from 'node:path';
 
-import { ACTION, DELEGATE, METHOD, ViewCodes, componentsOf, handlersOf, isObject, namedOf, validateSpec } from './spec.js';
+import { METHOD, ViewCodes, componentsOf, handlersOf, isObject, namedOf, validateSpec } from './spec.js';
 
 export { ViewCodes, componentsOf, handlersOf, namedOf, validateSpec };
 
@@ -126,3 +126,4 @@ export function formatDiagnostic(diagnostic, file) {
   return `${file}: ${diagnostic.severity} ${diagnostic.code} at ${diagnostic.path}: ${diagnostic.message}${hint}`;
 }
 export { generateKindTypes, publishedType } from './kinds.js';
+export { formatSpec } from './format.js';

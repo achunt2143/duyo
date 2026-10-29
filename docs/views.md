@@ -182,7 +182,14 @@ This is a guard for the data, not a sandbox. It assumes the packs you allow are 
 draw whatever their properties say; Remochi's components are, but a pack that renders
 raw HTML from a property would not be, so do not allow it.
 
+## The designer
+
+`npm run designer` opens [apps/designer](../apps/designer), a visual editor for the design half
+of a view: a palette of every registered kind, a live canvas you click to select in, a component
+tree, and an inspector generated from each kind's published properties and events. It saves in
+the format above and regenerates the view's types, so the code-behind is checked against every
+change. It is itself a view.
+
 ## Not built yet
 
-- A visual designer that edits `.view.json` files.
 - Per-event payload types (`event.value` is `any`) and typed `this` for loaded views.
