@@ -3,8 +3,8 @@ import type { Component, ComponentEvent, Instance, ViewComponent } from '@duyo/c
 
 /** `this.$` in the code-behind: every named component in the spec. */
 export type Named = {
-  /** mochi.TextArea */
-  source: Instance<"mochi.TextArea">;
+  /** remochi.TextArea */
+  source: Instance<"remochi.TextArea">;
   /** duyo.Control */
   result: Instance<"duyo.Control">;
   /** duyo.FittableRows */

@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "@duyo/core": "*",
-    "@duyo/mochi": "*",
+    "@duyo/remochi": "*",
     "@duyo/react": "*",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"

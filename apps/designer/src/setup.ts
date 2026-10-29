@@ -1,5 +1,5 @@
 import { defaultKindRegistry } from '@duyo/core';
-import { createMochiPack } from '@duyo/mochi';
+import { createRemochiPack } from '@duyo/remochi';
 import { basePack, createRenderer, installPack } from '@duyo/react';
 
 // The project's own kinds (its sections, base kinds and views), so specs that extend them
@@ -9,7 +9,7 @@ import '@duyo-designer/project';
 import { designerPack } from './canvas.js';
 
 /** Packs the designer draws with, and the previews too. */
-const packs = [basePack, createMochiPack({ theme: false }), designerPack];
+const packs = [basePack, createRemochiPack({ theme: false }), designerPack];
 for (const pack of packs) installPack(defaultKindRegistry, pack, { allowReplace: true });
 
 export const registry = defaultKindRegistry;

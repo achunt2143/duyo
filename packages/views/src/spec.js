@@ -147,7 +147,7 @@ export function validateSpec(spec) {
   for (const { component, path } of componentsOf(spec)) {
     const kind = component['kind'];
     if (kind !== undefined && (typeof kind !== 'string' || kind === '')) {
-      error(ViewCodes.BAD_KIND, `${path}.kind`, '"kind" must be a kind name, such as "mochi.Button".');
+      error(ViewCodes.BAD_KIND, `${path}.kind`, '"kind" must be a kind name, such as "remochi.Button".');
     }
 
     const name = component['name'];

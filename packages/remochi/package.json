@@ -1,7 +1,7 @@
 {
-  "name": "@duyo/mochi",
+  "name": "@duyo/remochi",
   "version": "0.4.0-alpha.0",
-  "description": "Duyo kind pack for Remochi: Mochi-style controls, panels and popups as Duyo kinds.",
+  "description": "Duyo kind pack for Remochi: its controls, panels and popups as Duyo kinds.",
   "license": "Apache-2.0",
   "author": "achunt2143",
   "keywords": [

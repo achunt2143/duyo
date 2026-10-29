@@ -1,4 +1,4 @@
-import '@duyo/mochi/css';
+import '@duyo/remochi/css';
 
 import { createRuntime } from '@duyo/core';
 import { renderInto } from '@duyo/react';

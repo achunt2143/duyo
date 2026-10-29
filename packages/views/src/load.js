@@ -6,7 +6,7 @@
  *
  *     const result = loadSpec(await response.text(), {
  *       registry,
- *       allowedKinds: ['mochi.*'],
+ *       allowedKinds: ['remochi.*'],
  *       allowedHandlers: ['orders.open'],
  *     });
  *     if (result.ok) view(result.spec, {}, { registry });

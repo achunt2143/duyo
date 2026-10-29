@@ -54,7 +54,7 @@ export function row(label: string, editor: ComponentDefinition, set: boolean, ac
 }
 
 const text = (name: string, value: unknown, placeholder: string, handler: string, extra: Json = {}): ComponentDefinition => ({
-  kind: 'mochi.Input',
+  kind: 'remochi.Input',
   name,
   value: value === undefined ? '' : typeof value === 'string' ? value : JSON.stringify(value),
   placeholder,
@@ -69,7 +69,7 @@ export function editorFor(property: PropertyInfo, value: unknown): ComponentDefi
   switch (property.type) {
     case 'choice':
       return {
-        kind: 'mochi.Dropdown',
+        kind: 'remochi.Dropdown',
         name,
         options: property.allowed!.map((v) => ({ value: v, label: String(v) })),
         value: value ?? property.default,
@@ -77,14 +77,14 @@ export function editorFor(property: PropertyInfo, value: unknown): ComponentDefi
         onChange: 'propChanged',
       };
     case 'boolean':
-      return { kind: 'mochi.Checkbox', name, checked: (value ?? property.default) === true, onChange: 'propChanged' };
+      return { kind: 'remochi.Checkbox', name, checked: (value ?? property.default) === true, onChange: 'propChanged' };
     case 'number':
       return text(name, value, fallback, 'propChanged', { type: 'number' });
     case 'string':
       return text(name, typeof value === 'string' ? value : undefined, fallback, 'propChanged');
     case 'json':
       return {
-        kind: 'mochi.TextArea',
+        kind: 'remochi.TextArea',
         name,
         rows: 3,
         value: value === undefined ? '' : JSON.stringify(value, null, 1),
@@ -141,7 +141,7 @@ function header(input: InspectorInput): ComponentDefinition[] {
   const options = [...new Set([kindName, ...kinds])].map((k) => ({ value: k, label: k }));
   return [
     row(isRoot ? 'view name' : 'name', text('field:name', node['name'], isRoot ? 'App.MyView' : 'optional', 'nameChanged'), node['name'] !== undefined),
-    row(isRoot ? 'based on' : 'kind', { kind: 'mochi.Dropdown', name: 'field:kind', options, value: kindName, maxHeight: 320, onChange: 'kindChanged' }, true),
+    row(isRoot ? 'based on' : 'kind', { kind: 'remochi.Dropdown', name: 'field:kind', options, value: kindName, maxHeight: 320, onChange: 'kindChanged' }, true),
   ];
 }
 

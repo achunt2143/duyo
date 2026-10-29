@@ -4,7 +4,7 @@ import { cleanup, render } from '@testing-library/react';
 import * as remochi from 'remochi';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { mochiEntries, mochiPack } from '../index.js';
+import { remochiEntries, remochiPack } from '../index.js';
 
 afterEach(cleanup);
 
@@ -17,31 +17,31 @@ const NOT_KINDS = new Set([
   'useTheme', 'ThemeContext', 'DARK_THEME_COLORS', 'LIGHT_THEME_COLORS',
 ]);
 
-describe('the Mochi pack', () => {
+describe('the Remochi pack', () => {
   it('has a kind for every component Remochi exports', () => {
     const components = Object.keys(remochi).filter((name) => !NOT_KINDS.has(name)).sort();
-    const kinds = mochiEntries.map((entry) => entry.name.replace(/^mochi\./, '')).sort();
+    const kinds = remochiEntries.map((entry) => entry.name.replace(/^remochi\./, '')).sort();
     expect(kinds).toEqual(components);
   });
 
-  it('registers every kind under the mochi namespace, each drawable', () => {
-    const names = mochiPack.kinds.map((k) => k.name);
+  it('registers every kind under the remochi namespace, each drawable', () => {
+    const names = remochiPack.kinds.map((k) => k.name);
     expect(new Set(names).size).toBe(names.length);
-    expect(names.every((n) => n.startsWith('mochi.'))).toBe(true);
-    for (const entry of mochiEntries) expect(mochiPack.bindings[entry.name]).toBeDefined();
+    expect(names.every((n) => n.startsWith('remochi.'))).toBe(true);
+    for (const entry of remochiEntries) expect(remochiPack.bindings[entry.name]).toBeDefined();
   });
 
   // A React warning here means a kind hands Remochi something it does not accept.
-  it.each(mochiPack.kinds.map((k) => k.name))('%s renders with defaults, with no diagnostics and no React warnings', (name) => {
+  it.each(remochiPack.kinds.map((k) => k.name))('%s renders with defaults, with no diagnostics and no React warnings', (name) => {
     const errors = vi.spyOn(console, 'error').mockImplementation(() => {});
     const registry = new KindRegistry();
-    const packs = [basePack, mochiPack];
+    const packs = [basePack, remochiPack];
     for (const pack of packs) installPack(registry, pack);
     const runtime = createRuntime({ registry });
     const renderer = createRenderer(packs);
     // A wizard draws nothing until it has a step.
     const root = runtime.create(
-      name === 'mochi.Wizard' ? { kind: name, components: [{ kind: 'mochi.WizardStep', label: 'One' }] } : { kind: name },
+      name === 'remochi.Wizard' ? { kind: name, components: [{ kind: 'remochi.WizardStep', label: 'One' }] } : { kind: name },
     );
     const { container } = render(<RuntimeView root={root} renderer={renderer} />);
     // The first argument is a format string, so keep the arguments that name the problem.

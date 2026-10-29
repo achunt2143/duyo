@@ -2,7 +2,7 @@
 
 A *pack* is how a UI library plugs into Duyo, the way Onyx, Moonstone and Mochi plugged
 into Enyo. The framework (`@duyo/core`, `@duyo/layout`, `@duyo/react`) knows no particular
-library; a test enforces it (`packages/react/src/__tests__/independence.test.ts`). `@duyo/mochi`
+library; a test enforces it (`packages/react/src/__tests__/independence.test.ts`). `@duyo/remochi`
 is built with exactly the API below, with nothing private, so your pack is on equal terms.
 
 A pack is two things:

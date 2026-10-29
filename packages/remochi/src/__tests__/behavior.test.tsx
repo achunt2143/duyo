@@ -3,11 +3,11 @@ import { RuntimeView, basePack, createRenderer, installPack, renderInto, type Ki
 import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { createMochiPack, mochiPack } from '../index.js';
+import { createRemochiPack, remochiPack } from '../index.js';
 
 afterEach(cleanup);
 
-function mount(definition: ComponentDefinition, pack: KindPack = mochiPack, setupKinds?: (registry: KindRegistry) => void) {
+function mount(definition: ComponentDefinition, pack: KindPack = remochiPack, setupKinds?: (registry: KindRegistry) => void) {
   const registry = new KindRegistry();
   const packs = [basePack, pack];
   for (const p of packs) installPack(registry, p);
@@ -32,7 +32,7 @@ function withHandlers(component: ComponentDefinition, heard: Record<string, Retu
 describe('buttons and toggles', () => {
   it('draws content as the label and taps through the wrapper', () => {
     const tapped = vi.fn();
-    const { root } = mount({ kind: 'App.Screen' }, mochiPack, withHandlers({ kind: 'mochi.Button', content: 'Save', ontap: 'tapped' }, { tapped }));
+    const { root } = mount({ kind: 'App.Screen' }, remochiPack, withHandlers({ kind: 'remochi.Button', content: 'Save', ontap: 'tapped' }, { tapped }));
     fireEvent.click(screen.getByRole('button', { name: /Save/ }));
     expect(tapped).toHaveBeenCalledTimes(1);
     expect(tapped.mock.calls[0]![0]).toBe(root.$.subject);
@@ -40,14 +40,14 @@ describe('buttons and toggles', () => {
 
   it('does not tap while disabled', () => {
     const tapped = vi.fn();
-    mount({ kind: 'App.Screen' }, mochiPack, withHandlers({ kind: 'mochi.Button', content: 'Nope', disabled: true, ontap: 'tapped' }, { tapped }));
+    mount({ kind: 'App.Screen' }, remochiPack, withHandlers({ kind: 'remochi.Button', content: 'Nope', disabled: true, ontap: 'tapped' }, { tapped }));
     fireEvent.click(screen.getByText('Nope'));
     expect(tapped).not.toHaveBeenCalled();
   });
 
   it('Toggle: a click writes the value and raises onChange; code can set it back', () => {
     const changed = vi.fn();
-    const { root } = mount({ kind: 'App.Screen' }, mochiPack, withHandlers({ kind: 'mochi.Toggle', onChange: 'changed' }, { changed }));
+    const { root } = mount({ kind: 'App.Screen' }, remochiPack, withHandlers({ kind: 'remochi.Toggle', onChange: 'changed' }, { changed }));
     const toggle = screen.getByRole('switch');
     expect(toggle.getAttribute('aria-checked')).toBe('false');
     // Remochi's switch is pointer-driven: a press and release without a drag toggles.
@@ -64,7 +64,7 @@ describe('buttons and toggles', () => {
 
   it('Checkbox: same two-way behaviour', () => {
     const changed = vi.fn();
-    const { root } = mount({ kind: 'App.Screen' }, mochiPack, withHandlers({ kind: 'mochi.Checkbox', onChange: 'changed' }, { changed }));
+    const { root } = mount({ kind: 'App.Screen' }, remochiPack, withHandlers({ kind: 'remochi.Checkbox', onChange: 'changed' }, { changed }));
     const box = screen.getByRole('checkbox');
     fireEvent.click(box);
     expect(root.$.subject!.checked).toBe(true);
@@ -78,8 +78,8 @@ describe('buttons and toggles', () => {
     const selected = vi.fn();
     const { root } = mount(
       { kind: 'App.Screen' },
-      mochiPack,
-      withHandlers({ kind: 'mochi.ViewSelectButton', items: [{ content: 'Grid', value: 'grid' }, { content: 'List', value: 'list' }], onSelect: 'selected' }, { selected }),
+      remochiPack,
+      withHandlers({ kind: 'remochi.ViewSelectButton', items: [{ content: 'Grid', value: 'grid' }, { content: 'List', value: 'list' }], onSelect: 'selected' }, { selected }),
     );
     fireEvent.click(screen.getByText('List'));
     expect(root.$.subject!.selected).toBe(1);
@@ -93,8 +93,8 @@ describe('fields', () => {
     const committed = vi.fn();
     const { root } = mount(
       { kind: 'App.Screen' },
-      mochiPack,
-      withHandlers({ kind: 'mochi.Input', placeholder: 'Name', oninput: 'typed', onchange: 'committed' }, { typed, committed }),
+      remochiPack,
+      withHandlers({ kind: 'remochi.Input', placeholder: 'Name', oninput: 'typed', onchange: 'committed' }, { typed, committed }),
     );
     const input = screen.getByPlaceholderText('Name') as HTMLInputElement;
     fireEvent.change(input, { target: { value: 'Ada' } });
@@ -110,9 +110,9 @@ describe('fields', () => {
     const changed = vi.fn();
     const { root } = mount(
       { kind: 'App.Screen' },
-      mochiPack,
+      remochiPack,
       withHandlers(
-        { kind: 'mochi.Dropdown', options: [{ value: 'a', label: 'Alpha' }, { value: 'b', label: 'Beta' }], value: 'a', onChange: 'changed' },
+        { kind: 'remochi.Dropdown', options: [{ value: 'a', label: 'Alpha' }, { value: 'b', label: 'Beta' }], value: 'a', onChange: 'changed' },
         { changed },
       ),
     );
@@ -125,15 +125,15 @@ describe('fields', () => {
 
 describe('panels', () => {
   const panels = (n: number): ComponentDefinition[] =>
-    Array.from({ length: n }, (_, i) => ({ kind: 'mochi.Repanel', name: `p${i}`, components: [{ content: `Panel ${i}` }] }));
+    Array.from({ length: n }, (_, i) => ({ kind: 'remochi.Repanel', name: `p${i}`, components: [{ content: `Panel ${i}` }] }));
 
   it('RepanelStack draws its Duyo panels as real Repanels, in order', () => {
-    mount({ kind: 'mochi.RepanelStack', activeIndex: 0, components: panels(3) });
+    mount({ kind: 'remochi.RepanelStack', activeIndex: 0, components: panels(3) });
     expect(screen.getByText('Panel 0')).toBeTruthy();
   });
 
   it('RepanelStack: activeIndex is controlled, and next()/previous() move it', () => {
-    const { root } = mount({ kind: 'mochi.RepanelStack', activeIndex: 0, components: panels(3) });
+    const { root } = mount({ kind: 'remochi.RepanelStack', activeIndex: 0, components: panels(3) });
     act(() => root.next());
     expect(root.activeIndex).toBe(1);
     expect(screen.getByText('Panel 1')).toBeTruthy();
@@ -148,12 +148,12 @@ describe('panels', () => {
     const toggled = vi.fn();
     const { root } = mount(
       { kind: 'App.Screen' },
-      mochiPack,
+      remochiPack,
       (registry) =>
         registry.register({
           name: 'App.Screen',
           kind: 'duyo.Control',
-          components: [{ name: 'subject', kind: 'mochi.Collapsable', title: 'More', onToggle: 'toggled', components: [{ content: 'details' }] }],
+          components: [{ name: 'subject', kind: 'remochi.Collapsable', title: 'More', onToggle: 'toggled', components: [{ content: 'details' }] }],
           toggled,
         }),
     );
@@ -168,9 +168,9 @@ describe('dialogs', () => {
     const confirmed = vi.fn();
     const { root } = mount(
       { kind: 'App.Screen' },
-      mochiPack,
+      remochiPack,
       withHandlers(
-        { kind: 'mochi.Dialog', title: 'Delete it?', dialogType: 'confirm', confirmText: 'Yes, delete', onConfirm: 'confirmed', components: [{ content: 'This cannot be undone.' }] },
+        { kind: 'remochi.Dialog', title: 'Delete it?', dialogType: 'confirm', confirmText: 'Yes, delete', onConfirm: 'confirmed', components: [{ content: 'This cannot be undone.' }] },
         { confirmed },
       ),
     );
@@ -189,9 +189,9 @@ describe('dialogs', () => {
     const acted = vi.fn();
     mount(
       { kind: 'App.Screen' },
-      mochiPack,
+      remochiPack,
       withHandlers(
-        { kind: 'mochi.Dialog', open: true, title: 'Pick', actions: [{ label: 'Retry', action: 'retry' }], onAction: 'acted' },
+        { kind: 'remochi.Dialog', open: true, title: 'Pick', actions: [{ label: 'Retry', action: 'retry' }], onAction: 'acted' },
         { acted },
       ),
     );
@@ -202,15 +202,15 @@ describe('dialogs', () => {
 
 describe('theming and layout', () => {
   it('mounts Remochi ThemeWrapper from the pack, with options', () => {
-    const light = createMochiPack({ theme: { defaultTheme: 'light' } });
-    mount({ kind: 'mochi.Badge', content: '3' }, light);
+    const light = createRemochiPack({ theme: { defaultTheme: 'light' } });
+    mount({ kind: 'remochi.Badge', content: '3' }, light);
     expect(document.documentElement.getAttribute('data-mochi-theme')).toBe('light');
   });
 
-  it('Mochi kinds take part in Duyo layout like any other kind', () => {
+  it('Remochi kinds take part in Duyo layout like any other kind', () => {
     const { container } = mount({
       kind: 'duyo.FittableColumns',
-      components: [{ kind: 'mochi.Button', content: 'A' }, { kind: 'mochi.Slider', fit: true }],
+      components: [{ kind: 'remochi.Button', content: 'A' }, { kind: 'remochi.Slider', fit: true }],
     });
     const columns = container.querySelector<HTMLElement>('[data-duyo-kind="duyo.FittableColumns"]')!;
     const [first, second] = Array.from(columns.children) as HTMLElement[];
@@ -220,16 +220,16 @@ describe('theming and layout', () => {
   });
 
   it('keeps unknown values out: variant is validated by Duyo before Remochi sees it', () => {
-    const { runtime } = mount({ kind: 'mochi.Button', variant: 'neon' });
+    const { runtime } = mount({ kind: 'remochi.Button', variant: 'neon' });
     expect(runtime.diagnostics.map((d) => d.code)).toContain('DUYO_PROP_002');
   });
 });
 
-describe('within the sampler idea: Mochi and base kinds side by side', () => {
-  it('mixes duyo.* and mochi.* freely in one tree', () => {
+describe('within the sampler idea: Remochi and base kinds side by side', () => {
+  it('mixes duyo.* and remochi.* freely in one tree', () => {
     const { container } = mount({
       kind: 'duyo.FittableRows',
-      components: [{ tag: 'h1', content: 'Settings' }, { kind: 'mochi.Toggle' }, { kind: 'duyo.Button', content: 'Plain' }],
+      components: [{ tag: 'h1', content: 'Settings' }, { kind: 'remochi.Toggle' }, { kind: 'duyo.Button', content: 'Plain' }],
     });
     expect(within(container).getByText('Settings')).toBeTruthy();
     expect(within(container).getByRole('switch')).toBeTruthy();
@@ -241,7 +241,7 @@ describe('within the sampler idea: Mochi and base kinds side by side', () => {
 describe('README example', () => {
   it('runs as documented', async () => {
     const heard: unknown[] = [];
-    const mochi = createMochiPack({ theme: { defaultTheme: 'dark' } });
+    const mochi = createRemochiPack({ theme: { defaultTheme: 'dark' } });
     const packs = [basePack, mochi];
     const registry = new KindRegistry();
     packs.forEach((pack) => installPack(registry, pack));
@@ -251,9 +251,9 @@ describe('README example', () => {
         name: 'App.Settings',
         kind: 'duyo.FittableRows',
         components: [
-          { kind: 'mochi.Header', content: 'Settings' },
-          { kind: 'mochi.Toggle', name: 'wifi', onChange: 'wifiChanged' },
-          { kind: 'mochi.Button', content: 'Save', variant: 'affirmative', ontap: 'save' },
+          { kind: 'remochi.Header', content: 'Settings' },
+          { kind: 'remochi.Toggle', name: 'wifi', onChange: 'wifiChanged' },
+          { kind: 'remochi.Button', content: 'Save', variant: 'affirmative', ontap: 'save' },
         ],
         wifiChanged(_sender: Component, event: { value: boolean }) {
           heard.push(event.value);

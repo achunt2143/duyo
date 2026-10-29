@@ -1,7 +1,7 @@
 # Duyo Sampler
 
-Every `mochi.*` kind in one app, in the spirit of Enyo's Sampler. The app is written
-entirely as Duyo kinds: the shell is a `mochi.ThemeWrapper` with a dark/light switch, a
+Every `remochi.*` kind in one app, in the spirit of Enyo's Sampler. The app is written
+entirely as Duyo kinds: the shell is a `remochi.ThemeWrapper` with a dark/light switch, a
 section list and an event log, and each section is a kind whose handlers report what
 happened by bubbling `onLog` to the shell.
 
@@ -25,6 +25,6 @@ Files:
 
 - `src/shell.ts`: the app kind.
 - `src/sections.ts`: one kind per section.
-- `src/main.ts`: installs the base and Mochi packs and renders `Sampler.App`.
+- `src/main.ts`: installs the base and Remochi packs and renders `Sampler.App`.
 
 Diagnostics are logged to the console, and `window.duyo.runtime` is available in devtools.

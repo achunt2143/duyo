@@ -11,9 +11,9 @@ const GOOD = JSON.stringify(
     kind: 'duyo.FittableRows',
     gap: 'sm',
     components: [
-      { kind: 'mochi.Header', content: 'Loaded from "the server"' },
+      { kind: 'remochi.Header', content: 'Loaded from "the server"' },
       { content: 'None of this was in the app when it was built.' },
-      { kind: 'mochi.Button', content: 'Ping the host', variant: 'affirmative', ontap: 'sampler.ping' },
+      { kind: 'remochi.Button', content: 'Ping the host', variant: 'affirmative', ontap: 'sampler.ping' },
     ],
   },
   null,
@@ -27,8 +27,8 @@ const HOSTILE = JSON.stringify(
     kind: 'duyo.FittableRows',
     components: [
       { kind: 'Sampler.Section' },
-      { kind: 'mochi.Button', content: 'Delete everything', ontap: 'admin.deleteEverything' },
-      { kind: 'mochi.Button', content: 'Odd', variant: 'purple' },
+      { kind: 'remochi.Button', content: 'Delete everything', ontap: 'admin.deleteEverything' },
+      { kind: 'remochi.Button', content: 'Odd', variant: 'purple' },
     ],
   },
   null,
@@ -58,7 +58,7 @@ export default view(
     load() {
       const result = loadSpec(this.$.source.value, {
         registry: defaultKindRegistry,
-        allowedKinds: ['duyo.*', 'mochi.*'],
+        allowedKinds: ['duyo.*', 'remochi.*'],
         allowedHandlers: ['sampler.ping'],
       });
 

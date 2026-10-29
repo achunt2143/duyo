@@ -20,8 +20,8 @@ owner. A view simply keeps the strings in one file and the methods in another.
   "name": "Sampler.Buttons",
   "kind": "Sampler.Section",
   "components": [
-    { "kind": "mochi.Toggle", "name": "wifi", "onChange": "switched" },
-    { "kind": "mochi.Button", "content": "Flip from code", "ontap": "flipFromCode" }
+    { "kind": "remochi.Toggle", "name": "wifi", "onChange": "switched" },
+    { "kind": "remochi.Button", "content": "Flip from code", "ontap": "flipFromCode" }
   ]
 }
 ```
@@ -100,7 +100,7 @@ this.$.big.setVariant('x')   // error: not one of "normal" | "warning" | ...
 
 The types come from the kinds themselves: published properties with their `getX` / `setX`
 (the `allowed` values become a union), event helpers (`doChange`) and methods.
-`@duyo/mochi` ships its own as `kinds.gen.ts`. For your own pack, generate them from a
+`@duyo/remochi` ships its own as `kinds.gen.ts`. For your own pack, generate them from a
 registry that has the pack installed:
 
 ```ts
@@ -116,7 +116,7 @@ writeFileSync('src/kinds.gen.ts', generateKindTypes(registry, myPack.kinds.map((
 
 then `export type * from './kinds.gen.js'` from the pack's entry point so TypeScript loads
 the `declare module '@duyo/core'` registration. Add a test that regenerates and compares, as
-`@duyo/mochi` does, so the file cannot go stale. Kinds nobody has described are plain
+`@duyo/remochi` does, so the file cannot go stale. Kinds nobody has described are plain
 `Component`s.
 
 Limit: a component keeps its open index signature, so a misspelled *property* on a typed
@@ -125,7 +125,7 @@ instance (`wifi.valeu`) is still `any`; wrong *types* are caught, unknown *names
 ## Conventions
 
 - Any `on…` property holding a string is an event handler. Packs must not publish properties
-  starting with `on` (the Mochi pack renames Remochi's `onContent` to `labelOn`).
+  starting with `on` (the Remochi pack renames Remochi's `onContent` to `labelOn`).
 - Names are unique across the whole view, however deeply nested: every component written in
   the spec is owned by the view.
 - The spec stays plain JSON. Anything that needs logic goes in the code-behind, or becomes a
@@ -143,7 +143,7 @@ import { loadSpec } from '@duyo/views/load';
 
 const result = loadSpec(await response.text(), {
   registry,                              // a KindRegistry, with your packs installed
-  allowedKinds: ['duyo.*', 'mochi.*'],   // the kinds a loaded screen may use
+  allowedKinds: ['duyo.*', 'remochi.*'],   // the kinds a loaded screen may use
   allowedHandlers: ['orders.open'],      // the actions it may trigger
 });
 
@@ -170,7 +170,7 @@ to your code. List only the actions you would be willing to have a stranger trig
 Refusals say what and where, with a hint:
 
 ```text
-DUYO_VIEW_012 at $.components[0].kind: "Sampler.Section" is not an allowed kind. Allowed: duyo.*, mochi.*.
+DUYO_VIEW_012 at $.components[0].kind: "Sampler.Section" is not an allowed kind. Allowed: duyo.*, remochi.*.
 DUYO_VIEW_016 at $.components[1].ontap: "admin.deleteEverything" is not an allowed handler.
 DUYO_VIEW_015 at $.components[2].variant: "purple" is not one of "normal", "warning", "affirmative", ...
 ```

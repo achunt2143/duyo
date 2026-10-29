@@ -1,4 +1,4 @@
-# @duyo/mochi
+# @duyo/remochi
 
 Every [Remochi](https://www.npmjs.com/package/remochi) component as a Duyo kind.
 
@@ -10,16 +10,16 @@ to build one for another library.
 Requires `remochi` ^0.4.0, a peer dependency, so your app chooses the version:
 
 ```bash
-npm install @duyo/mochi remochi
+npm install @duyo/remochi remochi
 ```
 
 ```tsx
-import '@duyo/mochi/css';
+import '@duyo/remochi/css';
 import { kind, KindRegistry, createRuntime } from '@duyo/core';
 import { basePack, createRenderer, installPack, renderInto } from '@duyo/react';
-import { createMochiPack } from '@duyo/mochi';
+import { createRemochiPack } from '@duyo/remochi';
 
-const mochi = createMochiPack({ theme: { defaultTheme: 'dark' } });
+const mochi = createRemochiPack({ theme: { defaultTheme: 'dark' } });
 const packs = [basePack, mochi];
 const registry = new KindRegistry();
 packs.forEach((pack) => installPack(registry, pack));
@@ -28,9 +28,9 @@ kind({
   name: 'App.Settings',
   kind: 'duyo.FittableRows',
   components: [
-    { kind: 'mochi.Header', content: 'Settings' },
-    { kind: 'mochi.Toggle', name: 'wifi', onChange: 'wifiChanged' },
-    { kind: 'mochi.Button', content: 'Save', variant: 'affirmative', ontap: 'save' },
+    { kind: 'remochi.Header', content: 'Settings' },
+    { kind: 'remochi.Toggle', name: 'wifi', onChange: 'wifiChanged' },
+    { kind: 'remochi.Button', content: 'Save', variant: 'affirmative', ontap: 'save' },
   ],
   wifiChanged(sender, event) { console.log(event.value); },
   save() { /* ... */ },
@@ -42,7 +42,7 @@ renderInto(runtime.create({ kind: 'App.Settings' }), createRenderer(packs), docu
 
 ## Kinds
 
-All 43 Remochi components, plus `mochi.WizardStep`. A test fails if Remochi exports a
+All 43 Remochi components, plus `remochi.WizardStep`. A test fails if Remochi exports a
 component the pack does not cover.
 
 | Group | Kinds |
@@ -89,18 +89,18 @@ control writes back to: `value`, `checked`, `selected`, `expanded`, `open`, `act
 **React nodes and refs become Duyo children or component names**, so definitions stay
 plain data:
 
-- `RepanelStack`: its children are `mochi.Repanel`s; `next()` / `previous()` move the front panel.
-- `Wizard`: its children are `mochi.WizardStep`s, whose own children are the step content. A
+- `RepanelStack`: its children are `remochi.Repanel`s; `next()` / `previous()` move the front panel.
+- `Wizard`: its children are `remochi.WizardStep`s, whose own children are the step content. A
   step's `onNext` handler that returns `true` holds the wizard on that step.
-- `SlidingMenuContentShifter`: `menu: 'nav'` names the `mochi.SlidingMenu` it moves aside
+- `SlidingMenuContentShifter`: `menu: 'nav'` names the `remochi.SlidingMenu` it moves aside
   for, and follows its open state, position and timing. `SlidingMenu` has `toggle()`.
 - `PopupPanel`: `anchor: 'moreButton'` names the component it points at.
 - `Dialog` / `PopupPanel` `actions` are `{ label, action?, type? }` and raise `onAction`.
 - `Table` takes plain `columns` and `rows` (or `data`).
 
-**Theme.** `createMochiPack({ theme })` wraps every Duyo tree in Remochi's `ThemeWrapper`
-with those props. For theme control from Duyo code, use `createMochiPack({ theme: false })`
-and put a `mochi.ThemeWrapper` at the root of your app: it has `theme`, a read-only
+**Theme.** `createRemochiPack({ theme })` wraps every Duyo tree in Remochi's `ThemeWrapper`
+with those props. For theme control from Duyo code, use `createRemochiPack({ theme: false })`
+and put a `remochi.ThemeWrapper` at the root of your app: it has `theme`, a read-only
 `resolvedTheme`, `toggleTheme()` and `onThemeChange`. `useTheme` and the colour constants
 are re-exported for hand-written bindings.
 
@@ -114,7 +114,7 @@ around the ones that affect it.
   `Dropdown.maxHeight`, and still declares `Dropdown.searchable`, which the source no longer
   implements.
 - **`Wizard` throws with no steps.** It defaults `steps = []` but reads `steps[0].title`.
-  The pack draws nothing until a `mochi.WizardStep` exists.
+  The pack draws nothing until a `remochi.WizardStep` exists.
 - **`DateInput` reads `value` once.** The pack remounts it when the value changes.
 - **`RepanelStack` finds panels with `child.type === Repanel`,** so the pack builds real
   `Repanel` elements for it. Inside a stack a panel's `classes` apply; its Duyo `style` does not.
@@ -122,7 +122,7 @@ around the ones that affect it.
   `.mochi-richtext-placeholder` inside `.mochi-richtext`, but `RichText.jsx` renders it as a
   sibling before that element, so the rule never matches. It shows as plain text above the
   box. (Found in the sampler, in Edge.)
-- **Portaled components lose the Mochi font.** `ThemeWrapper` puts theme colours on `:root`
+- **Portaled components lose the Remochi font.** `ThemeWrapper` puts theme colours on `:root`
   so portaled components get them, but the font only on the wrapper element. `Dialog`,
   `PopupPanel` and `Dropdown`'s menu are portaled to `<body>` and fall back to the browser's
   serif. The sampler works around it with a `body` font rule.

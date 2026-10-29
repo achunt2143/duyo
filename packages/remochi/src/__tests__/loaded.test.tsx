@@ -4,7 +4,7 @@ import { loadSpec } from '@duyo/views/load';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { mochiPack } from '../index.js';
+import { remochiPack } from '../index.js';
 
 afterEach(cleanup);
 
@@ -14,18 +14,18 @@ const fromServer = JSON.stringify({
   kind: 'duyo.FittableRows',
   gap: 'sm',
   components: [
-    { kind: 'mochi.Subheader', content: 'Loaded from the server' },
-    { kind: 'mochi.Button', content: 'Open orders', variant: 'affirmative', ontap: 'orders.open' },
+    { kind: 'remochi.Subheader', content: 'Loaded from the server' },
+    { kind: 'remochi.Button', content: 'Open orders', variant: 'affirmative', ontap: 'orders.open' },
   ],
 });
 
 function setup() {
   const registry = new KindRegistry();
-  for (const pack of [basePack, mochiPack]) installPack(registry, pack);
+  for (const pack of [basePack, remochiPack]) installPack(registry, pack);
   return registry;
 }
 
-const policy = { allowedKinds: ['duyo.*', 'mochi.*'], allowedHandlers: ['orders.open'] };
+const policy = { allowedKinds: ['duyo.*', 'remochi.*'], allowedHandlers: ['orders.open'] };
 
 describe('a spec loaded at run time', () => {
   it('becomes a kind, draws with the pack, and reaches only the actions the host listed', () => {
@@ -38,7 +38,7 @@ describe('a spec loaded at run time', () => {
     const opened = vi.fn();
     runtime.actions.register('orders.open', opened);
     const root = runtime.create({ kind: 'Remote.Profile' });
-    render(<RuntimeView root={root} renderer={createRenderer([basePack, mochiPack])} />);
+    render(<RuntimeView root={root} renderer={createRenderer([basePack, remochiPack])} />);
 
     expect(screen.getByText('Loaded from the server')).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: /Open orders/ }));
@@ -51,12 +51,12 @@ describe('a spec loaded at run time', () => {
     const hostile = JSON.stringify({
       name: 'Remote.Hostile',
       components: [
-        { kind: 'mochi.ThemeWrapper', theme: 'dark' },
-        { kind: 'mochi.Button', content: 'Click', ontap: 'admin.deleteEverything' },
-        { kind: 'mochi.Button', variant: 'purple' },
+        { kind: 'remochi.ThemeWrapper', theme: 'dark' },
+        { kind: 'remochi.Button', content: 'Click', ontap: 'admin.deleteEverything' },
+        { kind: 'remochi.Button', variant: 'purple' },
       ],
     });
-    const result = loadSpec(hostile, { registry, allowedKinds: ['duyo.*', 'mochi.Button'], allowedHandlers: ['orders.open'] });
+    const result = loadSpec(hostile, { registry, allowedKinds: ['duyo.*', 'remochi.Button'], allowedHandlers: ['orders.open'] });
     expect(result.ok).toBe(false);
     expect(result.diagnostics.map((d) => [d.code, d.path])).toEqual([
       ['DUYO_VIEW_012', '$.components[0].kind'],

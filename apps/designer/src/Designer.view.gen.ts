@@ -3,42 +3,42 @@ import type { Component, ComponentEvent, Instance, ViewComponent } from '@duyo/c
 
 /** `this.$` in the code-behind: every named component in the spec. */
 export type Named = {
-  /** mochi.Button */
-  saveButton: Instance<"mochi.Button">;
-  /** mochi.Button */
-  saveAllButton: Instance<"mochi.Button">;
-  /** mochi.Button */
-  undoButton: Instance<"mochi.Button">;
-  /** mochi.Button */
-  redoButton: Instance<"mochi.Button">;
-  /** mochi.Button */
-  cutButton: Instance<"mochi.Button">;
-  /** mochi.Button */
-  copyButton: Instance<"mochi.Button">;
-  /** mochi.Button */
-  pasteButton: Instance<"mochi.Button">;
+  /** remochi.Button */
+  saveButton: Instance<"remochi.Button">;
+  /** remochi.Button */
+  saveAllButton: Instance<"remochi.Button">;
+  /** remochi.Button */
+  undoButton: Instance<"remochi.Button">;
+  /** remochi.Button */
+  redoButton: Instance<"remochi.Button">;
+  /** remochi.Button */
+  cutButton: Instance<"remochi.Button">;
+  /** remochi.Button */
+  copyButton: Instance<"remochi.Button">;
+  /** remochi.Button */
+  pasteButton: Instance<"remochi.Button">;
   /** duyo.Control */
   status: Instance<"duyo.Control">;
-  /** mochi.ViewSelectButton */
-  leftTabs: Instance<"mochi.ViewSelectButton">;
+  /** remochi.ViewSelectButton */
+  leftTabs: Instance<"remochi.ViewSelectButton">;
   /** Designer.Files */
   files: Instance<"Designer.Files">;
   /** Designer.Palette */
   palette: Instance<"Designer.Palette">;
   /** Designer.Tabs */
   tabs: Instance<"Designer.Tabs">;
-  /** mochi.ViewSelectButton */
-  modes: Instance<"mochi.ViewSelectButton">;
-  /** mochi.Dropdown */
-  device: Instance<"mochi.Dropdown">;
-  /** mochi.Button */
-  rotateButton: Instance<"mochi.Button">;
-  /** mochi.Dropdown */
-  zoom: Instance<"mochi.Dropdown">;
-  /** mochi.Button */
-  reloadButton: Instance<"mochi.Button">;
-  /** mochi.Button */
-  windowButton: Instance<"mochi.Button">;
+  /** remochi.ViewSelectButton */
+  modes: Instance<"remochi.ViewSelectButton">;
+  /** remochi.Dropdown */
+  device: Instance<"remochi.Dropdown">;
+  /** remochi.Button */
+  rotateButton: Instance<"remochi.Button">;
+  /** remochi.Dropdown */
+  zoom: Instance<"remochi.Dropdown">;
+  /** remochi.Button */
+  reloadButton: Instance<"remochi.Button">;
+  /** remochi.Button */
+  windowButton: Instance<"remochi.Button">;
   /** Designer.Canvas */
   canvas: Instance<"Designer.Canvas">;
   /** Designer.Code */
@@ -49,8 +49,8 @@ export type Named = {
   run: Instance<"Designer.Run">;
   /** Designer.Tree */
   tree: Instance<"Designer.Tree">;
-  /** mochi.ViewSelectButton */
-  inspectorTabs: Instance<"mochi.ViewSelectButton">;
+  /** remochi.ViewSelectButton */
+  inspectorTabs: Instance<"remochi.ViewSelectButton">;
   /** duyo.Control */
   inspector: Instance<"duyo.Control">;
   /** duyo.Control */

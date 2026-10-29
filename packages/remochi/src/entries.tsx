@@ -62,7 +62,7 @@ const change = (node: Component, property: string) => (value: unknown) => {
 
 export const buttons: PackEntry[] = [
   adapt({
-    name: 'mochi.Button',
+    name: 'remochi.Button',
     component: R.Button,
     published: {
       variant: { default: 'normal', allowed: [...VARIANTS, 'dropdown'] },
@@ -79,7 +79,7 @@ export const buttons: PackEntry[] = [
   }),
 
   adapt({
-    name: 'mochi.ViewSelectButton',
+    name: 'remochi.ViewSelectButton',
     component: R.ViewSelectButton,
     published: {
       items: [],
@@ -110,7 +110,7 @@ export const buttons: PackEntry[] = [
   }),
 
   adapt({
-    name: 'mochi.Toggle',
+    name: 'remochi.Toggle',
     component: R.Toggle,
     published: {
       value: false,
@@ -137,7 +137,7 @@ export const buttons: PackEntry[] = [
   }),
 
   adapt({
-    name: 'mochi.Checkbox',
+    name: 'remochi.Checkbox',
     component: R.Checkbox,
     published: {
       checked: false,
@@ -163,7 +163,7 @@ export const buttons: PackEntry[] = [
   }),
 
   adapt({
-    name: 'mochi.Radio',
+    name: 'remochi.Radio',
     component: R.Radio,
     // `name` is the Duyo component's own identity, so the radio group is `group`.
     published: { group: '', value: '', checked: false, disabled: false },
@@ -200,7 +200,7 @@ const textEvents = (node: Component, read: (event: any) => string): Props => ({
 
 export const fields: PackEntry[] = [
   adapt({
-    name: 'mochi.Input',
+    name: 'remochi.Input',
     component: R.Input,
     published: { value: '', placeholder: '', type: 'text', disabled: false, readOnly: false, maxLength: undefined },
     hostStyle: { display: 'inline-block' },
@@ -219,7 +219,7 @@ export const fields: PackEntry[] = [
   }),
 
   adapt({
-    name: 'mochi.TextArea',
+    name: 'remochi.TextArea',
     component: R.TextArea,
     published: { value: '', placeholder: '', disabled: false, defaultFocus: false, minHeight: 50, rows: 4 },
     props: (node): Props => ({
@@ -234,7 +234,7 @@ export const fields: PackEntry[] = [
   }),
 
   adapt({
-    name: 'mochi.RichText',
+    name: 'remochi.RichText',
     component: R.RichText,
     published: {
       value: '',
@@ -259,7 +259,7 @@ export const fields: PackEntry[] = [
   }),
 
   adapt({
-    name: 'mochi.Dropdown',
+    name: 'remochi.Dropdown',
     component: R.Dropdown,
     published: {
       options: [],
@@ -283,7 +283,7 @@ export const fields: PackEntry[] = [
   }),
 
   adapt({
-    name: 'mochi.NumberInput',
+    name: 'remochi.NumberInput',
     component: R.NumberInput,
     published: {
       value: 0,
@@ -311,7 +311,7 @@ export const fields: PackEntry[] = [
   }),
 
   adapt({
-    name: 'mochi.Slider',
+    name: 'remochi.Slider',
     component: R.Slider,
     published: { value: 50, min: 0, max: 100, step: 1, color: undefined, width: '320px' },
     events: { onChange: '' },
@@ -327,7 +327,7 @@ export const fields: PackEntry[] = [
   }),
 
   adapt({
-    name: 'mochi.DateInput',
+    name: 'remochi.DateInput',
     component: R.DateInput,
     published: {
       value: undefined,
@@ -359,14 +359,14 @@ export const fields: PackEntry[] = [
 
 export const display: PackEntry[] = [
   adapt({
-    name: 'mochi.ProgressBar',
+    name: 'remochi.ProgressBar',
     component: R.ProgressBar,
     published: { value: 0, color: 'blue', width: undefined, height: undefined },
     props: (node): Props => ({ value: node.value, color: node.color, width: node.width, height: node.height }),
   }),
 
   adapt({
-    name: 'mochi.Spinner',
+    name: 'remochi.Spinner',
     component: R.Spinner,
     published: {
       active: true,
@@ -379,7 +379,7 @@ export const display: PackEntry[] = [
   }),
 
   adapt({
-    name: 'mochi.Badge',
+    name: 'remochi.Badge',
     component: R.Badge,
     published: {
       variant: { default: 'default', allowed: ['default', 'success', 'warning', 'error', 'danger', 'info'] },
@@ -399,19 +399,19 @@ export const display: PackEntry[] = [
   }),
 
   adapt({
-    name: 'mochi.Header',
+    name: 'remochi.Header',
     component: R.Header,
     props: (node): Props => ({ content: node.content }),
   }),
 
   adapt({
-    name: 'mochi.Subheader',
+    name: 'remochi.Subheader',
     component: R.Subheader,
     props: (node): Props => ({ content: node.content }),
   }),
 
   adapt({
-    name: 'mochi.Divider',
+    name: 'remochi.Divider',
     component: R.Divider,
     published: { orientation: { default: 'horizontal', allowed: ORIENTATIONS }, thickness: 4 },
     host: 'props',
@@ -419,7 +419,7 @@ export const display: PackEntry[] = [
   }),
 
   adapt({
-    name: 'mochi.NubbinDivider',
+    name: 'remochi.NubbinDivider',
     component: R.NubbinDivider,
     published: {
       nubbin: {
@@ -450,7 +450,7 @@ export const display: PackEntry[] = [
 
 export const lists: PackEntry[] = [
   adapt({
-    name: 'mochi.Item',
+    name: 'remochi.Item',
     component: R.Item,
     published: {
       title: undefined,
@@ -482,7 +482,7 @@ export const lists: PackEntry[] = [
   }),
 
   adapt({
-    name: 'mochi.List',
+    name: 'remochi.List',
     component: R.List,
     events: { onScrollStart: '', onScrollStop: '' },
     props: (node): Props => ({
@@ -492,13 +492,13 @@ export const lists: PackEntry[] = [
   }),
 
   adapt({
-    name: 'mochi.ListHeader',
+    name: 'remochi.ListHeader',
     component: R.ListHeader,
     props: (node): Props => ({ content: node.content }),
   }),
 
   adapt({
-    name: 'mochi.ListItem',
+    name: 'remochi.ListItem',
     component: R.ListItem,
     published: { tapHighlight: true },
     events: { onSelect: '' },
@@ -511,14 +511,14 @@ export const lists: PackEntry[] = [
   }),
 
   adapt({
-    name: 'mochi.GridList',
+    name: 'remochi.GridList',
     component: R.GridList,
     published: { columns: 3, gap: 12 },
     props: (node): Props => ({ columns: node.columns, gap: node.gap }),
   }),
 
   adapt({
-    name: 'mochi.GridListImageItem',
+    name: 'remochi.GridListImageItem',
     component: R.GridListImageItem,
     published: { src: undefined, caption: undefined, selected: false },
     events: { onSelect: '' },
@@ -534,7 +534,7 @@ export const lists: PackEntry[] = [
   }),
 
   adapt({
-    name: 'mochi.Table',
+    name: 'remochi.Table',
     component: R.Table,
     published: {
       columns: [],
@@ -557,7 +557,7 @@ export const lists: PackEntry[] = [
   }),
 
   adapt({
-    name: 'mochi.Pagination',
+    name: 'remochi.Pagination',
     component: R.Pagination,
     published: { currentPage: 1, totalPages: 1, showFirstLast: true, showPrevNext: true, maxVisible: 7 },
     events: { onChange: '' },
@@ -578,7 +578,7 @@ export const lists: PackEntry[] = [
 
 export const panels: PackEntry[] = [
   adapt({
-    name: 'mochi.Repanel',
+    name: 'remochi.Repanel',
     component: R.Repanel,
     published: { width: 100, look: { default: 'default', allowed: LOOKS }, handle: false },
     // Remochi's `style` is the variant, so Duyo's style goes on a wrapper.
@@ -587,14 +587,14 @@ export const panels: PackEntry[] = [
   }),
 
   adapt({
-    name: 'mochi.FloatingPanel',
+    name: 'remochi.FloatingPanel',
     component: R.FloatingPanel,
     published: { look: { default: 'default', allowed: LOOKS } },
     props: (node, ctx): Props => ({ style: node.look, children: label(node, ctx) }),
   }),
 
   adapt({
-    name: 'mochi.RepanelStack',
+    name: 'remochi.RepanelStack',
     component: R.RepanelStack,
     published: {
       activeIndex: undefined,
@@ -661,7 +661,7 @@ export const panels: PackEntry[] = [
   }),
 
   adapt({
-    name: 'mochi.Collapsable',
+    name: 'remochi.Collapsable',
     component: R.Collapsable,
     published: { title: undefined, expanded: false },
     events: { onToggle: '' },
@@ -676,16 +676,16 @@ export const panels: PackEntry[] = [
   }),
 
   adapt({
-    name: 'mochi.CollapsableHeader',
+    name: 'remochi.CollapsableHeader',
     component: R.CollapsableHeader,
     props: (node, ctx): Props => ({ children: label(node, ctx) }),
   }),
   adapt({
-    name: 'mochi.CollapsableItem',
+    name: 'remochi.CollapsableItem',
     component: R.CollapsableItem,
     props: (node, ctx): Props => ({ children: label(node, ctx) }),
   }),
-  adapt({ name: 'mochi.CollapsableFooter', component: R.CollapsableFooter }),
+  adapt({ name: 'remochi.CollapsableFooter', component: R.CollapsableFooter }),
 ];
 
 // ---------------------------------------------------------------------------
@@ -694,7 +694,7 @@ export const panels: PackEntry[] = [
 
 export const menus: PackEntry[] = [
   adapt({
-    name: 'mochi.SlidingMenu',
+    name: 'remochi.SlidingMenu',
     component: R.SlidingMenu,
     published: {
       open: false,
@@ -728,9 +728,9 @@ export const menus: PackEntry[] = [
   }),
 
   adapt({
-    name: 'mochi.SlidingMenuContentShifter',
+    name: 'remochi.SlidingMenuContentShifter',
     component: R.SlidingMenuContentShifter,
-    // `menu` names the mochi.SlidingMenu this content moves aside for. Its position and
+    // `menu` names the remochi.SlidingMenu this content moves aside for. Its position and
     // timing are used unless set here.
     published: {
       menu: undefined,
@@ -753,7 +753,7 @@ export const menus: PackEntry[] = [
   }),
 
   adapt({
-    name: 'mochi.SlidingMenuItem',
+    name: 'remochi.SlidingMenuItem',
     component: R.SlidingMenuItem,
     published: {
       icon: undefined,
@@ -776,7 +776,7 @@ export const menus: PackEntry[] = [
   }),
 
   adapt({
-    name: 'mochi.SlidingMenuItemGroup',
+    name: 'remochi.SlidingMenuItemGroup',
     component: R.SlidingMenuItemGroup,
     published: { label: undefined, divider: false },
     host: 'props',
@@ -790,7 +790,7 @@ export const menus: PackEntry[] = [
 
 export const overlays: PackEntry[] = [
   adapt({
-    name: 'mochi.Dialog',
+    name: 'remochi.Dialog',
     component: R.Dialog,
     published: {
       open: false,
@@ -838,7 +838,7 @@ export const overlays: PackEntry[] = [
   }),
 
   adapt({
-    name: 'mochi.PopupPanel',
+    name: 'remochi.PopupPanel',
     component: R.PopupPanel,
     // `anchor` names the component the popup points at, e.g. the button that opened it.
     published: { open: false, title: undefined, actions: [], anchor: undefined, anchorRect: undefined },
@@ -864,7 +864,7 @@ export const overlays: PackEntry[] = [
 
 export const media: PackEntry[] = [
   adapt({
-    name: 'mochi.Video',
+    name: 'remochi.Video',
     component: R.Video,
     published: { src: undefined, poster: undefined, autoPlay: false, loop: false, muted: false, controls: true },
     events: { onPlay: '', onPause: '', onEnded: '', onTimeUpdate: '' },
@@ -893,7 +893,7 @@ export const media: PackEntry[] = [
  * return stops any Duyo event.
  */
 export const wizardStepKind: KindDefinition = {
-  name: 'mochi.WizardStep',
+  name: 'remochi.WizardStep',
   kind: 'duyo.Control',
   published: { label: '', title: undefined, description: undefined, skippable: false },
   events: { onNext: '' },
@@ -906,13 +906,13 @@ export const wizardStepKind: KindDefinition = {
 function withSteps(entry: PackEntry): PackEntry {
   const Draw = entry.binding.component;
   const WhenStepped = (props: BindingProps) => (props.childNodes.length > 0 ? <Draw {...props} /> : null);
-  WhenStepped.displayName = 'WhenStepped(mochi.Wizard)';
+  WhenStepped.displayName = 'WhenStepped(remochi.Wizard)';
   return { ...entry, binding: { ...entry.binding, component: WhenStepped } };
 }
 
 export const flow: PackEntry[] = [
   withSteps(adapt({
-    name: 'mochi.Wizard',
+    name: 'remochi.Wizard',
     component: R.Wizard,
     published: { showStepNumbers: true, allowSkip: false, completedSteps: undefined, step: 0 },
     events: { onComplete: '', onCancel: '', onStepChange: '', onCompletedStepsChange: '' },
@@ -958,7 +958,7 @@ function ThemeProbe({ node, children }: { node: Component; children: ReactNode }
 
 export const theme: PackEntry[] = [
   adapt({
-    name: 'mochi.ThemeWrapper',
+    name: 'remochi.ThemeWrapper',
     component: R.ThemeWrapper,
     published: {
       theme: { default: undefined, allowed: [undefined, 'dark', 'light', 'system'] },
@@ -992,7 +992,7 @@ export const theme: PackEntry[] = [
   }),
 ];
 
-export const mochiEntries: readonly PackEntry[] = [
+export const remochiEntries: readonly PackEntry[] = [
   ...buttons,
   ...fields,
   ...display,

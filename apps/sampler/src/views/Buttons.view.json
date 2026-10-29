@@ -2,23 +2,23 @@
   "name": "Sampler.Buttons",
   "kind": "Sampler.Section",
   "components": [
-    { "kind": "mochi.Subheader", "content": "Button variants" },
+    { "kind": "remochi.Subheader", "content": "Button variants" },
     {
       "kind": "duyo.FittableColumns",
       "align": "center",
       "gap": "md",
       "components": [
-        { "kind": "mochi.Button", "content": "Normal", "ontap": "tapped" },
-        { "kind": "mochi.Button", "content": "Affirmative", "variant": "affirmative", "ontap": "tapped" },
-        { "kind": "mochi.Button", "content": "Warning", "variant": "warning", "ontap": "tapped" },
-        { "kind": "mochi.Button", "content": "Blue", "variant": "blue", "ontap": "tapped" },
-        { "kind": "mochi.Button", "content": "Dropdown", "variant": "dropdown", "ontap": "tapped" },
-        { "kind": "mochi.Button", "content": "Disabled", "disabled": true, "ontap": "tapped" }
+        { "kind": "remochi.Button", "content": "Normal", "ontap": "tapped" },
+        { "kind": "remochi.Button", "content": "Affirmative", "variant": "affirmative", "ontap": "tapped" },
+        { "kind": "remochi.Button", "content": "Warning", "variant": "warning", "ontap": "tapped" },
+        { "kind": "remochi.Button", "content": "Blue", "variant": "blue", "ontap": "tapped" },
+        { "kind": "remochi.Button", "content": "Dropdown", "variant": "dropdown", "ontap": "tapped" },
+        { "kind": "remochi.Button", "content": "Disabled", "disabled": true, "ontap": "tapped" }
       ]
     },
-    { "kind": "mochi.Subheader", "content": "ViewSelectButton" },
+    { "kind": "remochi.Subheader", "content": "ViewSelectButton" },
     {
-      "kind": "mochi.ViewSelectButton",
+      "kind": "remochi.ViewSelectButton",
       "items": [
         { "content": "Grid", "value": "grid" },
         { "content": "List", "value": "list" },
@@ -26,28 +26,28 @@
       ],
       "onSelect": "viewSelected"
     },
-    { "kind": "mochi.Subheader", "content": "Toggle and Checkbox" },
+    { "kind": "remochi.Subheader", "content": "Toggle and Checkbox" },
     {
       "kind": "duyo.FittableColumns",
       "align": "center",
       "gap": "md",
       "components": [
-        { "kind": "mochi.Toggle", "name": "wifi", "onChange": "switched" },
+        { "kind": "remochi.Toggle", "name": "wifi", "onChange": "switched" },
         { "tag": "span", "content": "Wi-Fi" },
-        { "kind": "mochi.Checkbox", "name": "agree", "onChange": "switched" },
+        { "kind": "remochi.Checkbox", "name": "agree", "onChange": "switched" },
         { "tag": "span", "content": "I agree" },
-        { "kind": "mochi.Button", "content": "Flip both from code", "ontap": "flipFromCode" }
+        { "kind": "remochi.Button", "content": "Flip both from code", "ontap": "flipFromCode" }
       ]
     },
-    { "kind": "mochi.Subheader", "content": "Radio" },
+    { "kind": "remochi.Subheader", "content": "Radio" },
     {
       "kind": "duyo.FittableColumns",
       "align": "center",
       "gap": "md",
       "components": [
-        { "kind": "mochi.Radio", "name": "small", "group": "size", "value": "S", "content": "Small", "onChange": "sized" },
+        { "kind": "remochi.Radio", "name": "small", "group": "size", "value": "S", "content": "Small", "onChange": "sized" },
         {
-          "kind": "mochi.Radio",
+          "kind": "remochi.Radio",
           "name": "medium",
           "group": "size",
           "value": "M",
@@ -55,7 +55,7 @@
           "checked": true,
           "onChange": "sized"
         },
-        { "kind": "mochi.Radio", "name": "large", "group": "size", "value": "L", "content": "Large", "onChange": "sized" }
+        { "kind": "remochi.Radio", "name": "large", "group": "size", "value": "L", "content": "Large", "onChange": "sized" }
       ]
     }
   ]

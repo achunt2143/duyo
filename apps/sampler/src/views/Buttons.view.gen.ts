@@ -3,16 +3,16 @@ import type { Component, ComponentEvent, Instance, ViewComponent } from '@duyo/c
 
 /** `this.$` in the code-behind: every named component in the spec. */
 export type Named = {
-  /** mochi.Toggle */
-  wifi: Instance<"mochi.Toggle">;
-  /** mochi.Checkbox */
-  agree: Instance<"mochi.Checkbox">;
-  /** mochi.Radio */
-  small: Instance<"mochi.Radio">;
-  /** mochi.Radio */
-  medium: Instance<"mochi.Radio">;
-  /** mochi.Radio */
-  large: Instance<"mochi.Radio">;
+  /** remochi.Toggle */
+  wifi: Instance<"remochi.Toggle">;
+  /** remochi.Checkbox */
+  agree: Instance<"remochi.Checkbox">;
+  /** remochi.Radio */
+  small: Instance<"remochi.Radio">;
+  /** remochi.Radio */
+  medium: Instance<"remochi.Radio">;
+  /** remochi.Radio */
+  large: Instance<"remochi.Radio">;
 };
 
 /** Handlers the spec names. The code-behind must implement every one. */

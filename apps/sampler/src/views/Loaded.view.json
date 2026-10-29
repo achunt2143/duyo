@@ -2,25 +2,25 @@
   "name": "Sampler.Loaded",
   "kind": "Sampler.Section",
   "components": [
-    { "kind": "mochi.Subheader", "content": "A screen that arrives as data" },
+    { "kind": "remochi.Subheader", "content": "A screen that arrives as data" },
     {
       "tag": "p",
-      "content": "Edit the JSON below, as if a server had sent it, and load it. This host allows duyo.* and mochi.* kinds and one action, sampler.ping. Anything else is refused with the reason."
+      "content": "Edit the JSON below, as if a server had sent it, and load it. This host allows duyo.* and remochi.* kinds and one action, sampler.ping. Anything else is refused with the reason."
     },
-    { "kind": "mochi.TextArea", "name": "source", "rows": 12 },
+    { "kind": "remochi.TextArea", "name": "source", "rows": 12 },
     {
       "kind": "duyo.FittableColumns",
       "align": "center",
       "gap": "md",
       "components": [
-        { "kind": "mochi.Button", "content": "Load", "variant": "affirmative", "ontap": "load" },
-        { "kind": "mochi.Button", "content": "Reset to a good spec", "ontap": "reset" },
-        { "kind": "mochi.Button", "content": "Try a hostile spec", "variant": "warning", "ontap": "hostile" }
+        { "kind": "remochi.Button", "content": "Load", "variant": "affirmative", "ontap": "load" },
+        { "kind": "remochi.Button", "content": "Reset to a good spec", "ontap": "reset" },
+        { "kind": "remochi.Button", "content": "Try a hostile spec", "variant": "warning", "ontap": "hostile" }
       ]
     },
-    { "kind": "mochi.Subheader", "content": "Result" },
+    { "kind": "remochi.Subheader", "content": "Result" },
     { "tag": "p", "name": "result", "content": "Nothing loaded yet.", "style": "white-space: pre-wrap; font-family: monospace;" },
-    { "kind": "mochi.Subheader", "content": "Stage" },
+    { "kind": "remochi.Subheader", "content": "Stage" },
     { "kind": "duyo.FittableRows", "name": "stage", "gap": "sm" }
   ]
 }

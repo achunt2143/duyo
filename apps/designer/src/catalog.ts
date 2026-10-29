@@ -19,9 +19,9 @@ export interface PropertyInfo {
 
 export interface KindInfo {
   name: string;
-  /** `mochi` for `mochi.Button`. */
+  /** `remochi` for `remochi.Button`. */
   group: string;
-  /** `Button` for `mochi.Button`. */
+  /** `Button` for `remochi.Button`. */
   label: string;
   properties: PropertyInfo[];
   /** Events a component of this kind can raise, each a place to name a handler. */

@@ -1,14 +1,14 @@
-import '@duyo/mochi/css';
+import '@duyo/remochi/css';
 
 import { createRuntime, defaultKindRegistry } from '@duyo/core';
-import { createMochiPack } from '@duyo/mochi';
+import { createRemochiPack } from '@duyo/remochi';
 import { basePack, createRenderer, installPack, renderInto } from '@duyo/react';
 
 import './sections.js';
 import './shell.js';
 
-// The app controls the theme itself, with a mochi.ThemeWrapper at its root.
-const packs = [basePack, createMochiPack({ theme: false })];
+// The app controls the theme itself, with a remochi.ThemeWrapper at its root.
+const packs = [basePack, createRemochiPack({ theme: false })];
 for (const pack of packs) installPack(defaultKindRegistry, pack);
 
 const runtime = createRuntime({

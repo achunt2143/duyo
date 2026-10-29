@@ -6,9 +6,9 @@ const spec = () => ({
   name: 'App.X',
   kind: 'duyo.FittableRows',
   components: [
-    { kind: 'mochi.Header', content: 'Title' },
-    { kind: 'duyo.FittableColumns', name: 'row', components: [{ kind: 'mochi.Button', name: 'ok', content: 'OK' }] },
-    { kind: 'mochi.Button', content: 'Last' },
+    { kind: 'remochi.Header', content: 'Title' },
+    { kind: 'duyo.FittableColumns', name: 'row', components: [{ kind: 'remochi.Button', name: 'ok', content: 'OK' }] },
+    { kind: 'remochi.Button', content: 'Last' },
   ],
 });
 
@@ -68,9 +68,9 @@ describe('ViewDocument', () => {
 
   it('inserts at the end or at an index, creating the components list', () => {
     const doc = new ViewDocument(spec());
-    expect(doc.insert([2], { kind: 'mochi.Badge' })).toEqual([2, 0]);
-    expect(nodeAt(doc.spec, [2, 0])!['kind']).toBe('mochi.Badge');
-    expect(doc.insert([], { kind: 'mochi.Divider' }, 1)).toEqual([1]);
+    expect(doc.insert([2], { kind: 'remochi.Badge' })).toEqual([2, 0]);
+    expect(nodeAt(doc.spec, [2, 0])!['kind']).toBe('remochi.Badge');
+    expect(doc.insert([], { kind: 'remochi.Divider' }, 1)).toEqual([1]);
     expect(nodeAt(doc.spec, [2])!['name']).toBe('row');
   });
 

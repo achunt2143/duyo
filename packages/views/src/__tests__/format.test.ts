@@ -10,7 +10,7 @@ describe('formatSpec', () => {
       name: 'App.X',
       kind: 'duyo.FittableRows',
       components: [
-        { kind: 'mochi.Button', content: 'Save', ontap: 'save' },
+        { kind: 'remochi.Button', content: 'Save', ontap: 'save' },
         { kind: 'duyo.FittableColumns', gap: 'md', components: [{ content: 'a' }, { content: 'b' }] },
       ],
     });
@@ -20,7 +20,7 @@ describe('formatSpec', () => {
         '  "name": "App.X",',
         '  "kind": "duyo.FittableRows",',
         '  "components": [',
-        '    { "kind": "mochi.Button", "content": "Save", "ontap": "save" },',
+        '    { "kind": "remochi.Button", "content": "Save", "ontap": "save" },',
         '    {',
         '      "kind": "duyo.FittableColumns",',
         '      "gap": "md",',

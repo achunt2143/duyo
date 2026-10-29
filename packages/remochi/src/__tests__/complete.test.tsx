@@ -3,7 +3,7 @@ import { RuntimeView, basePack, createRenderer, installPack, type KindPack } fro
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { createMochiPack, mochiPack } from '../index.js';
+import { createRemochiPack, remochiPack } from '../index.js';
 
 afterEach(cleanup);
 
@@ -11,7 +11,7 @@ afterEach(cleanup);
 function screenWith(
   components: ComponentDefinition[],
   handlers: Record<string, unknown> & ThisType<Component> = {},
-  pack: KindPack = mochiPack,
+  pack: KindPack = remochiPack,
 ) {
   const registry = new KindRegistry();
   const packs = [basePack, pack];
@@ -27,7 +27,7 @@ describe('controls whose Remochi API grew', () => {
   it('Collapsable can now be opened from code as well as by the user', () => {
     const toggled = vi.fn();
     const { root } = screenWith(
-      [{ kind: 'mochi.Collapsable', name: 'more', title: 'More', onToggle: 'toggled', components: [{ content: 'details' }] }],
+      [{ kind: 'remochi.Collapsable', name: 'more', title: 'More', onToggle: 'toggled', components: [{ content: 'details' }] }],
       { toggled },
     );
     const body = () => screen.getByText('details').closest('[aria-hidden]')!;
@@ -41,8 +41,8 @@ describe('controls whose Remochi API grew', () => {
 
   it('Radio puts `group` on the input and keeps `name` as the Duyo identity', () => {
     const { root, container } = screenWith([
-      { kind: 'mochi.Radio', name: 'small', group: 'size', value: 's', content: 'Small' },
-      { kind: 'mochi.Radio', name: 'large', group: 'size', value: 'l', content: 'Large' },
+      { kind: 'remochi.Radio', name: 'small', group: 'size', value: 's', content: 'Small' },
+      { kind: 'remochi.Radio', name: 'large', group: 'size', value: 'l', content: 'Large' },
     ]);
     const inputs = Array.from(container.querySelectorAll<HTMLInputElement>('input[type="radio"]'));
     expect(inputs.map((i) => i.name)).toEqual(['size', 'size']);
@@ -51,12 +51,12 @@ describe('controls whose Remochi API grew', () => {
   });
 
   it('Button passes htmlType through now that Remochi supports it', () => {
-    const { container } = screenWith([{ kind: 'mochi.Button', content: 'Send', htmlType: 'submit' }]);
+    const { container } = screenWith([{ kind: 'remochi.Button', content: 'Send', htmlType: 'submit' }]);
     expect(container.querySelector('button')!.getAttribute('type')).toBe('submit');
   });
 
   it('Badge shows a count', () => {
-    screenWith([{ kind: 'mochi.Badge', content: 'Inbox', count: 7, variant: 'info' }]);
+    screenWith([{ kind: 'remochi.Badge', content: 'Inbox', count: 7, variant: 'info' }]);
     expect(screen.getByText('7')).toBeTruthy();
     expect(screen.getByText('Inbox')).toBeTruthy();
   });
@@ -66,7 +66,7 @@ describe('lists and data', () => {
   it('GridListImageItem toggles its own selection', () => {
     const selected = vi.fn();
     const { root } = screenWith(
-      [{ kind: 'mochi.GridList', columns: 2, components: [{ kind: 'mochi.GridListImageItem', name: 'pic', src: 'a.png', caption: 'Beach', onSelect: 'selected' }] }],
+      [{ kind: 'remochi.GridList', columns: 2, components: [{ kind: 'remochi.GridListImageItem', name: 'pic', src: 'a.png', caption: 'Beach', onSelect: 'selected' }] }],
       { selected },
     );
     fireEvent.click(screen.getByRole('button', { name: /Beach/ }));
@@ -81,7 +81,7 @@ describe('lists and data', () => {
     screenWith(
       [
         {
-          kind: 'mochi.Table',
+          kind: 'remochi.Table',
           columns: [{ key: 'name', label: 'Name' }, { key: 'age', label: 'Age' }],
           rows: [{ name: 'Ada', age: 36 }, { name: 'Grace', age: 85 }],
           onRowTap: 'tapped',
@@ -95,7 +95,7 @@ describe('lists and data', () => {
 
   it('ListItem forwards ontap through its own onClick (host: props)', () => {
     const tapped = vi.fn();
-    screenWith([{ kind: 'mochi.List', components: [{ kind: 'mochi.ListItem', content: 'Row', ontap: 'tapped' }] }], { tapped });
+    screenWith([{ kind: 'remochi.List', components: [{ kind: 'remochi.ListItem', content: 'Row', ontap: 'tapped' }] }], { tapped });
     fireEvent.click(screen.getByText('Row'));
     expect(tapped).toHaveBeenCalledTimes(1);
   });
@@ -104,22 +104,22 @@ describe('lists and data', () => {
 describe('sliding menu', () => {
   const menu = (extra: Record<string, unknown> = {}): ComponentDefinition[] => [
     {
-      kind: 'mochi.SlidingMenu',
+      kind: 'remochi.SlidingMenu',
       name: 'nav',
       onOpenChange: 'opened',
       components: [
         {
-          kind: 'mochi.SlidingMenuItemGroup',
+          kind: 'remochi.SlidingMenuItemGroup',
           label: 'Places',
           components: [
-            { kind: 'mochi.SlidingMenuItem', name: 'home', content: 'Home', active: true, ontap: 'go' },
-            { kind: 'mochi.SlidingMenuItem', name: 'mail', content: 'Mail', badge: 3, ontap: 'go' },
+            { kind: 'remochi.SlidingMenuItem', name: 'home', content: 'Home', active: true, ontap: 'go' },
+            { kind: 'remochi.SlidingMenuItem', name: 'mail', content: 'Mail', badge: 3, ontap: 'go' },
           ],
         },
       ],
       ...extra,
     },
-    { kind: 'mochi.SlidingMenuContentShifter', name: 'page', menu: 'nav', components: [{ content: 'Main content' }] },
+    { kind: 'remochi.SlidingMenuContentShifter', name: 'page', menu: 'nav', components: [{ content: 'Main content' }] },
   ];
 
   it('opens and closes from code, and the content shifter follows the menu it names', () => {
@@ -159,13 +159,13 @@ describe('sliding menu', () => {
 describe('wizard', () => {
   const steps = (): ComponentDefinition[] => [
     {
-      kind: 'mochi.Wizard',
+      kind: 'remochi.Wizard',
       name: 'setup',
       onStepChange: 'stepped',
       onComplete: 'done',
       components: [
-        { kind: 'mochi.WizardStep', name: 'account', label: 'Account', title: 'Your account', onNext: 'checkAccount', components: [{ content: 'Account form' }] },
-        { kind: 'mochi.WizardStep', name: 'wrapUp', label: 'Wrap up', title: 'All set', components: [{ content: 'Done screen' }] },
+        { kind: 'remochi.WizardStep', name: 'account', label: 'Account', title: 'Your account', onNext: 'checkAccount', components: [{ content: 'Account form' }] },
+        { kind: 'remochi.WizardStep', name: 'wrapUp', label: 'Wrap up', title: 'All set', components: [{ content: 'Done screen' }] },
       ],
     },
   ];
@@ -201,22 +201,22 @@ describe('wizard', () => {
   });
 
   it('draws nothing, rather than crashing, until it has a step', () => {
-    const { root, container } = screenWith([{ kind: 'mochi.Wizard', name: 'empty' }]);
-    expect(container.querySelector('[data-duyo-kind="mochi.Wizard"]')).toBeNull();
+    const { root, container } = screenWith([{ kind: 'remochi.Wizard', name: 'empty' }]);
+    expect(container.querySelector('[data-duyo-kind="remochi.Wizard"]')).toBeNull();
     act(() => {
-      root.$.empty!.createComponent({ kind: 'mochi.WizardStep', label: 'Late', title: 'Arrived later' });
+      root.$.empty!.createComponent({ kind: 'remochi.WizardStep', label: 'Late', title: 'Arrived later' });
     });
     expect(screen.getByText('Arrived later')).toBeTruthy();
   });
 });
 
 describe('theme', () => {
-  it('mochi.ThemeWrapper is controllable from Duyo: toggleTheme() and resolvedTheme', () => {
+  it('remochi.ThemeWrapper is controllable from Duyo: toggleTheme() and resolvedTheme', () => {
     const changed = vi.fn();
     const { root } = screenWith(
-      [{ kind: 'mochi.ThemeWrapper', name: 'theme', theme: 'dark', syncHtml: true, onThemeChange: 'changed', components: [{ kind: 'mochi.Toggle' }] }],
+      [{ kind: 'remochi.ThemeWrapper', name: 'theme', theme: 'dark', syncHtml: true, onThemeChange: 'changed', components: [{ kind: 'remochi.Toggle' }] }],
       { changed },
-      createMochiPack({ theme: false }),
+      createRemochiPack({ theme: false }),
     );
     const theme = root.$.theme!;
     expect(theme.resolvedTheme).toBe('dark');
@@ -228,10 +228,10 @@ describe('theme', () => {
   });
 
   it('the pack-level wrapper takes ThemeWrapper options, or can be turned off', () => {
-    screenWith([{ kind: 'mochi.Badge', content: 'x' }], {}, createMochiPack({ theme: { theme: 'light', syncHtml: true } }));
+    screenWith([{ kind: 'remochi.Badge', content: 'x' }], {}, createRemochiPack({ theme: { theme: 'light', syncHtml: true } }));
     expect(document.documentElement.getAttribute('data-mochi-theme')).toBe('light');
     cleanup();
-    const off = createMochiPack({ theme: false });
+    const off = createRemochiPack({ theme: false });
     expect(off.wrapper).toBeUndefined();
   });
 });
@@ -239,8 +239,8 @@ describe('theme', () => {
 describe('overlays, media and rich text', () => {
   it('PopupPanel anchors to a component named by `anchor`', () => {
     const { root } = screenWith([
-      { kind: 'mochi.Button', name: 'more', content: 'More', ontap: 'openMenu' },
-      { kind: 'mochi.PopupPanel', name: 'menu', anchor: 'more', title: 'Options', actions: [{ label: 'Rename', action: 'rename' }] },
+      { kind: 'remochi.Button', name: 'more', content: 'More', ontap: 'openMenu' },
+      { kind: 'remochi.PopupPanel', name: 'menu', anchor: 'more', title: 'Options', actions: [{ label: 'Rename', action: 'rename' }] },
     ], { openMenu() { this.$.menu!.setOpen(true); } });
     fireEvent.click(screen.getByRole('button', { name: /More/ }));
     expect(root.$.menu!.open).toBe(true);
@@ -251,7 +251,7 @@ describe('overlays, media and rich text', () => {
   it('Video raises onPlay / onPause / onEnded from the media element', () => {
     const played = vi.fn();
     const ended = vi.fn();
-    const { container } = screenWith([{ kind: 'mochi.Video', src: 'clip.mp4', onPlay: 'played', onEnded: 'ended' }], { played, ended });
+    const { container } = screenWith([{ kind: 'remochi.Video', src: 'clip.mp4', onPlay: 'played', onEnded: 'ended' }], { played, ended });
     const video = container.querySelector('video')!;
     fireEvent.play(video);
     fireEvent.ended(video);
@@ -261,7 +261,7 @@ describe('overlays, media and rich text', () => {
 
   it('RichText writes its HTML to value and bubbles oninput', () => {
     const typed = vi.fn();
-    const { root, container } = screenWith([{ kind: 'mochi.RichText', name: 'notes', oninput: 'typed' }], { typed });
+    const { root, container } = screenWith([{ kind: 'remochi.RichText', name: 'notes', oninput: 'typed' }], { typed });
     const editor = container.querySelector<HTMLElement>('[contenteditable]')!;
     editor.innerHTML = '<b>hi</b>';
     fireEvent.input(editor);

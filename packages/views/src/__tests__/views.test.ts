@@ -20,13 +20,13 @@ const settings = {
   kind: 'duyo.FittableRows',
   handlers: { onLog: 'appendLog' },
   components: [
-    { kind: 'mochi.Header', content: 'Settings' },
+    { kind: 'remochi.Header', content: 'Settings' },
     {
       kind: 'duyo.FittableColumns',
       components: [
-        { kind: 'mochi.Toggle', name: 'wifi', onChange: 'wifiChanged' },
-        { kind: 'mochi.Button', name: 'save', ontap: 'save' },
-        { kind: 'mochi.Button', name: 'search', ontap: 'customer.search' },
+        { kind: 'remochi.Toggle', name: 'wifi', onChange: 'wifiChanged' },
+        { kind: 'remochi.Button', name: 'save', ontap: 'save' },
+        { kind: 'remochi.Button', name: 'search', ontap: 'customer.search' },
       ],
     },
     { name: 'status' },
@@ -38,9 +38,9 @@ const codes = (spec: unknown) => validateSpec(spec).map((d) => d.code);
 describe('reading a spec', () => {
   it('finds named components at any depth, with their kinds', () => {
     expect(namedOf(settings)).toEqual([
-      ['wifi', 'mochi.Toggle'],
-      ['save', 'mochi.Button'],
-      ['search', 'mochi.Button'],
+      ['wifi', 'remochi.Toggle'],
+      ['save', 'remochi.Button'],
+      ['search', 'remochi.Button'],
       ['status', 'duyo.Control'],
     ]);
   });
@@ -96,7 +96,7 @@ describe('generateTypes', () => {
   });
 
   it('types this.$ with every named component and its kind', () => {
-    expect(text).toContain('  /** mochi.Toggle */\n  wifi: Instance<"mochi.Toggle">;');
+    expect(text).toContain('  /** remochi.Toggle */\n  wifi: Instance<"remochi.Toggle">;');
     expect(text).toContain('  status: Instance<"duyo.Control">;');
   });
 

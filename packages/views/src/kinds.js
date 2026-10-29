@@ -32,7 +32,7 @@ const capitalize = (/** @type {string} */ text) => text.charAt(0).toUpperCase() 
 const IDENTIFIER = /^[A-Za-z_$][A-Za-z0-9_$]*$/;
 const key = (/** @type {string} */ name) => (IDENTIFIER.test(name) ? name : JSON.stringify(name));
 
-/** `mochi.Toggle` -> `Mochi_Toggle`. */
+/** `remochi.Toggle` -> `Remochi_Toggle`. */
 const typeNameFor = (/** @type {string} */ kind) =>
   capitalize(kind.replace(/[^A-Za-z0-9]+/g, '_').replace(/^(\d)/, '_$1'));
 

@@ -1,4 +1,4 @@
-import '@duyo/mochi/css';
+import '@duyo/remochi/css';
 
 import { createRuntime, kind, view } from '@duyo/core';
 import { renderInto } from '@duyo/react';
@@ -43,7 +43,7 @@ async function start() {
     }
   }
 
-  kind({ name: 'Designer.RunHost', kind: 'mochi.ThemeWrapper', theme, syncHtml: true, style: 'height: 100%;', components: [{ kind: name }] }, { registry });
+  kind({ name: 'Designer.RunHost', kind: 'remochi.ThemeWrapper', theme, syncHtml: true, style: 'height: 100%;', components: [{ kind: name }] }, { registry });
   const runtime = createRuntime({
     registry,
     onDiagnostic: (d) => console.warn(`[duyo] ${d.code} ${d.path ?? ''}: ${d.message}`, d.hint ?? ''),

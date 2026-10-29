@@ -5,7 +5,7 @@ type Declaration = { default?: unknown; allowed?: readonly unknown[] };
 const kinds: Record<string, Record<string, Declaration>> = {
   'duyo.Component': {},
   'duyo.Control': { content: { default: '' }, showing: { default: true } },
-  'mochi.Button': {
+  'remochi.Button': {
     content: { default: '' },
     showing: { default: true },
     variant: { default: 'normal', allowed: ['normal', 'warning'] },
@@ -18,13 +18,13 @@ const registry = {
   names: () => Object.keys(kinds),
   resolve: (name: string) => ({ published: new Map(Object.entries(kinds[name]!)) }),
 };
-const options = { registry, allowedKinds: ['mochi.*', 'duyo.*'], allowedHandlers: ['orders.open', 'app.*'] };
+const options = { registry, allowedKinds: ['remochi.*', 'duyo.*'], allowedHandlers: ['orders.open', 'app.*'] };
 
 const good = {
   name: 'Remote.Profile',
   kind: 'duyo.Control',
   components: [
-    { kind: 'mochi.Button', name: 'open', content: 'Open', variant: 'warning', ontap: 'orders.open' },
+    { kind: 'remochi.Button', name: 'open', content: 'Open', variant: 'warning', ontap: 'orders.open' },
     { content: 'plain control' },
   ],
 };
@@ -57,8 +57,8 @@ describe('loadSpec: untrusted specs', () => {
 
   it('refuses kinds outside the allow-list, and unknown kinds with a hint', () => {
     reject({ name: 'R.X', components: [{ kind: 'evil.Thing' }] }, 'DUYO_VIEW_012');
-    const result = reject({ name: 'R.X', components: [{ kind: 'mochi.Buton' }] }, 'DUYO_VIEW_013');
-    expect(result.diagnostics[0]!.hint).toBe('Did you mean "mochi.Button"?');
+    const result = reject({ name: 'R.X', components: [{ kind: 'remochi.Buton' }] }, 'DUYO_VIEW_013');
+    expect(result.diagnostics[0]!.hint).toBe('Did you mean "remochi.Button"?');
   });
 
   it('refuses handlers that are not listed', () => {
@@ -80,14 +80,14 @@ describe('loadSpec: untrusted specs', () => {
   });
 
   it('may not take the name of an existing kind', () => {
-    reject({ name: 'mochi.Button' }, 'DUYO_VIEW_018');
+    reject({ name: 'remochi.Button' }, 'DUYO_VIEW_018');
   });
 
   it('checks properties and values against the kind', () => {
-    const unknown = reject({ name: 'R.X', components: [{ kind: 'mochi.Button', varient: 'warning' }] }, 'DUYO_VIEW_014');
+    const unknown = reject({ name: 'R.X', components: [{ kind: 'remochi.Button', varient: 'warning' }] }, 'DUYO_VIEW_014');
     expect(unknown.diagnostics[0]!.hint).toBe('Did you mean "variant"?');
-    reject({ name: 'R.X', components: [{ kind: 'mochi.Button', variant: 'purple' }] }, 'DUYO_VIEW_015');
-    reject({ name: 'R.X', components: [{ kind: 'mochi.Button', disabled: 'yes' }] }, 'DUYO_VIEW_015');
+    reject({ name: 'R.X', components: [{ kind: 'remochi.Button', variant: 'purple' }] }, 'DUYO_VIEW_015');
+    reject({ name: 'R.X', components: [{ kind: 'remochi.Button', disabled: 'yes' }] }, 'DUYO_VIEW_015');
   });
 
   it('refuses what JSON cannot carry', () => {
@@ -147,7 +147,7 @@ describe('loadSpec: trusted specs', () => {
   });
 
   it('gets warnings, not errors, for unknown properties and bad values', () => {
-    const spec = { name: 'App.X', components: [{ kind: 'mochi.Button', varient: 'x', variant: 'purple' }] };
+    const spec = { name: 'App.X', components: [{ kind: 'remochi.Button', varient: 'x', variant: 'purple' }] };
     const result = loadSpec(spec, trusted);
     expect(result.ok).toBe(true);
     expect(result.diagnostics.map((d) => d.severity)).toEqual(['warning', 'warning']);

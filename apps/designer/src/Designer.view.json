@@ -1,6 +1,6 @@
 {
   "name": "Designer.App",
-  "kind": "mochi.ThemeWrapper",
+  "kind": "remochi.ThemeWrapper",
   "theme": "dark",
   "syncHtml": true,
   "style": "height: 100%;",
@@ -16,21 +16,21 @@
           "padding": "sm",
           "style": "border-bottom: 1px solid rgba(127,127,127,0.3); flex-wrap: wrap;",
           "components": [
-            { "kind": "mochi.Header", "content": "Duyo Designer", "style": "margin-right: 12px;" },
-            { "kind": "mochi.Button", "name": "saveButton", "content": "Save", "variant": "affirmative", "ontap": "save" },
-            { "kind": "mochi.Button", "name": "saveAllButton", "content": "Save all", "ontap": "saveAll" },
-            { "kind": "mochi.Button", "name": "undoButton", "content": "Undo", "ontap": "undo" },
-            { "kind": "mochi.Button", "name": "redoButton", "content": "Redo", "ontap": "redo" },
-            { "kind": "mochi.Button", "name": "cutButton", "content": "Cut", "ontap": "cut" },
-            { "kind": "mochi.Button", "name": "copyButton", "content": "Copy", "ontap": "copy" },
-            { "kind": "mochi.Button", "name": "pasteButton", "content": "Paste", "ontap": "paste" },
+            { "kind": "remochi.Header", "content": "Duyo Designer", "style": "margin-right: 12px;" },
+            { "kind": "remochi.Button", "name": "saveButton", "content": "Save", "variant": "affirmative", "ontap": "save" },
+            { "kind": "remochi.Button", "name": "saveAllButton", "content": "Save all", "ontap": "saveAll" },
+            { "kind": "remochi.Button", "name": "undoButton", "content": "Undo", "ontap": "undo" },
+            { "kind": "remochi.Button", "name": "redoButton", "content": "Redo", "ontap": "redo" },
+            { "kind": "remochi.Button", "name": "cutButton", "content": "Cut", "ontap": "cut" },
+            { "kind": "remochi.Button", "name": "copyButton", "content": "Copy", "ontap": "copy" },
+            { "kind": "remochi.Button", "name": "pasteButton", "content": "Paste", "ontap": "paste" },
             {
               "tag": "span",
               "name": "status",
               "fit": true,
               "style": "opacity: 0.8; text-align: right; font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"
             },
-            { "kind": "mochi.Button", "content": "Help", "ontap": "help" }
+            { "kind": "remochi.Button", "content": "Help", "ontap": "help" }
           ]
         },
         {
@@ -45,7 +45,7 @@
               "style": "width: 250px; flex: none; min-height: 0; overflow: hidden; border-right: 1px solid rgba(127,127,127,0.3);",
               "components": [
                 {
-                  "kind": "mochi.ViewSelectButton",
+                  "kind": "remochi.ViewSelectButton",
                   "name": "leftTabs",
                   "items": [{ "content": "Files", "value": "files" }, { "content": "Palette", "value": "palette" }],
                   "onSelect": "leftTabChanged"
@@ -83,7 +83,7 @@
                   "padding": "sm",
                   "components": [
                     {
-                      "kind": "mochi.ViewSelectButton",
+                      "kind": "remochi.ViewSelectButton",
                       "name": "modes",
                       "items": [
                         { "content": "Design", "value": "design" },
@@ -94,11 +94,11 @@
                       "onSelect": "modeChanged"
                     },
                     { "fit": true },
-                    { "kind": "mochi.Dropdown", "name": "device", "maxHeight": 320, "onChange": "deviceChanged" },
-                    { "kind": "mochi.Button", "name": "rotateButton", "content": "Rotate", "ontap": "rotate" },
-                    { "kind": "mochi.Dropdown", "name": "zoom", "maxHeight": 320, "onChange": "zoomChanged" },
-                    { "kind": "mochi.Button", "name": "reloadButton", "content": "Reload", "showing": false, "ontap": "reloadRun" },
-                    { "kind": "mochi.Button", "name": "windowButton", "content": "Open in window", "showing": false, "ontap": "openRunWindow" }
+                    { "kind": "remochi.Dropdown", "name": "device", "maxHeight": 320, "onChange": "deviceChanged" },
+                    { "kind": "remochi.Button", "name": "rotateButton", "content": "Rotate", "ontap": "rotate" },
+                    { "kind": "remochi.Dropdown", "name": "zoom", "maxHeight": 320, "onChange": "zoomChanged" },
+                    { "kind": "remochi.Button", "name": "reloadButton", "content": "Reload", "showing": false, "ontap": "reloadRun" },
+                    { "kind": "remochi.Button", "name": "windowButton", "content": "Open in window", "showing": false, "ontap": "openRunWindow" }
                   ]
                 },
                 { "kind": "Designer.Canvas", "name": "canvas", "fit": true, "onPick": "picked", "onDropAt": "canvasDrop" },
@@ -113,7 +113,7 @@
               "padding": "sm",
               "style": "width: 380px; flex: none; min-height: 0; overflow: hidden; border-left: 1px solid rgba(127,127,127,0.3);",
               "components": [
-                { "kind": "mochi.Subheader", "content": "Components" },
+                { "kind": "remochi.Subheader", "content": "Components" },
                 {
                   "kind": "Designer.Tree",
                   "name": "tree",
@@ -127,16 +127,16 @@
                   "gap": "sm",
                   "style": "flex-wrap: wrap;",
                   "components": [
-                    { "kind": "mochi.Button", "content": "Up", "ontap": "moveUp" },
-                    { "kind": "mochi.Button", "content": "Down", "ontap": "moveDown" },
-                    { "kind": "mochi.Button", "content": "In", "ontap": "indent" },
-                    { "kind": "mochi.Button", "content": "Out", "ontap": "outdent" },
-                    { "kind": "mochi.Button", "content": "Duplicate", "ontap": "duplicate" },
-                    { "kind": "mochi.Button", "content": "Delete", "variant": "warning", "ontap": "remove" }
+                    { "kind": "remochi.Button", "content": "Up", "ontap": "moveUp" },
+                    { "kind": "remochi.Button", "content": "Down", "ontap": "moveDown" },
+                    { "kind": "remochi.Button", "content": "In", "ontap": "indent" },
+                    { "kind": "remochi.Button", "content": "Out", "ontap": "outdent" },
+                    { "kind": "remochi.Button", "content": "Duplicate", "ontap": "duplicate" },
+                    { "kind": "remochi.Button", "content": "Delete", "variant": "warning", "ontap": "remove" }
                   ]
                 },
                 {
-                  "kind": "mochi.ViewSelectButton",
+                  "kind": "remochi.ViewSelectButton",
                   "name": "inspectorTabs",
                   "items": [
                     { "content": "Properties", "value": "properties" },

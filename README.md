@@ -21,7 +21,7 @@ The 2.7 iteration does not work as shipped (the built bundle never exposes `enyo
 
 - **A TypeScript runtime**, not a vendored one. Kinds are resolved as data (not prototype chains), with owner/parent trees, published props, lifecycle, event bubbling, an action registry, and Fittable layout. Definitions can be plain JSON.
 - **Pluggable kind packs.** The runtime does not know about any particular design system; a pack supplies kinds, layout metadata and React bindings.
-- **[Remochi](../remochi) as the first-party pack** (`@duyo/mochi`): the Mochi look and webOS-style panels, menus and popups, on React.
+- **[Remochi](../remochi) as the first-party pack** (`@duyo/remochi`): the Remochi look and webOS-style panels, menus and popups, on React.
 - **Tooling after that**: Vite plugin, `create-duyo`, and a visual designer (begun: `apps/designer`).
 
 ### What exists
@@ -31,10 +31,10 @@ The 2.7 iteration does not work as shipped (the built bundle never exposes `enyo
 | `@duyo/core` | Kinds, components, ownership, published properties, events, inheritance. No DOM, no React. |
 | `@duyo/layout` | `FittableRows` / `FittableColumns` as a pure resolver plus kind definitions. |
 | `@duyo/react` | Kind-pack interface, `adapt()` for porting any React component library, `RuntimeView` / `renderInto`, and a plain-DOM base pack. |
-| `@duyo/mochi` | An optional pack: every [Remochi](https://www.npmjs.com/package/remochi) component as a `mochi.*` kind. Built with the same public API anyone can use. |
+| `@duyo/remochi` | An optional pack: every [Remochi](https://www.npmjs.com/package/remochi) component as a `remochi.*` kind. Built with the same public API anyone can use. |
 | `@duyo/views` | Views: a screen's design in a `.view.json` spec and its behaviour in a code-behind, checked against each other through generated types, plus per-kind property types and a guarded loader for specs that arrive at run time. CLI and Vite plugin. |
 
-`npm run sampler` starts [apps/sampler](apps/sampler), which shows every `mochi.*` kind in dark and light. Its Buttons and Loaded specs sections are written as views; see [docs/views.md](docs/views.md).
+`npm run sampler` starts [apps/sampler](apps/sampler), which shows every `remochi.*` kind in dark and light. Its Buttons and Loaded specs sections are written as views; see [docs/views.md](docs/views.md).
 
 `npm run designer` starts [apps/designer](apps/designer), a visual editor for `.view.json` files with a live preview, as Ares was for Enyo.
 
@@ -79,12 +79,12 @@ duyo/
 │   ├── core/           # kinds, components, events
 │   ├── layout/         # Fittable layout
 │   ├── react/          # React host, kind packs, adapt()
-│   ├── mochi/          # optional pack over Remochi
+│   ├── remochi/        # optional pack over Remochi
 │   ├── views/          # .view.json specs + code-behind: validation, types, CLI, Vite plugin
 │   ├── runtime/        # ARCHIVED: vendored Enyo 2.7 + Rollup build
 │   ├── vite-plugin/    # ARCHIVED: injects the Enyo bundle as a classic script
 │   └── create-duyo/    # ARCHIVED: scaffolder for the above
-├── apps/sampler/       # every mochi kind, two sections written as views
+├── apps/sampler/       # every remochi kind, two sections written as views
 ├── apps/designer/      # visual editor for .view.json files
 └── apps/example/       # ARCHIVED: smoke test for the above
 ```
