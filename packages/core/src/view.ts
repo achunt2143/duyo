@@ -7,9 +7,8 @@ import type { KindDefinition } from './types.js';
  * `this` inside a code-behind: the view's named components are typed, and everything else
  * is available as on any component. Generated view types fill in `Named`.
  */
-export interface ViewComponent<Named extends object = Record<string, Component>> {
+export interface ViewComponent<Named extends Record<string, Component> = Record<string, Component>> extends Component {
   readonly $: Named;
-  [member: string]: any;
 }
 
 /**

@@ -32,9 +32,9 @@ The 2.7 iteration does not work as shipped (the built bundle never exposes `enyo
 | `@duyo/layout` | `FittableRows` / `FittableColumns` as a pure resolver plus kind definitions. |
 | `@duyo/react` | Kind-pack interface, `adapt()` for porting any React component library, `RuntimeView` / `renderInto`, and a plain-DOM base pack. |
 | `@duyo/mochi` | An optional pack: every [Remochi](https://www.npmjs.com/package/remochi) component as a `mochi.*` kind. Built with the same public API anyone can use. |
-| `@duyo/views` | Views: a screen's design in a `.view.json` spec and its behaviour in a code-behind, checked against each other through generated types. CLI and Vite plugin. |
+| `@duyo/views` | Views: a screen's design in a `.view.json` spec and its behaviour in a code-behind, checked against each other through generated types, plus per-kind property types and a guarded loader for specs that arrive at run time. CLI and Vite plugin. |
 
-`npm run sampler` starts [apps/sampler](apps/sampler), which shows every `mochi.*` kind in dark and light. Its Buttons section is written as a view; see [docs/views.md](docs/views.md).
+`npm run sampler` starts [apps/sampler](apps/sampler), which shows every `mochi.*` kind in dark and light. Its Buttons and Loaded specs sections are written as views; see [docs/views.md](docs/views.md).
 
 UI libraries plug in as *packs*, as Onyx and Mochi did for Enyo. The framework knows none of them; see [docs/writing-a-pack.md](docs/writing-a-pack.md) to add your own.
 

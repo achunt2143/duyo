@@ -1,8 +1,9 @@
 import { kind, type Component, type ComponentDefinition, type ComponentEvent } from '@duyo/core';
 
-// Sampler.Buttons is written as a view: views/Buttons.view.json is the design and
+// Sampler.Buttons and Sampler.Loaded are written as views: views/Buttons.view.json is the design and
 // views/Buttons.ts the behaviour. The other sections are inline kinds, for comparison.
 import './views/Buttons.js';
+import './views/Loaded.js';
 
 /**
  * One kind per sampler section. Each extends Sampler.Section, whose `log()` bubbles an
@@ -24,6 +25,7 @@ export const SECTIONS: SectionInfo[] = [
   { key: 'panels', title: 'Panels', subtitle: 'RepanelStack, Repanel, FloatingPanel, Collapsable', kind: 'Sampler.Panels' },
   { key: 'overlays', title: 'Menus and overlays', subtitle: 'SlidingMenu, Dialog, PopupPanel', kind: 'Sampler.Overlays' },
   { key: 'flow', title: 'Media and flow', subtitle: 'Video, Wizard', kind: 'Sampler.Flow' },
+  { key: 'loaded', title: 'Loaded specs', subtitle: 'A screen from JSON at run time, with allow-lists', kind: 'Sampler.Loaded' },
 ];
 
 const value = (event: ComponentEvent) => JSON.stringify(event['value']);

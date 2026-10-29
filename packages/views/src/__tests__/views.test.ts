@@ -106,7 +106,7 @@ describe('generateTypes', () => {
 
   it('copes with a view that names nothing', () => {
     const empty = generateTypes({ name: 'X' }, 'X.view.json');
-    expect(empty).toContain('export interface Named {}');
+    expect(empty).toContain('export type Named = {};');
     expect(empty).toContain('export type Handlers = never;');
   });
 

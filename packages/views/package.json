@@ -13,6 +13,10 @@
     "./vite": {
       "types": "./src/vite.d.ts",
       "default": "./src/vite.js"
+    },
+    "./load": {
+      "types": "./src/load.d.ts",
+      "default": "./src/load.js"
     }
   },
   "bin": {

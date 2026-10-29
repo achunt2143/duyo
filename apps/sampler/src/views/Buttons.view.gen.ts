@@ -2,7 +2,7 @@
 import type { Component, ComponentEvent, Instance, ViewComponent } from '@duyo/core';
 
 /** `this.$` in the code-behind: every named component in the spec. */
-export interface Named {
+export type Named = {
   /** mochi.Toggle */
   wifi: Instance<"mochi.Toggle">;
   /** mochi.Checkbox */
@@ -13,7 +13,7 @@ export interface Named {
   medium: Instance<"mochi.Radio">;
   /** mochi.Radio */
   large: Instance<"mochi.Radio">;
-}
+};
 
 /** Handlers the spec names. The code-behind must implement every one. */
 export type Handlers = 'flipFromCode' | 'sized' | 'switched' | 'tapped' | 'viewSelected';

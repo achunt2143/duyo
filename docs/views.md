@@ -131,7 +131,58 @@ instance (`wifi.valeu`) is still `any`; wrong *types* are caught, unknown *names
 - The spec stays plain JSON. Anything that needs logic goes in the code-behind, or becomes a
   kind of its own.
 
+## Loading a spec at run time
+
+A spec can also arrive when the app is running: from a server, a CMS or a user. It is still
+data, so it cannot run code, but it can still name kinds, set properties and name handlers.
+`loadSpec` (from `@duyo/views/load`, which has no Node dependencies) checks it before it
+becomes a kind:
+
+```ts
+import { loadSpec } from '@duyo/views/load';
+
+const result = loadSpec(await response.text(), {
+  registry,                              // a KindRegistry, with your packs installed
+  allowedKinds: ['duyo.*', 'mochi.*'],   // the kinds a loaded screen may use
+  allowedHandlers: ['orders.open'],      // the actions it may trigger
+});
+
+if (result.ok) view(result.spec, {}, { registry });
+else console.warn(result.diagnostics);
+```
+
+| | `trusted` | `untrusted` (default) |
+| --- | --- | --- |
+| Parsed, copied as plain data, structure checked | yes | yes |
+| Kinds exist; properties are published; values match type and `allowed` | warnings | errors |
+| Kinds restricted to `allowedKinds` | no | yes, none by default |
+| Handlers restricted to `allowedHandlers` | no | yes, none by default |
+| May declare `published`, `events`, `handlers`, `statics` | yes | no |
+| May reuse the name of an existing kind | n/a | no |
+| Size limits (text, components, depth, string length) | no | yes |
+
+The copy it returns is built by the loader, so nothing in it can change after the check, and
+`__proto__`, getters, functions, class instances and cycles are refused. Because a loaded
+view owns its own components, the handlers it names resolve to **registered actions**
+(`runtime.actions.register('orders.open', ...)`), which is the one doorway from loaded data
+to your code. List only the actions you would be willing to have a stranger trigger.
+
+Refusals say what and where, with a hint:
+
+```text
+DUYO_VIEW_012 at $.components[0].kind: "Sampler.Section" is not an allowed kind. Allowed: duyo.*, mochi.*.
+DUYO_VIEW_016 at $.components[1].ontap: "admin.deleteEverything" is not an allowed handler.
+DUYO_VIEW_015 at $.components[2].variant: "purple" is not one of "normal", "warning", "affirmative", ...
+```
+
+The sampler's **Loaded specs** section lets you edit a spec and load it, and has a hostile one
+to try. That section is itself a view.
+
+This is a guard for the data, not a sandbox. It assumes the packs you allow are safe to
+draw whatever their properties say; Remochi's components are, but a pack that renders
+raw HTML from a property would not be, so do not allow it.
+
 ## Not built yet
 
-- Loading specs from a server, with a trust level and stricter validation for untrusted data.
 - A visual designer that edits `.view.json` files.
+- Per-event payload types (`event.value` is `any`) and typed `this` for loaded views.

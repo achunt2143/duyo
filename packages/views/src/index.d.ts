@@ -18,6 +18,15 @@ export declare const ViewCodes: Readonly<{
   DUPLICATE_NAME: 'DUYO_VIEW_006';
   BAD_HANDLER: 'DUYO_VIEW_007';
   BAD_KIND: 'DUYO_VIEW_008';
+  LIMIT: 'DUYO_VIEW_010';
+  NOT_PLAIN: 'DUYO_VIEW_011';
+  KIND_NOT_ALLOWED: 'DUYO_VIEW_012';
+  KIND_UNKNOWN: 'DUYO_VIEW_013';
+  PROPERTY_UNKNOWN: 'DUYO_VIEW_014';
+  VALUE_INVALID: 'DUYO_VIEW_015';
+  HANDLER_NOT_ALLOWED: 'DUYO_VIEW_016';
+  FORBIDDEN_MEMBER: 'DUYO_VIEW_017';
+  NAME_TAKEN: 'DUYO_VIEW_018';
 }>;
 
 export declare function componentsOf(spec: Json): Array<{ component: Json; path: string }>;
