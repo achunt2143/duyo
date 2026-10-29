@@ -1,13 +1,14 @@
 import type { KindDefinition } from '@duyo/core';
 import type { BindingProps, RendererBinding } from '@duyo/react';
-import { Collapsable, Input, Item, List } from './remochi.js';
+import { Collapsable, Input } from './remochi.js';
+import { Row, Rows } from './rows.js';
 import { useState } from 'react';
 
 import type { KindInfo } from '../catalog.js';
 import { DRAG_KIND, fill } from './shared.js';
 
 /**
- * `Designer.Palette`: every kind, in Remochi `Collapsable` groups of `Item`s, with a Remochi
+ * `Designer.Palette`: every kind, in Remochi `Collapsable` groups of `ListItem` rows, with a Remochi
  * `Input` to filter. Click a kind to add it at the selection (`onAdd`), or drag it onto the
  * canvas or the tree.
  */
@@ -34,7 +35,7 @@ function Palette({ node, hostProps, bubble }: BindingProps) {
           <Input value={filter} placeholder="Filter kinds" aria-label="Filter kinds" style={fill} onChange={(event: { target: { value: string } }) => setFilter(event.target.value)} />
         </div>
         <div style={{ flex: 1, minHeight: 0 }}>
-          <List>
+          <Rows>
             {[...groups].map(([group, list]) => {
               const open = !!filter || !closed.has(group);
               return (
@@ -60,14 +61,14 @@ function Palette({ node, hostProps, bubble }: BindingProps) {
                         event.dataTransfer.effectAllowed = 'copy';
                       }}
                     >
-                      <Item variant="compact" title={info.label} onClick={() => bubble('onAdd', { kind: info.name })} />
+                      <Row onClick={() => bubble('onAdd', { kind: info.name })}>{info.label}</Row>
                     </div>
                   ))}
                 </Collapsable>
               );
             })}
-            {shown.length === 0 ? <Item variant="compact" title="No kind matches." disabled /> : null}
-          </List>
+            {shown.length === 0 ? <Row dim>No kind matches.</Row> : null}
+          </Rows>
         </div>
       </div>
     </div>

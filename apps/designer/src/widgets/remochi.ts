@@ -7,7 +7,7 @@ import * as R from 'remochi';
  * `variant`, `Collapsable.isOpen`, `PopupPanel.anchorEl`, and a `ReactNode` as a `ViewSelectButton` item's content.
  * Re-declaring them here keeps the designer's widgets free of casts.
  */
-export const { Button, Input, Item, List, Subheader } = R;
+export const { Button, Input, Item, List, ListHeader, ListItem, Subheader } = R;
 
 export const Badge = R.Badge as unknown as ComponentType<{ children?: ReactNode; variant?: string; count?: number }>;
 

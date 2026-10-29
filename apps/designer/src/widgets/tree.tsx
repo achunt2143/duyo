@@ -1,13 +1,13 @@
 import type { KindDefinition } from '@duyo/core';
 import type { BindingProps, RendererBinding } from '@duyo/react';
-import { Item, List } from './remochi.js';
 import { useEffect, useRef, useState, type DragEvent } from 'react';
 
 import { ActionsMenu, type MenuAction } from './menu.js';
+import { Row, Rows } from './rows.js';
 import { DRAG_KIND, DRAG_PATH, accent, accentSoft, placeFor, type DropPlace } from './shared.js';
 
 /**
- * `Designer.Tree`: the view's components as an outline, in a Remochi `List` of `Item`s. Click
+ * `Designer.Tree`: the view's components as an outline of Remochi `ListItem` rows in a `List`. Click
  * to select; drag a row to move it before, after or into another; drop a kind from the palette
  * to add one. The structure commands are a Remochi `Button` that opens a `PopupPanel`, also on
  * a right-click.
@@ -115,7 +115,7 @@ function Tree({ node, hostProps, bubble }: BindingProps) {
           style={{ flex: 1, minHeight: 0 }}
           onDragLeave={(e) => !e.currentTarget.contains(e.relatedTarget as Node) && setDrop(null)}
         >
-          <List>
+          <Rows>
             {rows.map((row) => {
               const selected = row.key === selectedKey;
               const marker = drop?.key === row.key ? drop.place : undefined;
@@ -128,7 +128,6 @@ function Tree({ node, hostProps, bubble }: BindingProps) {
                   data-key={row.key}
                   draggable={row.key !== ''}
                   style={{
-                    paddingLeft: row.depth * 14,
                     boxShadow: marker === 'before' ? `inset 0 2px 0 ${accent}` : marker === 'after' ? `inset 0 -2px 0 ${accent}` : undefined,
                     background: marker === 'inside' ? accentSoft : undefined,
                     outline: marker === 'inside' ? `1px dashed ${accent}` : undefined,
@@ -141,11 +140,13 @@ function Tree({ node, hostProps, bubble }: BindingProps) {
                   onDrop={(event) => dropped(event, row)}
                   onDragEnd={() => setDrop(null)}
                 >
-                  <Item variant="compact" title={row.label} selected={selected} onClick={() => bubble('onSelect', { key: row.key })} />
+                  <Row depth={row.depth} selected={selected} onClick={() => bubble('onSelect', { key: row.key })}>
+                    {row.label}
+                  </Row>
                 </div>
               );
             })}
-          </List>
+          </Rows>
         </div>
       </div>
     </div>

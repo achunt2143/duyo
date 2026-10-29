@@ -76,7 +76,8 @@ the rest of a Remochi app:
 
 | | Remochi component |
 | --- | --- |
-| Files, Components, Changes, folder and repository pickers | `List` of compact `Item`s |
+| Files, Components, Palette, Changes, folder picker | `List` of `ListItem` rows: webOS list rows with a thin accent bar for the selection, and indentation for hierarchy (`widgets/rows.tsx`) |
+| Repository picker | `List` of `Item` cards: a name, a description and a badge per row |
 | Palette groups, inspector sections | `Collapsable` |
 | Git statuses, project, git and repository badges | `Badge` |
 | File, Edit and Git commands | dropdown `Button` opening a `PopupPanel` |
@@ -85,7 +86,9 @@ the rest of a Remochi app:
 | Questions | `Dialog` |
 | Titles and separators | `Subheader`, `Divider`, `NubbinDivider` |
 
-Colours (the selection outline, drop markers) come from the theme's variables. What is not
+Why two kinds of row: an `Item` is a card, which suits a few rich rows, but in a long or nested list the cards
+nest and crowd (an outline went from 8 rows to about 16 in the same pane with `ListItem`s). Colours (the
+selection outline, drop markers, the selected row) come from the theme's variables. What is not
 Remochi: the design canvas and its device frame, the code editor (CodeMirror), the drag handles
 that make dividers resizable, and the small × and → in the inspector's rows.
 

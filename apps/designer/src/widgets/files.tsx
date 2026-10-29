@@ -1,13 +1,13 @@
 import type { KindDefinition } from '@duyo/core';
 import type { BindingProps, RendererBinding } from '@duyo/react';
-import { Item, List } from './remochi.js';
 import { useState } from 'react';
 
 import { ActionsMenu, type MenuAction } from './menu.js';
+import { Row, Rows } from './rows.js';
 
 /**
- * `Designer.Files`: the project folder, as Ares' file manager showed it, in a Remochi `List`
- * of `Item`s. Views open in the designer; their code-behind opens in the code editor. Folders
+ * `Designer.Files`: the project folder, as Ares' file manager showed it, as Remochi `ListItem`
+ * rows in a `List`. Views open in the designer; their code-behind opens in the code editor. Folders
  * collapse. The file commands are a Remochi `Button` that opens a `PopupPanel`, also on a
  * right-click.
  *
@@ -65,21 +65,20 @@ function Files({ node, hostProps, bubble }: BindingProps) {
           <ActionsMenu label="File" title="Project files" actions={actions} onAction={run} at={menuAt} onAtClosed={() => setMenuAt(null)} />
         </div>
         <div role="tree" aria-label="Project files" style={{ flex: 1, minHeight: 0 }}>
-          <List>
+          <Rows>
             {entries
               .filter((e) => !hidden(e.path))
               .map((entry) => {
                 const depth = entry.path.split('/').length - 1;
                 const open = !closed.has(entry.path);
                 return (
-                  <div key={entry.path} role="treeitem" data-path={entry.path} aria-selected={entry.path === current} style={{ paddingLeft: depth * 14 }}>
-                    <Item
-                      variant="compact"
-                      title={nameOf(entry.path)}
-                      icon={<span style={{ display: 'inline-block', width: 22, textAlign: 'center', fontSize: 12, transform: entry.type === 'dir' && open ? 'rotate(90deg)' : undefined }}>{GLYPH[entry.type]}</span>}
-                      subtitle={entry.type === 'generated' ? 'generated' : undefined}
+                  <div key={entry.path} role="treeitem" data-path={entry.path} title={entry.type === 'generated' ? `${entry.path}: generated from its view` : entry.path} aria-selected={entry.path === current}>
+                    <Row
+                      depth={depth}
+                      glyph={GLYPH[entry.type]}
+                      open={entry.type === 'dir' && open}
+                      dim={entry.type === 'generated' && entry.path !== current}
                       selected={entry.path === current}
-                      disabled={entry.type === 'generated' && entry.path !== current}
                       onClick={() => {
                         if (entry.type !== 'dir') return bubble('onOpen', { path: entry.path, type: entry.type });
                         const next = new Set(closed);
@@ -87,11 +86,13 @@ function Files({ node, hostProps, bubble }: BindingProps) {
                         else next.delete(entry.path);
                         setClosed(next);
                       }}
-                    />
+                    >
+                      {nameOf(entry.path)}
+                    </Row>
                   </div>
                 );
               })}
-          </List>
+          </Rows>
         </div>
       </div>
     </div>
