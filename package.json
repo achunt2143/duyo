@@ -1,12 +1,15 @@
 {
   "name": "duyo",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "private": true,
-  "description": "Classic Enyo 1.x apps. Modern web tooling.",
-  "workspaces": [
-    "packages/*",
-    "apps/*"
-  ],
+  "description": "A modern, Enyo-style component framework: kinds, views, kind packs (Remochi first), and a visual designer.",
+  "license": "Apache-2.0",
+  "author": "achunt2143",
+  "homepage": "https://github.com/achunt2143/duyo#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/achunt2143/duyo.git"
+  },
   "scripts": {
     "dev": "npm run dev --workspace=apps/sampler",
     "build": "npm run build --workspaces --if-present",
@@ -14,13 +17,9 @@
     "build:runtime": "npm run build --workspace=packages/runtime",
     "dev:sample": "npm run build:runtime && npm run dev --workspace=apps/example",
     "typecheck": "npm run typecheck --workspaces --if-present",
-    "sampler": "npm run dev --workspace=apps/sampler"
+    "sampler": "npm run dev --workspace=apps/sampler",
+    "designer": "npm run dev --workspace=apps/designer"
   },
-  "engines": {
-    "node": ">=18.0.0"
-  },
-  "license": "Apache-2.0",
-  "author": "achunt2143",
   "devDependencies": {
     "@testing-library/react": "^14.3.1",
     "@types/react": "^18.3.3",
@@ -30,5 +29,12 @@
     "react-dom": "^18.3.1",
     "typescript": "^5.5.4",
     "vitest": "^1.6.0"
-  }
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ]
 }

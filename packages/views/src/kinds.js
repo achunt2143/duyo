@@ -1,0 +1,146 @@
+// @ts-check
+/**
+ * Turns resolved kinds into TypeScript declarations, so a view's `this.$.name` has the
+ * published properties, getters, setters and event helpers of the kind it was declared with.
+ *
+ * The input is structural (a registry that can `resolve(name)`), so this package needs
+ * neither `@duyo/core` nor a UI library: whoever owns the pack runs it over their registry.
+ */
+
+/**
+ * @typedef {{
+ *   name: string,
+ *   ancestry: readonly string[],
+ *   published: ReadonlyMap<string, { default?: unknown, allowed?: readonly unknown[] }>,
+ *   methods: ReadonlyMap<string, unknown>,
+ *   events: ReadonlySet<string>,
+ * }} ResolvedKindLike
+ */
+
+/**
+ * Methods every component has already. A kind that overrides one keeps the framework's
+ * signature.
+ */
+const FRAMEWORK_METHODS = new Set([
+  'create', 'destroy', 'rendered', 'initComponents', 'createChrome', 'createClientComponents',
+  'getInstanceOwner', 'destroyComponents', 'get', 'set', 'inherited', 'createComponent',
+  'createComponents', 'bubble', 'bubbleUp', 'getBubbleTarget', 'dispatchBubble', 'dispatchEvent',
+  'dispatch', 'waterfall', 'waterfallDown',
+]);
+
+const capitalize = (/** @type {string} */ text) => text.charAt(0).toUpperCase() + text.slice(1);
+const IDENTIFIER = /^[A-Za-z_$][A-Za-z0-9_$]*$/;
+const key = (/** @type {string} */ name) => (IDENTIFIER.test(name) ? name : JSON.stringify(name));
+
+/** `remochi.Toggle` -> `Remochi_Toggle`. */
+const typeNameFor = (/** @type {string} */ kind) =>
+  capitalize(kind.replace(/[^A-Za-z0-9]+/g, '_').replace(/^(\d)/, '_$1'));
+
+/**
+ * The TypeScript type of a published property: its `allowed` values if it has a closed
+ * set, otherwise the type of its default.
+ * @param {{ default?: unknown, allowed?: readonly unknown[] }} declaration
+ */
+export function publishedType(declaration) {
+  const { allowed } = declaration;
+  if (allowed && allowed.length > 0 && allowed.every((v) => ['string', 'number', 'boolean'].includes(typeof v))) {
+    return allowed.map((v) => JSON.stringify(v)).join(' | ');
+  }
+  const value = declaration.default;
+  if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') return typeof value;
+  if (Array.isArray(value)) return 'unknown[]';
+  if (value !== null && typeof value === 'object') return 'Record<string, unknown>';
+  return 'unknown';
+}
+
+/**
+ * Members of a resolved kind as `name -> type text`.
+ * @param {ResolvedKindLike} resolved
+ * @returns {Map<string, string>}
+ */
+function membersOf(resolved) {
+  /** @type {Map<string, string>} */
+  const members = new Map();
+  for (const [name, declaration] of resolved.published) {
+    const type = publishedType(declaration);
+    members.set(name, type);
+    members.set(`get${capitalize(name)}`, `() => ${type.includes('|') ? `(${type})` : type}`);
+    members.set(`set${capitalize(name)}`, `(value: ${type}) => void`);
+  }
+  for (const event of resolved.events) {
+    members.set(`do${capitalize(event.replace(/^on/, ''))}`, '(event?: ComponentEvent) => boolean');
+  }
+  for (const name of resolved.methods.keys()) {
+    if (!FRAMEWORK_METHODS.has(name) && !members.has(name)) members.set(name, '(...args: any[]) => any');
+  }
+  return members;
+}
+
+/**
+ * @param {{ resolve(name: string): ResolvedKindLike }} registry
+ * @param {readonly string[]} kinds kinds to describe, in any order
+ * @param {{
+ *   source: string,
+ *   module?: string,
+ *   bases?: Readonly<Record<string, string>>,
+ *   augment?: boolean,
+ *   names?: Readonly<Record<string, string>>,
+ * }} options
+ *   `source`: what the header says generated this. `module`: the core package, default
+ *   `@duyo/core`. `bases`: ancestors that already have a type, as kind name -> exported type
+ *   name (`{ 'duyo.Control': 'ControlMembers' }`). `augment`: false emits the interfaces
+ *   only, without registering them in `KindTypes`. `names`: type names to use instead of the
+ *   derived ones.
+ * @returns {string}
+ */
+export function generateKindTypes(registry, kinds, options) {
+  const core = options.module ?? '@duyo/core';
+  const bases = options.bases ?? {};
+  const typeName = (/** @type {string} */ kind) => options.names?.[kind] ?? typeNameFor(kind);
+  const names = [...kinds].sort();
+  const resolved = new Map(names.map((name) => [name, registry.resolve(name)]));
+
+  /** The kind's nearest ancestor that already has a type, with that type's name. */
+  const baseOf = (/** @type {string} */ name) => {
+    const ancestry = /** @type {ResolvedKindLike} */ (resolved.get(name)).ancestry;
+    for (let i = ancestry.length - 2; i >= 0; i--) {
+      const ancestor = /** @type {string} */ (ancestry[i]);
+      if (resolved.has(ancestor)) return { kind: ancestor, type: typeName(ancestor) };
+      if (bases[ancestor]) return { kind: ancestor, type: /** @type {string} */ (bases[ancestor]) };
+    }
+    return undefined;
+  };
+
+  const imports = ['ComponentEvent', ...new Set(Object.values(bases))].sort();
+  const lines = [
+    `// Generated by @duyo/views from ${options.source}. Do not edit: regenerate it when the kinds change.`,
+    `import type { ${imports.join(', ')} } from '${core}';`,
+    '',
+  ];
+
+  for (const name of names) {
+    const own = membersOf(/** @type {ResolvedKindLike} */ (resolved.get(name)));
+    const base = baseOf(name);
+    if (base) {
+      const inherited = membersOf(
+        resolved.has(base.kind)
+          ? /** @type {ResolvedKindLike} */ (resolved.get(base.kind))
+          : registry.resolve(base.kind),
+      );
+      for (const [member, type] of [...own]) if (inherited.get(member) === type) own.delete(member);
+    }
+
+    const heading = `/** ${name} */`;
+    const extendsClause = base ? ` extends ${base.type}` : '';
+    lines.push(heading, `export interface ${typeName(name)}${extendsClause} {`);
+    for (const [member, type] of own) lines.push(`  ${key(member)}: ${type};`);
+    lines.push('}', '');
+  }
+
+  if (options.augment !== false) {
+    lines.push(`declare module '${core}' {`, '  interface KindTypes {');
+    for (const name of names) lines.push(`    ${JSON.stringify(name)}: ${typeName(name)};`);
+    lines.push('  }', '}', '');
+  }
+  return lines.join('\n');
+}

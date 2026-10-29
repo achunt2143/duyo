@@ -10,7 +10,7 @@ const LOG_LINES = 8;
  */
 kind({
   name: 'Sampler.App',
-  kind: 'mochi.ThemeWrapper',
+  kind: 'remochi.ThemeWrapper',
   theme: 'dark',
   syncHtml: true,
   // Full height, so the section area scrolls rather than the page.
@@ -28,9 +28,9 @@ kind({
           gap: 'md',
           padding: 'md',
           components: [
-            { kind: 'mochi.Header', content: 'Duyo Sampler', fit: true },
+            { kind: 'remochi.Header', content: 'Duyo Sampler', fit: true },
             { tag: 'span', name: 'themeLabel', content: 'Dark mode' },
-            { kind: 'mochi.Toggle', name: 'themeToggle', value: true, onChange: 'themeToggled' },
+            { kind: 'remochi.Toggle', name: 'themeToggle', value: true, onChange: 'themeToggled' },
           ],
         },
         {
@@ -38,11 +38,11 @@ kind({
           fit: true,
           components: [
             {
-              kind: 'mochi.List',
+              kind: 'remochi.List',
               name: 'nav',
               style: 'width: 260px; overflow-y: auto;',
               components: SECTIONS.map((section) => ({
-                kind: 'mochi.Item',
+                kind: 'remochi.Item',
                 name: `nav_${section.key}`,
                 title: section.title,
                 subtitle: section.subtitle,

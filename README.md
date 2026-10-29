@@ -6,38 +6,61 @@ Duyo is a replacement for EnyoJS built for today's tooling. It keeps what made E
 
 ---
 
-## Status: pre-alpha, changing direction
+## Status: 1.0
 
-The first iteration vendored Enyo itself (1.0, then 2.7) behind a Vite plugin. That approach is **archived**:
+Duyo 1.0.0 is the first release: the runtime, Fittable layout, the React renderer and kind
+packs, the Remochi pack, views, a sampler and a visual designer, all at 1.0.0. See the
+[release notes](CHANGELOG.md).
 
-| Tag | What it is |
-| --- | --- |
-| `archive/enyo-1.0` | Enyo 1.0 (HP webOS 3.0.5) as `packages/runtime` — the original `main` |
-| `archive/enyo-2.7-runtime` | Vendored Enyo 2.7, Rollup bundle, `@duyo/vite-plugin`, `create-duyo`, example app |
-
-The 2.7 iteration does not work as shipped (the built bundle never exposes `enyo.kind`), and Enyo 2.6+ dropped the pieces Duyo is modelled on, so it is not being repaired.
-
-## Direction
-
-- **A TypeScript runtime**, not a vendored one. Kinds are resolved as data (not prototype chains), with owner/parent trees, published props, lifecycle, event bubbling, an action registry, and Fittable layout. Definitions can be plain JSON.
+- **A TypeScript runtime.** Kinds are resolved as data (not prototype chains), with owner/parent trees, published props, lifecycle, event bubbling, an action registry, and Fittable layout. Definitions can be plain JSON.
 - **Pluggable kind packs.** The runtime does not know about any particular design system; a pack supplies kinds, layout metadata and React bindings.
-- **[Remochi](../remochi) as the first-party pack** (`@duyo/mochi`): the Mochi look and webOS-style panels, menus and popups, on React.
-- **Tooling after that**: Vite plugin, `create-duyo`, and eventually a visual designer.
+- **[Remochi](https://www.npmjs.com/package/remochi) as the first-party pack** (`@duyo/remochi`): the Remochi look and webOS-style panels, menus and popups, on React.
+- **Views and a designer.** A screen's design can live in a `.view.json` spec, edited visually in the designer, with its behaviour in a code-behind.
 
-### What exists
+### Packages
 
 | Package | |
 | --- | --- |
 | `@duyo/core` | Kinds, components, ownership, published properties, events, inheritance. No DOM, no React. |
 | `@duyo/layout` | `FittableRows` / `FittableColumns` as a pure resolver plus kind definitions. |
 | `@duyo/react` | Kind-pack interface, `adapt()` for porting any React component library, `RuntimeView` / `renderInto`, and a plain-DOM base pack. |
-| `@duyo/mochi` | An optional pack: every [Remochi](https://www.npmjs.com/package/remochi) component as a `mochi.*` kind. Built with the same public API anyone can use. |
+| `@duyo/remochi` | An optional pack: every [Remochi](https://www.npmjs.com/package/remochi) component as a `remochi.*` kind. Built with the same public API anyone can use. |
+| `@duyo/views` | Views: a screen's design in a `.view.json` spec and its behaviour in a code-behind, checked against each other through generated types, plus per-kind property types and a guarded loader for specs that arrive at run time. CLI and Vite plugin. |
 
-`npm run sampler` starts [apps/sampler](apps/sampler), which shows every `mochi.*` kind in dark and light.
+`npm run sampler` starts [apps/sampler](apps/sampler), which shows every `remochi.*` kind in dark and light. Its Buttons and Loaded specs sections are written as views; see [docs/views.md](docs/views.md).
+
+`npm run designer` starts [apps/designer](apps/designer), a visual editor for `.view.json` files with a live preview, as Ares was for Enyo.
 
 UI libraries plug in as *packs*, as Onyx and Mochi did for Enyo. The framework knows none of them; see [docs/writing-a-pack.md](docs/writing-a-pack.md) to add your own.
 
-Not built yet: a Vite plugin and scaffolder on the new runtime, and the visual designer. The `runtime`, `vite-plugin` and `create-duyo` packages and `apps/example` are the archived Enyo 2.7 iteration.
+### Getting started
+
+```bash
+git clone https://github.com/achunt2143/duyo.git
+cd duyo
+npm install
+npm run sampler     # every remochi.* kind, at http://localhost:5190
+npm run designer    # the visual designer, at http://localhost:5191
+```
+
+The packages ship TypeScript source, so use a TypeScript-aware bundler such as Vite. They are
+not on npm yet; use them from this repository.
+
+Not built yet: a scaffolder on the new runtime.
+
+### Earlier work
+
+The first iteration vendored Enyo itself (1.0, then 2.7) behind a Vite plugin. It is **archived**
+and not part of 1.0:
+
+| Tag | What it is |
+| --- | --- |
+| `archive/enyo-1.0` | Enyo 1.0 (HP webOS 3.0.5) as `packages/runtime` — the original `main` |
+| `archive/enyo-2.7-runtime` | Vendored Enyo 2.7, Rollup bundle, `@duyo/vite-plugin`, `create-duyo`, example app |
+
+The 2.7 iteration does not work as shipped (the built bundle never exposes `enyo.kind`), and
+Enyo 2.6+ dropped the pieces Duyo is modelled on, so it is not being repaired. The `runtime`,
+`vite-plugin` and `create-duyo` packages and `apps/example` belong to it.
 
 The API follows Enyo's closely so that Enyo knowledge carries over; see [docs/enyo-alignment.md](docs/enyo-alignment.md) for what maps and what deliberately differs.
 
@@ -76,10 +99,13 @@ duyo/
 │   ├── core/           # kinds, components, events
 │   ├── layout/         # Fittable layout
 │   ├── react/          # React host, kind packs, adapt()
-│   ├── mochi/          # optional pack over Remochi
+│   ├── remochi/        # optional pack over Remochi
+│   ├── views/          # .view.json specs + code-behind: validation, types, CLI, Vite plugin
 │   ├── runtime/        # ARCHIVED: vendored Enyo 2.7 + Rollup build
 │   ├── vite-plugin/    # ARCHIVED: injects the Enyo bundle as a classic script
 │   └── create-duyo/    # ARCHIVED: scaffolder for the above
+├── apps/sampler/       # every remochi kind, two sections written as views
+├── apps/designer/      # visual editor for .view.json files
 └── apps/example/       # ARCHIVED: smoke test for the above
 ```
 

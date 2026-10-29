@@ -1,0 +1,18 @@
+/*
+ * Row styling for the designer's lists (see widgets/rows.tsx).
+ *
+ * Remochi's ListItem is a flex row around a shrink-to-fit content block, 54px tall at least.
+ * Inside these lists the content fills the row, so a hint or badge can sit at its right edge,
+ * and rows are as tall as their content needs. Scoped to .duyo-list; nothing else in Remochi is
+ * touched, and all colours are the theme's.
+ */
+/* The wrapper must not break the height chain: Remochi's List scrolls inside the pane it is given. */
+.duyo-list { height: 100%; min-height: 0; }
+.duyo-list .mochi-list-item { min-height: 0; align-items: center; cursor: pointer; padding-top: 5px; padding-bottom: 5px; }
+.duyo-list .mochi-list-item-content { flex: 1; min-width: 0; }
+.duyo-list .duyo-row { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.duyo-list .duyo-row > .grow { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.duyo-list .duyo-row > .glyph { flex: none; width: 18px; text-align: center; font-size: 11px; opacity: 0.7; }
+.duyo-list .duyo-row > .hint { flex: none; opacity: 0.55; font-size: 12px; }
+.duyo-list .duyo-selected { background: color-mix(in srgb, var(--mochi-accent, #69cdff) 20%, transparent); box-shadow: inset 3px 0 0 var(--mochi-accent, #69cdff); }
+.duyo-list .duyo-dim .grow { opacity: 0.5; }

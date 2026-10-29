@@ -36,8 +36,8 @@ describe('the framework packages know no particular UI library', () => {
     });
   }
 
-  it('@duyo/mochi reaches the framework only through its public exports', () => {
-    const files = sources(join(packages, 'mochi', 'src'));
+  it('@duyo/remochi reaches the framework only through its public exports', () => {
+    const files = sources(join(packages, 'remochi', 'src'));
     const imports = files.flatMap((file) =>
       [...readFileSync(file, 'utf8').matchAll(/from '(@duyo\/[^']+)'/g)].map((m) => m[1]!),
     );

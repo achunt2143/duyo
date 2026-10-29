@@ -1,0 +1,62 @@
+{
+  "name": "Sampler.Buttons",
+  "kind": "Sampler.Section",
+  "components": [
+    { "kind": "remochi.Subheader", "content": "Button variants" },
+    {
+      "kind": "duyo.FittableColumns",
+      "align": "center",
+      "gap": "md",
+      "components": [
+        { "kind": "remochi.Button", "content": "Normal", "ontap": "tapped" },
+        { "kind": "remochi.Button", "content": "Affirmative", "variant": "affirmative", "ontap": "tapped" },
+        { "kind": "remochi.Button", "content": "Warning", "variant": "warning", "ontap": "tapped" },
+        { "kind": "remochi.Button", "content": "Blue", "variant": "blue", "ontap": "tapped" },
+        { "kind": "remochi.Button", "content": "Dropdown", "variant": "dropdown", "ontap": "tapped" },
+        { "kind": "remochi.Button", "content": "Disabled", "disabled": true, "ontap": "tapped" }
+      ]
+    },
+    { "kind": "remochi.Subheader", "content": "ViewSelectButton" },
+    {
+      "kind": "remochi.ViewSelectButton",
+      "items": [
+        { "content": "Grid", "value": "grid" },
+        { "content": "List", "value": "list" },
+        { "content": "Cards", "value": "cards" }
+      ],
+      "onSelect": "viewSelected"
+    },
+    { "kind": "remochi.Subheader", "content": "Toggle and Checkbox" },
+    {
+      "kind": "duyo.FittableColumns",
+      "align": "center",
+      "gap": "md",
+      "components": [
+        { "kind": "remochi.Toggle", "name": "wifi", "onChange": "switched" },
+        { "tag": "span", "content": "Wi-Fi" },
+        { "kind": "remochi.Checkbox", "name": "agree", "onChange": "switched" },
+        { "tag": "span", "content": "I agree" },
+        { "kind": "remochi.Button", "content": "Flip both from code", "ontap": "flipFromCode" }
+      ]
+    },
+    { "kind": "remochi.Subheader", "content": "Radio" },
+    {
+      "kind": "duyo.FittableColumns",
+      "align": "center",
+      "gap": "md",
+      "components": [
+        { "kind": "remochi.Radio", "name": "small", "group": "size", "value": "S", "content": "Small", "onChange": "sized" },
+        {
+          "kind": "remochi.Radio",
+          "name": "medium",
+          "group": "size",
+          "value": "M",
+          "content": "Medium",
+          "checked": true,
+          "onChange": "sized"
+        },
+        { "kind": "remochi.Radio", "name": "large", "group": "size", "value": "L", "content": "Large", "onChange": "sized" }
+      ]
+    }
+  ]
+}

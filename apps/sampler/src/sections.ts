@@ -1,5 +1,10 @@
 import { kind, type Component, type ComponentDefinition, type ComponentEvent } from '@duyo/core';
 
+// Sampler.Buttons and Sampler.Loaded are written as views: views/Buttons.view.json is the design and
+// views/Buttons.ts the behaviour. The other sections are inline kinds, for comparison.
+import './views/Buttons.js';
+import './views/Loaded.js';
+
 /**
  * One kind per sampler section. Each extends Sampler.Section, whose `log()` bubbles an
  * `onLog` event up to the shell, so every interaction shows in the event log.
@@ -20,12 +25,13 @@ export const SECTIONS: SectionInfo[] = [
   { key: 'panels', title: 'Panels', subtitle: 'RepanelStack, Repanel, FloatingPanel, Collapsable', kind: 'Sampler.Panels' },
   { key: 'overlays', title: 'Menus and overlays', subtitle: 'SlidingMenu, Dialog, PopupPanel', kind: 'Sampler.Overlays' },
   { key: 'flow', title: 'Media and flow', subtitle: 'Video, Wizard', kind: 'Sampler.Flow' },
+  { key: 'loaded', title: 'Loaded specs', subtitle: 'A screen from JSON at run time, with allow-lists', kind: 'Sampler.Loaded' },
 ];
 
 const value = (event: ComponentEvent) => JSON.stringify(event['value']);
 
 /** A caption above a group of demos. */
-const caption = (text: string) => ({ kind: 'mochi.Subheader', content: text });
+const caption = (text: string) => ({ kind: 'remochi.Subheader', content: text });
 
 /** A horizontal row of controls. */
 const row = (components: ComponentDefinition[]): ComponentDefinition => ({ kind: 'duyo.FittableColumns', align: 'center', gap: 'md', components });
@@ -51,66 +57,6 @@ kind({
 
 // ---------------------------------------------------------------------------
 
-kind({
-  name: 'Sampler.Buttons',
-  kind: 'Sampler.Section',
-  components: [
-    caption('Button variants'),
-    row([
-      { kind: 'mochi.Button', content: 'Normal', ontap: 'tapped' },
-      { kind: 'mochi.Button', content: 'Affirmative', variant: 'affirmative', ontap: 'tapped' },
-      { kind: 'mochi.Button', content: 'Warning', variant: 'warning', ontap: 'tapped' },
-      { kind: 'mochi.Button', content: 'Blue', variant: 'blue', ontap: 'tapped' },
-      { kind: 'mochi.Button', content: 'Dropdown', variant: 'dropdown', ontap: 'tapped' },
-      { kind: 'mochi.Button', content: 'Disabled', disabled: true, ontap: 'tapped' },
-    ]),
-    caption('ViewSelectButton'),
-    {
-      kind: 'mochi.ViewSelectButton',
-      items: [
-        { content: 'Grid', value: 'grid' },
-        { content: 'List', value: 'list' },
-        { content: 'Cards', value: 'cards' },
-      ],
-      onSelect: 'viewSelected',
-    },
-    caption('Toggle and Checkbox'),
-    row([
-      { kind: 'mochi.Toggle', name: 'wifi', onChange: 'switched' },
-      text('Wi-Fi'),
-      { kind: 'mochi.Checkbox', name: 'agree', onChange: 'switched' },
-      text('I agree'),
-      { kind: 'mochi.Button', content: 'Flip both from code', ontap: 'flipFromCode' },
-    ]),
-    caption('Radio'),
-    row([
-      { kind: 'mochi.Radio', name: 'small', group: 'size', value: 'S', content: 'Small', onChange: 'sized' },
-      { kind: 'mochi.Radio', name: 'medium', group: 'size', value: 'M', content: 'Medium', checked: true, onChange: 'sized' },
-      { kind: 'mochi.Radio', name: 'large', group: 'size', value: 'L', content: 'Large', onChange: 'sized' },
-    ]),
-  ],
-  tapped(sender: Component) {
-    this.log(`ontap: ${sender.content}`);
-  },
-  viewSelected(_sender: Component, event: ComponentEvent) {
-    this.log(`onSelect: ${value(event)} (index ${event['index']})`);
-  },
-  switched(sender: Component, event: ComponentEvent) {
-    this.log(`onChange: ${sender.name} = ${value(event)}`);
-  },
-  flipFromCode() {
-    this.$.wifi!.setValue(!this.$.wifi!.value);
-    this.$.agree!.setChecked(!this.$.agree!.checked);
-    this.log(`set from code: wifi = ${this.$.wifi!.value}, agree = ${this.$.agree!.checked}`);
-  },
-  sized(sender: Component) {
-    for (const name of ['small', 'medium', 'large']) {
-      if (this.$[name] !== sender) this.$[name]!.setChecked(false);
-    }
-    this.log(`onChange: size = ${sender.value}`);
-  },
-});
-
 // ---------------------------------------------------------------------------
 
 kind({
@@ -119,17 +65,17 @@ kind({
   components: [
     caption('Input'),
     row([
-      { kind: 'mochi.Input', name: 'who', placeholder: 'Your name', onchange: 'committed' },
+      { kind: 'remochi.Input', name: 'who', placeholder: 'Your name', onchange: 'committed' },
       text('Type, then press Enter or tab away.'),
     ]),
     caption('TextArea'),
-    { kind: 'mochi.TextArea', name: 'notes', placeholder: 'Notes', onchange: 'committed' },
+    { kind: 'remochi.TextArea', name: 'notes', placeholder: 'Notes', onchange: 'committed' },
     caption('RichText'),
-    { kind: 'mochi.RichText', name: 'rich', placeholder: 'Rich text: try Ctrl+B', onchange: 'committed' },
+    { kind: 'remochi.RichText', name: 'rich', placeholder: 'Rich text: try Ctrl+B', onchange: 'committed' },
     caption('Dropdown and NumberInput'),
     row([
       {
-        kind: 'mochi.Dropdown',
+        kind: 'remochi.Dropdown',
         name: 'fruit',
         options: [
           { value: 'apple', label: 'Apple' },
@@ -138,13 +84,13 @@ kind({
         ],
         onChange: 'changed',
       },
-      { kind: 'mochi.NumberInput', name: 'quantity', label: 'Quantity', min: 0, max: 10, onChange: 'changed' },
+      { kind: 'remochi.NumberInput', name: 'quantity', label: 'Quantity', min: 0, max: 10, onChange: 'changed' },
     ]),
     caption('Slider (drives the progress bar)'),
-    { kind: 'mochi.Slider', name: 'level', value: 30, onChange: 'levelled' },
-    { kind: 'mochi.ProgressBar', name: 'levelBar', value: 30 },
+    { kind: 'remochi.Slider', name: 'level', value: 30, onChange: 'levelled' },
+    { kind: 'remochi.ProgressBar', name: 'levelBar', value: 30 },
     caption('DateInput'),
-    { kind: 'mochi.DateInput', name: 'when', label: 'Date', onChange: 'changed' },
+    { kind: 'remochi.DateInput', name: 'when', label: 'Date', onChange: 'changed' },
   ],
   committed(sender: Component) {
     this.log(`onchange: ${sender.name} = ${JSON.stringify(sender.value)}`);
@@ -165,34 +111,34 @@ kind({
   kind: 'Sampler.Section',
   components: [
     caption('ProgressBar'),
-    { kind: 'mochi.ProgressBar', value: 25 },
-    { kind: 'mochi.ProgressBar', value: 60, color: 'yellow' },
-    { kind: 'mochi.ProgressBar', value: 90, color: 'red' },
+    { kind: 'remochi.ProgressBar', value: 25 },
+    { kind: 'remochi.ProgressBar', value: 60, color: 'yellow' },
+    { kind: 'remochi.ProgressBar', value: 90, color: 'red' },
     caption('Spinner'),
     row([
-      { kind: 'mochi.Spinner' },
-      { kind: 'mochi.Spinner', size: 'large' },
-      { kind: 'mochi.Spinner', styleType: 'dark' },
-      { kind: 'mochi.Spinner', styleType: 'dark', size: 'large' },
+      { kind: 'remochi.Spinner' },
+      { kind: 'remochi.Spinner', size: 'large' },
+      { kind: 'remochi.Spinner', styleType: 'dark' },
+      { kind: 'remochi.Spinner', styleType: 'dark', size: 'large' },
     ]),
     caption('Badge'),
     row([
-      { kind: 'mochi.Badge', content: 'Default' },
-      { kind: 'mochi.Badge', content: 'Success', variant: 'success' },
-      { kind: 'mochi.Badge', content: 'Warning', variant: 'warning' },
-      { kind: 'mochi.Badge', content: 'Error', variant: 'error' },
-      { kind: 'mochi.Badge', content: 'Info', variant: 'info' },
-      { kind: 'mochi.Badge', content: 'Inbox', count: 7 },
+      { kind: 'remochi.Badge', content: 'Default' },
+      { kind: 'remochi.Badge', content: 'Success', variant: 'success' },
+      { kind: 'remochi.Badge', content: 'Warning', variant: 'warning' },
+      { kind: 'remochi.Badge', content: 'Error', variant: 'error' },
+      { kind: 'remochi.Badge', content: 'Info', variant: 'info' },
+      { kind: 'remochi.Badge', content: 'Inbox', count: 7 },
     ]),
     caption('Header and Subheader'),
-    { kind: 'mochi.Header', content: 'A Header' },
-    { kind: 'mochi.Subheader', content: 'A Subheader' },
+    { kind: 'remochi.Header', content: 'A Header' },
+    { kind: 'remochi.Subheader', content: 'A Subheader' },
     caption('Divider'),
-    { kind: 'mochi.Divider' },
+    { kind: 'remochi.Divider' },
     caption('NubbinDivider'),
-    { kind: 'mochi.NubbinDivider', nubbin: 'up' },
-    { kind: 'mochi.NubbinDivider', nubbin: 'down', nubbinOffset: '25%' },
-    { kind: 'mochi.NubbinDivider', nubbin: 'top-left-up' },
+    { kind: 'remochi.NubbinDivider', nubbin: 'up' },
+    { kind: 'remochi.NubbinDivider', nubbin: 'down', nubbinOffset: '25%' },
+    { kind: 'remochi.NubbinDivider', nubbin: 'top-left-up' },
   ],
 });
 
@@ -204,34 +150,34 @@ kind({
   components: [
     caption('List, ListHeader and ListItem'),
     {
-      kind: 'mochi.List',
+      kind: 'remochi.List',
       style: 'max-width: 420px;',
       components: [
-        { kind: 'mochi.ListHeader', content: 'Inbox' },
-        { kind: 'mochi.ListItem', name: 'mail1', content: 'Lunch on Friday?', ontap: 'tapped' },
-        { kind: 'mochi.ListItem', name: 'mail2', content: 'Your parcel has shipped', ontap: 'tapped' },
-        { kind: 'mochi.ListItem', name: 'mail3', content: 'Build passed', ontap: 'tapped' },
+        { kind: 'remochi.ListHeader', content: 'Inbox' },
+        { kind: 'remochi.ListItem', name: 'mail1', content: 'Lunch on Friday?', ontap: 'tapped' },
+        { kind: 'remochi.ListItem', name: 'mail2', content: 'Your parcel has shipped', ontap: 'tapped' },
+        { kind: 'remochi.ListItem', name: 'mail3', content: 'Build passed', ontap: 'tapped' },
       ],
     },
     caption('Item'),
     {
       style: 'max-width: 420px;',
       components: [
-        { kind: 'mochi.Item', name: 'item1', title: 'Andrew', subtitle: 'Online', icon: '👤', ontap: 'tapped', onIconTap: 'iconTapped' },
-        { kind: 'mochi.Item', name: 'item2', title: 'Compact item', variant: 'compact', ontap: 'tapped' },
-        { kind: 'mochi.Item', name: 'item3', title: 'Detailed item', subtitle: 'With a subtitle', rightContent: '3m', variant: 'detailed', ontap: 'tapped' },
-        { kind: 'mochi.Item', name: 'item4', title: 'Disabled item', disabled: true, ontap: 'tapped' },
+        { kind: 'remochi.Item', name: 'item1', title: 'Andrew', subtitle: 'Online', icon: '👤', ontap: 'tapped', onIconTap: 'iconTapped' },
+        { kind: 'remochi.Item', name: 'item2', title: 'Compact item', variant: 'compact', ontap: 'tapped' },
+        { kind: 'remochi.Item', name: 'item3', title: 'Detailed item', subtitle: 'With a subtitle', rightContent: '3m', variant: 'detailed', ontap: 'tapped' },
+        { kind: 'remochi.Item', name: 'item4', title: 'Disabled item', disabled: true, ontap: 'tapped' },
       ],
     },
     caption('GridList'),
     {
-      kind: 'mochi.GridList',
+      kind: 'remochi.GridList',
       columns: 4,
       style: 'max-width: 720px;',
       components: [
         ['#e05d44', 'Red'], ['#dfb317', 'Yellow'], ['#4c1', 'Green'], ['#007ec6', 'Blue'],
       ].map(([colour, name]) => ({
-        kind: 'mochi.GridListImageItem',
+        kind: 'remochi.GridListImageItem',
         name: `tile${name}`,
         src: swatch(colour!, name!),
         caption: name,
@@ -240,7 +186,7 @@ kind({
     },
     caption('Table'),
     {
-      kind: 'mochi.Table',
+      kind: 'remochi.Table',
       columns: [
         { key: 'name', label: 'Name' },
         { key: 'device', label: 'Device' },
@@ -256,7 +202,7 @@ kind({
       onRowTap: 'rowTapped',
     },
     caption('Pagination'),
-    { kind: 'mochi.Pagination', name: 'pages', totalPages: 12, onChange: 'paged' },
+    { kind: 'remochi.Pagination', name: 'pages', totalPages: 12, onChange: 'paged' },
   ],
   tapped(sender: Component) {
     this.log(`ontap: ${sender.name}`);
@@ -283,47 +229,47 @@ kind({
   components: [
     caption('RepanelStack'),
     row([
-      { kind: 'mochi.Button', content: 'Previous', ontap: 'previous' },
-      { kind: 'mochi.Button', content: 'Next', ontap: 'next' },
+      { kind: 'remochi.Button', content: 'Previous', ontap: 'previous' },
+      { kind: 'remochi.Button', content: 'Next', ontap: 'next' },
       text('', 'stackState'),
     ]),
     {
-      kind: 'mochi.RepanelStack',
+      kind: 'remochi.RepanelStack',
       name: 'stack',
       activeIndex: 2,
       style: 'height: 320px;',
       onActiveIndexChange: 'stackMoved',
       components: ['Accounts', 'Folders', 'Messages'].map((title, index) => ({
-        kind: 'mochi.Repanel',
+        kind: 'remochi.Repanel',
         name: `panel${index}`,
         components: [
-          { kind: 'mochi.Header', content: title },
+          { kind: 'remochi.Header', content: title },
           { kind: 'duyo.Control', style: 'padding: 12px;', content: `Panel ${index + 1}. Drag the nubbin, or use Previous and Next.` },
         ],
       })),
     },
     caption('FloatingPanel'),
     {
-      kind: 'mochi.FloatingPanel',
+      kind: 'remochi.FloatingPanel',
       look: 'shadow',
       style: 'max-width: 360px;',
       components: [{ style: 'padding: 16px;', content: 'A floating panel with the shadow look.' }],
     },
     caption('Collapsable'),
-    row([{ kind: 'mochi.Button', content: 'Open and close from code', ontap: 'toggleDetails' }]),
+    row([{ kind: 'remochi.Button', content: 'Open and close from code', ontap: 'toggleDetails' }]),
     {
-      kind: 'mochi.Collapsable',
+      kind: 'remochi.Collapsable',
       name: 'details',
       title: 'Details',
       onToggle: 'toggled',
       style: 'max-width: 420px;',
       components: [
-        { kind: 'mochi.CollapsableItem', content: 'First item' },
-        { kind: 'mochi.CollapsableItem', content: 'Second item' },
-        { kind: 'mochi.CollapsableFooter' },
+        { kind: 'remochi.CollapsableItem', content: 'First item' },
+        { kind: 'remochi.CollapsableItem', content: 'Second item' },
+        { kind: 'remochi.CollapsableFooter' },
       ],
     },
-    { kind: 'mochi.CollapsableHeader', content: 'A standalone CollapsableHeader', ontap: 'headerTapped' },
+    { kind: 'remochi.CollapsableHeader', content: 'A standalone CollapsableHeader', ontap: 'headerTapped' },
   ],
   create() {
     this.inherited(arguments);
@@ -363,32 +309,32 @@ kind({
   kind: 'Sampler.Section',
   components: [
     caption('SlidingMenu and its content shifter'),
-    row([{ kind: 'mochi.Button', content: 'Open the menu', ontap: 'toggleMenu' }]),
+    row([{ kind: 'remochi.Button', content: 'Open the menu', ontap: 'toggleMenu' }]),
     {
-      kind: 'mochi.SlidingMenu',
+      kind: 'remochi.SlidingMenu',
       name: 'nav',
       onOpenChange: 'menuChanged',
       components: [
         {
-          kind: 'mochi.SlidingMenuItemGroup',
+          kind: 'remochi.SlidingMenuItemGroup',
           label: 'Places',
           divider: true,
           components: [
-            { kind: 'mochi.SlidingMenuItem', name: 'home', content: 'Home', icon: '🏠', active: true, ontap: 'went' },
-            { kind: 'mochi.SlidingMenuItem', name: 'mail', content: 'Mail', icon: '✉️', badge: 3, ontap: 'went' },
+            { kind: 'remochi.SlidingMenuItem', name: 'home', content: 'Home', icon: '🏠', active: true, ontap: 'went' },
+            { kind: 'remochi.SlidingMenuItem', name: 'mail', content: 'Mail', icon: '✉️', badge: 3, ontap: 'went' },
           ],
         },
         {
-          kind: 'mochi.SlidingMenuItemGroup',
+          kind: 'remochi.SlidingMenuItemGroup',
           label: 'Account',
           components: [
-            { kind: 'mochi.SlidingMenuItem', name: 'signOut', content: 'Sign out', variant: 'danger', ontap: 'went' },
+            { kind: 'remochi.SlidingMenuItem', name: 'signOut', content: 'Sign out', variant: 'danger', ontap: 'went' },
           ],
         },
       ],
     },
     {
-      kind: 'mochi.SlidingMenuContentShifter',
+      kind: 'remochi.SlidingMenuContentShifter',
       menu: 'nav',
       components: [
         { style: 'padding: 12px; border: 1px dashed rgba(127,127,127,0.5);', content: 'This content moves aside when the menu opens.' },
@@ -396,13 +342,13 @@ kind({
     },
     caption('Dialog'),
     row([
-      { kind: 'mochi.Button', content: 'Confirm', ontap: 'openConfirm' },
-      { kind: 'mochi.Button', content: 'Prompt', ontap: 'openPrompt' },
-      { kind: 'mochi.Button', content: 'Alert', ontap: 'openAlert' },
-      { kind: 'mochi.Button', content: 'Custom actions', ontap: 'openCustom' },
+      { kind: 'remochi.Button', content: 'Confirm', ontap: 'openConfirm' },
+      { kind: 'remochi.Button', content: 'Prompt', ontap: 'openPrompt' },
+      { kind: 'remochi.Button', content: 'Alert', ontap: 'openAlert' },
+      { kind: 'remochi.Button', content: 'Custom actions', ontap: 'openCustom' },
     ]),
     {
-      kind: 'mochi.Dialog',
+      kind: 'remochi.Dialog',
       name: 'confirm',
       title: 'Delete this message?',
       dialogType: 'confirm',
@@ -412,10 +358,10 @@ kind({
       onCancel: 'cancelled',
       components: [{ content: 'This cannot be undone.' }],
     },
-    { kind: 'mochi.Dialog', name: 'prompt', title: 'Rename', dialogType: 'prompt', onConfirm: 'confirmed', onCancel: 'cancelled' },
-    { kind: 'mochi.Dialog', name: 'alert', title: 'Heads up', dialogType: 'alert', onConfirm: 'confirmed', components: [{ content: 'Something happened.' }] },
+    { kind: 'remochi.Dialog', name: 'prompt', title: 'Rename', dialogType: 'prompt', onConfirm: 'confirmed', onCancel: 'cancelled' },
+    { kind: 'remochi.Dialog', name: 'alert', title: 'Heads up', dialogType: 'alert', onConfirm: 'confirmed', components: [{ content: 'Something happened.' }] },
     {
-      kind: 'mochi.Dialog',
+      kind: 'remochi.Dialog',
       name: 'custom',
       title: 'Sync failed',
       actions: [
@@ -426,9 +372,9 @@ kind({
       components: [{ content: 'Custom actions are plain data and raise onAction.' }],
     },
     caption('PopupPanel'),
-    row([{ kind: 'mochi.Button', name: 'more', content: 'More…', variant: 'dropdown', ontap: 'openPopup' }]),
+    row([{ kind: 'remochi.Button', name: 'more', content: 'More…', variant: 'dropdown', ontap: 'openPopup' }]),
     {
-      kind: 'mochi.PopupPanel',
+      kind: 'remochi.PopupPanel',
       name: 'popup',
       anchor: 'more',
       title: 'Options',
@@ -489,7 +435,7 @@ kind({
   components: [
     caption('Video'),
     {
-      kind: 'mochi.Video',
+      kind: 'remochi.Video',
       src: 'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4',
       muted: true,
       style: 'max-width: 480px;',
@@ -499,30 +445,30 @@ kind({
     },
     caption('Wizard (step 1 will not continue until a name is entered)'),
     {
-      kind: 'mochi.Wizard',
+      kind: 'remochi.Wizard',
       name: 'wizard',
       onStepChange: 'stepped',
       onComplete: 'completed',
       onCancel: 'cancelled',
       components: [
         {
-          kind: 'mochi.WizardStep',
+          kind: 'remochi.WizardStep',
           label: 'Account',
           title: 'Create your account',
           description: 'Next is refused while the name is empty.',
           onNext: 'checkName',
-          components: [{ kind: 'mochi.Input', name: 'accountName', placeholder: 'Name' }],
+          components: [{ kind: 'remochi.Input', name: 'accountName', placeholder: 'Name' }],
         },
         {
-          kind: 'mochi.WizardStep',
+          kind: 'remochi.WizardStep',
           label: 'Preferences',
           title: 'Preferences',
           skippable: true,
           components: [
-            { kind: 'duyo.FittableColumns', align: 'center', gap: 'md', components: [{ kind: 'mochi.Toggle' }, { tag: 'span', content: 'Send me updates' }] },
+            { kind: 'duyo.FittableColumns', align: 'center', gap: 'md', components: [{ kind: 'remochi.Toggle' }, { tag: 'span', content: 'Send me updates' }] },
           ],
         },
-        { kind: 'mochi.WizardStep', label: 'Done', title: 'All set', components: [{ content: 'Press Finish.' }] },
+        { kind: 'remochi.WizardStep', label: 'Done', title: 'All set', components: [{ content: 'Press Finish.' }] },
       ],
     },
   ],

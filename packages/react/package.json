@@ -1,23 +1,33 @@
 {
   "name": "@duyo/react",
-  "version": "0.4.0-alpha.0",
+  "version": "1.0.0",
   "description": "Duyo React host: renders a @duyo/core component tree through pluggable kind packs.",
   "license": "Apache-2.0",
   "author": "achunt2143",
+  "homepage": "https://github.com/achunt2143/duyo/tree/main/packages/react#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/achunt2143/duyo.git",
+    "directory": "packages/react"
+  },
+  "bugs": {
+    "url": "https://github.com/achunt2143/duyo/issues"
+  },
   "type": "module",
   "exports": {
     ".": "./src/index.ts"
   },
   "files": [
-    "src/"
+    "src/",
+    "CHANGELOG.md"
   ],
   "scripts": {
     "typecheck": "tsc -p tsconfig.json",
     "test": "vitest run"
   },
   "dependencies": {
-    "@duyo/core": "*",
-    "@duyo/layout": "*"
+    "@duyo/core": "^1.0.0",
+    "@duyo/layout": "^1.0.0"
   },
   "peerDependencies": {
     "react": "^18.0.0 || ^19.0.0",
