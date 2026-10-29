@@ -3,6 +3,10 @@ import type { Component, ComponentEvent, Instance, ViewComponent } from '@duyo/c
 
 /** `this.$` in the code-behind: every named component in the spec. */
 export type Named = {
+  /** remochi.Button */
+  projectButton: Instance<"remochi.Button">;
+  /** remochi.PopupPanel */
+  projectMenuPanel: Instance<"remochi.PopupPanel">;
   /** duyo.Control */
   status: Instance<"duyo.Control">;
   /** remochi.Button */
@@ -23,6 +27,16 @@ export type Named = {
   files: Instance<"Designer.Files">;
   /** Designer.Palette */
   palette: Instance<"Designer.Palette">;
+  /** duyo.FittableRows */
+  changesPane: Instance<"duyo.FittableRows">;
+  /** Designer.Changes */
+  changes: Instance<"Designer.Changes">;
+  /** remochi.Input */
+  commitMessage: Instance<"remochi.Input">;
+  /** remochi.Button */
+  commitButton: Instance<"remochi.Button">;
+  /** remochi.Button */
+  pushButton: Instance<"remochi.Button">;
   /** Designer.Splitter */
   browseSplit: Instance<"Designer.Splitter">;
   /** Designer.Tree */
@@ -72,7 +86,7 @@ export type Named = {
 };
 
 /** Handlers the spec names. The code-behind must implement every one. */
-export type Handlers = 'browseResized' | 'canvasDrop' | 'codeEdited' | 'deleteFile' | 'deviceChanged' | 'dialogAction' | 'dialogCancelled' | 'dialogClosed' | 'dialogConfirmed' | 'explorerResized' | 'fileOpened' | 'help' | 'inspectorResized' | 'inspectorTabChanged' | 'jsonEdited' | 'leftTabChanged' | 'modeChanged' | 'newFolder' | 'newView' | 'openRunWindow' | 'paletteAdd' | 'picked' | 'redo' | 'reloadRun' | 'renameFile' | 'rotate' | 'save' | 'saveAll' | 'tabActivated' | 'tabClosed' | 'treeAction' | 'treeDroppedKind' | 'treeMoved' | 'treeSelected' | 'undo' | 'zoomChanged';
+export type Handlers = 'browseResized' | 'canvasDrop' | 'codeEdited' | 'commitChanges' | 'deleteFile' | 'deviceChanged' | 'dialogAction' | 'dialogCancelled' | 'dialogClosed' | 'dialogConfirmed' | 'explorerResized' | 'fileOpened' | 'gitAction' | 'help' | 'inspectorResized' | 'inspectorTabChanged' | 'jsonEdited' | 'leftTabChanged' | 'modeChanged' | 'newFolder' | 'newView' | 'openRunWindow' | 'paletteAdd' | 'picked' | 'projectAction' | 'projectMenu' | 'projectMenuClosed' | 'pushChanges' | 'redo' | 'reloadRun' | 'renameFile' | 'rotate' | 'save' | 'saveAll' | 'tabActivated' | 'tabClosed' | 'treeAction' | 'treeDroppedKind' | 'treeMoved' | 'treeSelected' | 'undo' | 'zoomChanged';
 
 /** `this` inside the code-behind. */
 export type Self = ViewComponent<Named>;

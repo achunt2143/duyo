@@ -21,6 +21,21 @@
               "style": "font-size: 20px; font-weight: 300; letter-spacing: 0.08em; text-transform: uppercase; margin: 0 16px 0 8px; white-space: nowrap;"
             },
             {
+              "kind": "remochi.Button",
+              "name": "projectButton",
+              "content": "Project",
+              "variant": "dropdown",
+              "ontap": "projectMenu"
+            },
+            {
+              "kind": "remochi.PopupPanel",
+              "name": "projectMenuPanel",
+              "anchor": "projectButton",
+              "title": "Project",
+              "onAction": "projectAction",
+              "onClose": "projectMenuClosed"
+            },
+            {
               "tag": "span",
               "name": "status",
               "fit": true,
@@ -49,7 +64,11 @@
                 {
                   "kind": "remochi.ViewSelectButton",
                   "name": "leftTabs",
-                  "items": [{ "content": "Files", "value": "files" }, { "content": "Palette", "value": "palette" }],
+                  "items": [
+                    { "content": "Files", "value": "files" },
+                    { "content": "Palette", "value": "palette" },
+                    { "content": "Changes", "value": "changes" }
+                  ],
                   "onSelect": "leftTabChanged"
                 },
                 {
@@ -67,7 +86,50 @@
                       "onRename": "renameFile",
                       "onDelete": "deleteFile"
                     },
-                    { "kind": "Designer.Palette", "name": "palette", "fit": true, "showing": false, "onAdd": "paletteAdd" }
+                    { "kind": "Designer.Palette", "name": "palette", "fit": true, "showing": false, "onAdd": "paletteAdd" },
+                    {
+                      "kind": "duyo.FittableRows",
+                      "name": "changesPane",
+                      "fit": true,
+                      "showing": false,
+                      "gap": "sm",
+                      "style": "min-height: 0;",
+                      "components": [
+                        {
+                          "kind": "Designer.Changes",
+                          "name": "changes",
+                          "fit": true,
+                          "onOpen": "fileOpened",
+                          "onAction": "gitAction"
+                        },
+                        {
+                          "kind": "remochi.Input",
+                          "name": "commitMessage",
+                          "placeholder": "Describe the change",
+                          "width": "100%"
+                        },
+                        {
+                          "kind": "duyo.FittableColumns",
+                          "gap": "sm",
+                          "components": [
+                            {
+                              "kind": "remochi.Button",
+                              "name": "commitButton",
+                              "content": "Commit",
+                              "variant": "affirmative",
+                              "ontap": "commitChanges"
+                            },
+                            {
+                              "kind": "remochi.Button",
+                              "name": "pushButton",
+                              "content": "Push",
+                              "variant": "blue",
+                              "ontap": "pushChanges"
+                            }
+                          ]
+                        }
+                      ]
+                    }
                   ]
                 },
                 {
@@ -75,9 +137,15 @@
                   "name": "browseSplit",
                   "orientation": "horizontal",
                   "onResize": "browseResized",
-                  "components": [{ "kind": "remochi.NubbinDivider", "nubbin": "down", "style": "width: 100%;" }]
+                  "components": [
+                    { "kind": "remochi.NubbinDivider", "nubbin": "down", "style": "width: 100%;" }
+                  ]
                 },
-                { "tag": "div", "content": "Components", "style": "font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.6; padding: 0 4px;" },
+                {
+                  "tag": "div",
+                  "content": "Components",
+                  "style": "font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.6; padding: 0 4px;"
+                },
                 {
                   "kind": "Designer.Tree",
                   "name": "tree",
@@ -93,7 +161,9 @@
               "kind": "Designer.Splitter",
               "name": "explorerSplit",
               "onResize": "explorerResized",
-              "components": [{ "kind": "remochi.Divider", "orientation": "vertical", "style": "height: 100%;" }]
+              "components": [
+                { "kind": "remochi.Divider", "orientation": "vertical", "style": "height: 100%;" }
+              ]
             },
             {
               "kind": "duyo.FittableRows",
@@ -101,7 +171,13 @@
               "fit": true,
               "style": "min-width: 0; min-height: 0;",
               "components": [
-                { "kind": "Designer.Tabs", "name": "tabs", "style": "padding: 4px 8px 0;", "onActivate": "tabActivated", "onClose": "tabClosed" },
+                {
+                  "kind": "Designer.Tabs",
+                  "name": "tabs",
+                  "style": "padding: 4px 8px 0;",
+                  "onActivate": "tabActivated",
+                  "onClose": "tabClosed"
+                },
                 {
                   "kind": "duyo.FittableColumns",
                   "align": "center",
@@ -123,14 +199,33 @@
                     { "kind": "remochi.Dropdown", "name": "device", "maxHeight": 320, "onChange": "deviceChanged" },
                     { "kind": "remochi.Button", "name": "rotateButton", "content": "Rotate", "ontap": "rotate" },
                     { "kind": "remochi.Dropdown", "name": "zoom", "maxHeight": 320, "onChange": "zoomChanged" },
-                    { "kind": "remochi.Button", "name": "reloadButton", "content": "Reload", "showing": false, "ontap": "reloadRun" },
-                    { "kind": "remochi.Button", "name": "windowButton", "content": "Open in window", "showing": false, "ontap": "openRunWindow" }
+                    {
+                      "kind": "remochi.Button",
+                      "name": "reloadButton",
+                      "content": "Reload",
+                      "showing": false,
+                      "ontap": "reloadRun"
+                    },
+                    {
+                      "kind": "remochi.Button",
+                      "name": "windowButton",
+                      "content": "Open in window",
+                      "showing": false,
+                      "ontap": "openRunWindow"
+                    }
                   ]
                 },
                 { "kind": "remochi.Divider", "thickness": 2 },
                 { "kind": "Designer.Canvas", "name": "canvas", "fit": true, "onPick": "picked", "onDropAt": "canvasDrop" },
                 { "kind": "Designer.Code", "name": "code", "fit": true, "showing": false, "onEdit": "codeEdited" },
-                { "kind": "Designer.Code", "name": "json", "language": "json", "fit": true, "showing": false, "onEdit": "jsonEdited" },
+                {
+                  "kind": "Designer.Code",
+                  "name": "json",
+                  "language": "json",
+                  "fit": true,
+                  "showing": false,
+                  "onEdit": "jsonEdited"
+                },
                 { "kind": "Designer.Run", "name": "run", "fit": true, "showing": false }
               ]
             },
@@ -138,7 +233,9 @@
               "kind": "Designer.Splitter",
               "name": "inspectorSplit",
               "onResize": "inspectorResized",
-              "components": [{ "kind": "remochi.Divider", "orientation": "vertical", "style": "height: 100%;" }]
+              "components": [
+                { "kind": "remochi.Divider", "orientation": "vertical", "style": "height: 100%;" }
+              ]
             },
             {
               "kind": "duyo.FittableRows",
@@ -159,7 +256,11 @@
                   "onSelect": "inspectorTabChanged"
                 },
                 { "kind": "remochi.Divider", "thickness": 2 },
-                { "name": "inspector", "fit": true, "style": "overflow-y: auto; overflow-x: hidden; min-height: 0; padding-right: 4px;" }
+                {
+                  "name": "inspector",
+                  "fit": true,
+                  "style": "overflow-y: auto; overflow-x: hidden; min-height: 0; padding-right: 4px;"
+                }
               ]
             }
           ]
@@ -179,7 +280,9 @@
           "onCancel": "dialogCancelled",
           "onClose": "dialogClosed",
           "onAction": "dialogAction",
-          "components": [{ "tag": "p", "name": "dialogMessage", "style": "margin: 0 0 8px; white-space: pre-wrap;" }]
+          "components": [
+            { "tag": "p", "name": "dialogMessage", "style": "margin: 0 0 8px; white-space: pre-wrap;" }
+          ]
         }
       ]
     }

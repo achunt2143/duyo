@@ -3,24 +3,25 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vite';
 
-import { designerFiles } from './server/files.js';
+import { designerFiles, isProjectFile } from './server/files.js';
 
 /**
- * The project the designer edits. By default the sampler next door:
- *
- *   DUYO_DESIGNER_ROOT   folder whose *.view.json files are listed and saved (default ../sampler/src)
- *   DUYO_DESIGNER_KINDS  module that registers the project's own kinds (default <root>/sections.ts)
+ * The designer opens projects while it runs (its Project menu). It starts on the project it
+ * had last, or on `DUYO_DESIGNER_ROOT` if that is set, or on the sampler next door.
  */
-const root = resolve(process.env['DUYO_DESIGNER_ROOT'] ?? resolve(dirname(fileURLToPath(import.meta.url)), '../sampler/src'));
-const kinds = resolve(process.env['DUYO_DESIGNER_KINDS'] ?? resolve(root, 'sections.ts'));
+const sampler = resolve(dirname(fileURLToPath(import.meta.url)), '../sampler');
 
 export default defineConfig({
   esbuild: { jsx: 'automatic' },
-  plugins: [duyoViews(), designerFiles({ root })],
-  resolve: { alias: { '@duyo-designer/project': kinds } },
+  plugins: [duyoViews(), designerFiles({ root: sampler })],
+  resolve: {
+    // A project's modules import Duyo and React too; they must be the designer's copies, or the
+    // project's kinds would register in a registry of their own.
+    dedupe: ['@duyo/core', '@duyo/layout', '@duyo/react', '@duyo/remochi', '@duyo/views', 'react', 'react-dom', 'remochi'],
+  },
   server: {
     port: 5191,
     // The designer saves into the project; that must not reload the designer itself.
-    watch: { ignored: [`${root.replace(/\\/g, '/')}/**`] },
+    watch: { ignored: [isProjectFile] },
   },
 });

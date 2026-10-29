@@ -1,16 +1,33 @@
 import { formatSpec, handlersOf, syncViewTypes, validateSpec } from '@duyo/views';
 import { existsSync, mkdirSync, readdirSync, readFileSync, renameSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { dirname, join, relative, resolve, sep } from 'node:path';
+import { randomBytes } from 'node:crypto';
+import { basename, dirname, join, relative, resolve, sep } from 'node:path';
 import type { Plugin, ViteDevServer } from 'vite';
 
 import { codeBehindCandidates, codeBehindTemplate, renameImports, viewBase } from '../src/codebehind.js';
+import { clone, cloneSource, commitAll, init, newBranch, pull, push, repoInfo, repoName, validBranch } from './git.js';
 import { folderPath, kindOfFile, readableFile, writableFile } from './paths.js';
+import { describe, freshFolder, isFolder, recentProjects, remember, startingProject, writeConfig, WORKSPACE, type ProjectInfo } from './project.js';
+import { nameInZip, unzipProject, zipProject } from './zip.js';
 
 /**
- * Lets the designer manage one project folder while the dev server runs: list it, read and
- * write views and code, scaffold, rename and delete views. Development only: it exists on
- * the dev server alone, never leaves the folder, and touches only views and code files.
+ * Lets the designer manage a project while the dev server runs: list it, read and write
+ * views and code, scaffold, rename and delete views; open another project, clone one, import
+ * or export one as a zip; and commit, push and pull it with git. Development only: it exists
+ * on the dev server alone, and file routes never leave the project's views folder.
+ *
+ * Every request carries the session key the server puts in the designer's page, so other
+ * sites open in the same browser cannot drive it.
+ *
+ *   GET  /__designer/project                   -> the current project and recent ones
+ *   POST /__designer/project/open    { path }
+ *   POST /__designer/project/config  { views, kinds }
+ *   POST /__designer/project/clone   { url, name? }
+ *   POST /__designer/project/import?name=      (body: a zip)
+ *   GET  /__designer/project/export.zip
+ *   GET  /__designer/git                       -> branch, remote, changes
+ *   POST /__designer/git/commit { message } | push | pull | branch { name } | init
  *
  *   GET  /__designer/tree                      -> { root, entries: [{ path, type }] }
  *   GET  /__designer/file?path=                -> the file's text
@@ -54,9 +71,39 @@ function listTree(root: string): TreeEntry[] {
 const companionOf = (root: string, viewPath: string) =>
   codeBehindCandidates(viewPath).find((candidate) => existsSync(resolve(root, candidate)));
 
+/** Every project opened this session: the dev server must not reload the designer when they change. */
+const openedRoots = new Set<string>();
+
+/** For `server.watch.ignored`: true for files inside any project the designer has opened. */
+export const isProjectFile = (path: string) => {
+  const file = resolve(path);
+  for (const folder of openedRoots) if (file === folder || file.startsWith(folder + sep)) return true;
+  return false;
+};
+
 export function designerFiles(options: { root: string }): Plugin {
-  const root = resolve(options.root);
+  let project: ProjectInfo = describe(startingProject(resolve(options.root)));
+  /** The folder the file routes work in: the project's views folder. */
+  let root = project.source;
   let server: ViteDevServer | undefined;
+  const key = randomBytes(18).toString('base64url');
+
+  /** Lets Vite serve the project's modules (its kinds and code-behinds) to the designer. */
+  const allow = (folder: string) => {
+    const list = server?.config.server.fs.allow;
+    if (list && !list.includes(folder)) list.push(folder);
+  };
+
+  const open = (folder: string) => {
+    project = describe(folder);
+    openedRoots.add(project.root);
+    root = project.source;
+    allow(project.root);
+    remember(project.root);
+    return project;
+  };
+
+  const projectBody = async () => ({ ...project, recent: recentProjects(), workspace: WORKSPACE });
 
   /** The designer writes into the project; make the next import see it. */
   const invalidate = (file?: string) => {
@@ -74,6 +121,19 @@ export function designerFiles(options: { root: string }): Plugin {
     response.end(JSON.stringify(body));
   };
   const refuse = (response: ServerResponse, message: string, status = 400) => send(response, status, { ok: false, error: message });
+
+  const readBytes = (request: IncomingMessage, limit = 200 * 1024 * 1024) =>
+    new Promise<Uint8Array>((done, fail) => {
+      const chunks: Buffer[] = [];
+      let size = 0;
+      request.on('data', (chunk: Buffer) => {
+        size += chunk.length;
+        if (size > limit) request.destroy(new Error('Upload too large'));
+        else chunks.push(chunk);
+      });
+      request.on('end', () => done(new Uint8Array(Buffer.concat(chunks))));
+      request.on('error', fail);
+    });
 
   const readBody = (request: IncomingMessage) =>
     new Promise<string>((done, fail) => {
@@ -100,11 +160,20 @@ export function designerFiles(options: { root: string }): Plugin {
   return {
     name: 'duyo-designer-files',
     apply: 'serve',
+    transformIndexHtml() {
+      return [{ tag: 'meta', attrs: { name: 'duyo-designer-key', content: key }, injectTo: 'head' }];
+    },
     configureServer(devServer) {
       server = devServer;
+      openedRoots.add(project.root);
+      allow(project.root);
+      remember(project.root);
       devServer.middlewares.use('/__designer', (request, response, next) => {
         void (async () => {
           const url = new URL(request.url ?? '/', 'http://localhost');
+          if (request.headers['x-duyo-designer'] !== key && url.searchParams.get('key') !== key) {
+            return refuse(response, 'Missing or wrong designer key: reload the designer.', 403);
+          }
           const route = `${request.method} ${url.pathname}`;
           const json = async () => JSON.parse((await readBody(request)) || '{}') as Record<string, unknown>;
 
@@ -218,6 +287,96 @@ export function designerFiles(options: { root: string }): Plugin {
             case 'POST /invalidate':
               invalidate();
               return send(response, 200, { ok: true });
+
+            // --- Projects ---------------------------------------------------------------
+
+            case 'GET /project':
+              return send(response, 200, await projectBody());
+
+            case 'POST /project/open': {
+              const folder = resolve(String((await json())['path'] ?? '').trim() || '.');
+              if (!isFolder(folder)) return refuse(response, `${folder} is not a folder.`, 404);
+              open(folder);
+              invalidate();
+              return send(response, 200, await projectBody());
+            }
+
+            case 'POST /project/config': {
+              const body = await json();
+              const views = String(body['views'] ?? '').trim() || '.';
+              const kinds = String(body['kinds'] ?? '').trim();
+              if (!resolve(project.root, views).startsWith(project.root)) return refuse(response, 'The views folder must be inside the project.');
+              if (kinds && !resolve(project.root, kinds).startsWith(project.root)) return refuse(response, 'The kinds module must be inside the project.');
+              writeConfig(project.root, { views, ...(kinds ? { kinds } : {}) });
+              open(project.root);
+              return send(response, 200, await projectBody());
+            }
+
+            case 'POST /project/clone': {
+              const body = await json();
+              const source = cloneSource(String(body['url'] ?? ''));
+              if (!source) return refuse(response, 'Clone an https or ssh git URL, such as https://github.com/owner/repo.git.');
+              const dest = freshFolder(String(body['name'] ?? '') || repoName(source));
+              const cloned = await clone(source, dest);
+              if (!cloned.ok) return refuse(response, `git clone failed: ${cloned.error}`, 502);
+              open(dest);
+              return send(response, 200, await projectBody());
+            }
+
+            case 'POST /project/import': {
+              const zip = await readBytes(request);
+              if (zip.length === 0) return refuse(response, 'The upload was empty.');
+              const dest = freshFolder(url.searchParams.get('name') || nameInZip(zip) || 'imported');
+              let unpacked;
+              try {
+                unpacked = unzipProject(zip, dest);
+              } catch (error) {
+                rmSync(dest, { recursive: true, force: true });
+                return refuse(response, `Not a usable zip: ${error instanceof Error ? error.message : String(error)}`);
+              }
+              open(dest);
+              return send(response, 200, { ...(await projectBody()), imported: unpacked });
+            }
+
+            case 'GET /project/export.zip': {
+              const name = basename(project.root);
+              const zip = zipProject(project.root, name);
+              response.statusCode = 200;
+              response.setHeader('content-type', 'application/zip');
+              response.setHeader('content-disposition', `attachment; filename="${name.replace(/[^\w.-]/g, '_')}.zip"`);
+              return response.end(Buffer.from(zip));
+            }
+
+            // --- Git --------------------------------------------------------------------
+
+            case 'GET /git':
+              return send(response, 200, await repoInfo(project.root));
+
+            case 'POST /git/init': {
+              const result = await init(project.root);
+              return send(response, result.ok ? 200 : 502, { ok: result.ok, error: result.error, ...(await repoInfo(project.root)) });
+            }
+
+            case 'POST /git/commit': {
+              const message = String((await json())['message'] ?? '').trim();
+              if (!message) return refuse(response, 'A commit needs a message.');
+              const result = await commitAll(project.root, message);
+              return send(response, result.ok ? 200 : 502, { ok: result.ok, error: result.error || result.out, ...(await repoInfo(project.root)) });
+            }
+
+            case 'POST /git/push':
+            case 'POST /git/pull': {
+              const result = await (url.pathname === '/git/push' ? push : pull)(project.root);
+              invalidate();
+              return send(response, result.ok ? 200 : 502, { ok: result.ok, error: result.error, ...(await repoInfo(project.root)) });
+            }
+
+            case 'POST /git/branch': {
+              const name = String((await json())['name'] ?? '').trim();
+              if (!validBranch(name)) return refuse(response, `"${name}" is not a usable branch name.`);
+              const result = await newBranch(project.root, name);
+              return send(response, result.ok ? 200 : 502, { ok: result.ok, error: result.error, ...(await repoInfo(project.root)) });
+            }
 
             default:
               return next();

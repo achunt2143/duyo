@@ -3,7 +3,7 @@ import '@duyo/remochi/css';
 import { createRuntime, kind, view } from '@duyo/core';
 import { renderInto } from '@duyo/react';
 
-import { companionOf, listTree, readView } from './files.js';
+import { companionOf, currentProject, listTree, loadProjectKinds, readView } from './files.js';
 import { registry, renderer } from './setup.js';
 
 /**
@@ -27,6 +27,7 @@ function notice(text: string) {
 }
 
 async function start() {
+  await loadProjectKinds(await currentProject());
   const spec = await readView(path);
   const name = String(spec['name']);
   let behaviour = true;

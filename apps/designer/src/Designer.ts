@@ -7,8 +7,21 @@ import { addHandler, codeBehindTemplate, isGenerated, methodsIn, viewBase } from
 import type { CodeBehind } from './Designer.view.gen.js';
 import spec from './Designer.view.json';
 import {
+  cloneProject,
   companionOf,
+  configureProject,
   createView,
+  downloadProject,
+  gitBranch,
+  gitCommit,
+  gitInit,
+  gitPull,
+  gitPush,
+  gitState,
+  importProject,
+  openProject,
+  type GitState,
+  type Project,
   deleteView,
   listTree,
   makeFolder,
@@ -190,6 +203,105 @@ async function askName(self: Component, title: string, value: string, message?: 
   }
 }
 
+/** Asks for a line of text; undefined if cancelled or left empty. */
+async function askText(self: Component, question: Omit<Question, 'value'> & { value: string }): Promise<string | undefined> {
+  const answer = await ask(self, question);
+  const text = answer.result === 'confirm' ? String(answer.value ?? '').trim() : '';
+  return text || undefined;
+}
+
+// --- Projects ----------------------------------------------------------------------------
+
+const projectOf = (self: Component) => self['project'] as Project | undefined;
+
+/** Shows which project is open, and anything about it the user should know. */
+function showProject(self: Component) {
+  const project = projectOf(self);
+  self.$.projectButton.setContent(project ? project.name : 'Project');
+  const kindsError = self['kindsError'] as string | undefined;
+  if (kindsError) setStatus(self, `The project's kinds could not load, so views built on them will not draw: ${kindsError}`);
+  else if (project && !project.hasConfig) setStatus(self, `${project.name}: no duyo.config.json yet. Project > Settings says where its views and kinds are.`);
+}
+
+/** Leaves this project for another: offers to save first, then starts the designer afresh on it. */
+async function switchProject(self: Component, change: () => Promise<Project>, doing: string) {
+  const unsaved = st(self).docs.filter(dirty);
+  if (unsaved.length > 0) {
+    const answer = await ask(self, {
+      title: 'Unsaved changes',
+      message: `${unsaved.map((d) => fileName(d.key)).join(', ')} ${unsaved.length === 1 ? 'has' : 'have'} changes that are not saved.`,
+      actions: [
+        { label: 'Cancel', action: 'cancel' },
+        { label: 'Discard', action: 'discard', type: 'warning' },
+        { label: 'Save all', action: 'save', type: 'affirmative' },
+      ],
+    });
+    if (answer.result === 'cancel') return;
+    if (answer.result === 'save') for (const doc of unsaved) if (!(await saveDoc(self, doc))) return;
+    for (const doc of unsaved) {
+      doc.view?.markSaved();
+      if (doc.code) doc.code.saved = doc.code.text;
+    }
+  }
+  setStatus(self, doing);
+  try {
+    await change();
+    history.replaceState(null, '', location.pathname);
+    location.reload();
+  } catch (error) {
+    setStatus(self, `${doing.replace(/…$/, '')} failed: ${error instanceof Error ? error.message : String(error)}`);
+  }
+}
+
+/** Lets the user pick a zip file. */
+function pickZip(): Promise<File | undefined> {
+  return new Promise((resolve) => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.zip,application/zip';
+    input.addEventListener('change', () => resolve(input.files?.[0] ?? undefined));
+    input.addEventListener('cancel', () => resolve(undefined));
+    input.click();
+  });
+}
+
+// --- Git ---------------------------------------------------------------------------------
+
+async function refreshGit(self: Component, known?: GitState) {
+  const changes = self.$.changes;
+  const project = projectOf(self);
+  try {
+    const state = known ?? (await gitState());
+    changes['state'] = state;
+    changes['sourcePrefix'] = project && project.config.views !== '.' ? `${project.config.views.replace(/\/+$/, '')}/` : '';
+    changes.setRevision(Number(changes.revision ?? 0) + 1);
+    self.$.commitButton.setDisabled(!state.repo || state.changes.length === 0);
+    self.$.pushButton.setDisabled(!state.repo || !state.remote);
+    self.$.commitMessage.setShowing(state.repo);
+    return state;
+  } catch (error) {
+    setStatus(self, `Could not read git: ${String(error)}`);
+    return undefined;
+  }
+}
+
+/** Runs a git step, shows its outcome, and redraws the Changes tab. */
+async function runGit(self: Component, doing: string, step: () => Promise<GitState>): Promise<GitState | undefined> {
+  self.$.changes.setBusy(true);
+  setStatus(self, doing);
+  try {
+    const result = await step();
+    await refreshGit(self, result);
+    if (result.ok === false) setStatus(self, `${doing.replace(/…$/, '')} failed: ${result.error ?? 'git refused'}`);
+    return result;
+  } catch (error) {
+    setStatus(self, `${doing.replace(/…$/, '')} failed: ${String(error)}`);
+    return undefined;
+  } finally {
+    self.$.changes.setBusy(false);
+  }
+}
+
 // --- Column sizes -------------------------------------------------------------------------
 
 function loadSizes(): Sizes {
@@ -355,6 +467,7 @@ async function saveDoc(self: Component, doc: Doc): Promise<boolean> {
     code.exists = true;
     if (created) await loadEntries(self);
   }
+  void refreshGit(self);
   return true;
 }
 
@@ -640,11 +753,13 @@ export default view(
       });
       refresh(this);
       showMode(this);
-      void this.start();
     },
 
+    /** Called once the project's kinds have loaded; see main.ts. */
     async start() {
+      showProject(this);
       await loadEntries(this);
+      void refreshGit(this);
       const wanted = decodeURIComponent(location.hash.slice(1));
       const entries = st(this).entries;
       const first = entries.find((e) => e.path === wanted) ?? entries.find((e) => e.type === 'view');
@@ -799,9 +914,181 @@ export default view(
     // --- Modes and the device frame ---------------------------------------------------
 
     leftTabChanged(_sender, event) {
-      const palette = event['value'] === 'palette';
-      this.$.palette.setShowing(palette);
-      this.$.files.setShowing(!palette);
+      const tab = String(event['value']);
+      this.$.files.setShowing(tab === 'files');
+      this.$.palette.setShowing(tab === 'palette');
+      this.$.changesPane.setShowing(tab === 'changes');
+      if (tab === 'changes') void refreshGit(this);
+    },
+
+    // --- Projects -----------------------------------------------------------------------
+
+    projectMenu() {
+      const project = projectOf(this);
+      const recent = (project?.recent ?? []).filter((path) => path !== project?.root).slice(0, 5);
+      this.$.projectMenuPanel.setTitle(project?.name ?? 'Project');
+      this.$.projectMenuPanel.setActions([
+        { label: 'Open a folder…', action: 'open' },
+        { label: 'Clone from GitHub…', action: 'clone' },
+        { label: 'Import a zip…', action: 'import' },
+        { label: 'Download as a zip', action: 'download' },
+        { label: 'Project settings…', action: 'settings' },
+        ...recent.map((path) => ({ label: `Recent: ${path.split(/[\\/]/).pop()}`, action: `recent:${path}` })),
+      ]);
+      this.$.projectMenuPanel.setOpen(true);
+    },
+
+    projectMenuClosed() {
+      this.$.projectMenuPanel.setOpen(false);
+    },
+
+    async projectAction(_sender, event) {
+      this.$.projectMenuPanel.setOpen(false);
+      const action = String(event['action']);
+      const project = projectOf(this);
+
+      if (action.startsWith('recent:')) {
+        const path = action.slice('recent:'.length);
+        return switchProject(this, () => openProject(path), `Opening ${path}…`);
+      }
+      switch (action) {
+        case 'open': {
+          const path = await askText(this, {
+            title: 'Open a project',
+            message: 'A folder on this computer that holds a Duyo app, such as the folder with its package.json.',
+            value: project ? project.root.replace(/[\\/][^\\/]+$/, '') : '',
+            confirmText: 'Open',
+          });
+          if (path) await switchProject(this, () => openProject(path), `Opening ${path}…`);
+          return;
+        }
+        case 'clone': {
+          const url = await askText(this, {
+            title: 'Clone from GitHub',
+            message: `The repository's URL, as GitHub's Code button shows it. It is cloned into ${project?.workspace ?? 'your DuyoProjects folder'} with your own git login.`,
+            value: 'https://github.com/',
+            confirmText: 'Clone',
+          });
+          if (url) await switchProject(this, () => cloneProject(url), `Cloning ${url}…`);
+          return;
+        }
+        case 'import': {
+          const zip = await pickZip();
+          if (!zip) return;
+          const name = await askText(this, {
+            title: 'Import a zip',
+            message: `A folder for it in ${project?.workspace ?? 'your DuyoProjects folder'}.`,
+            value: zip.name.replace(/\.zip$/i, '').replace(/-(main|master)$/, ''),
+            confirmText: 'Import',
+          });
+          if (name) await switchProject(this, async () => importProject(await zip.arrayBuffer(), name), `Importing ${zip.name}…`);
+          return;
+        }
+        case 'download':
+          if (st(this).docs.some(dirty)) setStatus(this, 'The zip holds the saved files: save first to include your latest changes.');
+          else setStatus(this, `Downloading ${project?.name ?? 'the project'} as a zip.`);
+          downloadProject();
+          return;
+        case 'settings': {
+          const views = await askText(this, {
+            title: 'Project settings',
+            message: 'The folder that holds its views and code, inside the project.',
+            value: project?.config.views ?? 'src',
+            confirmText: 'Next',
+          });
+          if (!views) return;
+          const answer = await ask(this, {
+            title: 'Project settings',
+            message: 'The module that registers the project\'s own kinds, so views built on them can be drawn. Leave it empty if it has none.',
+            value: project?.config.kinds ?? '',
+            confirmText: 'Save',
+          });
+          if (answer.result !== 'confirm') return;
+          await switchProject(this, () => configureProject(views, String(answer.value ?? '').trim()), 'Saving duyo.config.json…');
+          return;
+        }
+      }
+    },
+
+    // --- Git ------------------------------------------------------------------------------
+
+    async gitAction(_sender, event) {
+      const action = String(event['action']);
+      if (action === 'refresh') {
+        await refreshGit(this);
+        return setStatus(this, 'Changes refreshed');
+      }
+      if (action === 'pullRequest') {
+        const url = (this.$.changes['state'] as GitState | undefined)?.pullRequestUrl;
+        if (url) window.open(url, '_blank', 'noopener');
+        return;
+      }
+      if (action === 'init') {
+        const result = await runGit(this, 'Starting a git repository…', gitInit);
+        if (result?.ok !== false) setStatus(this, 'This project is now a git repository.');
+        return;
+      }
+      if (action === 'pull') {
+        const result = await runGit(this, 'Pulling…', gitPull);
+        if (result?.ok !== false) {
+          setStatus(this, 'Pulled. Open documents keep what you had; reopen them to see the new versions.');
+          await loadEntries(this);
+        }
+        return;
+      }
+      if (action === 'branch') {
+        const name = await askText(this, {
+          title: 'New branch',
+          message: 'Your changes come with you to the new branch.',
+          value: 'design/',
+          confirmText: 'Create',
+        });
+        if (!name) return;
+        const result = await runGit(this, `Creating ${name}…`, () => gitBranch(name));
+        if (result?.ok !== false) setStatus(this, `On ${name}`);
+      }
+    },
+
+    async commitChanges() {
+      const message = String(this.$.commitMessage.value ?? '').trim();
+      if (!message) return setStatus(this, 'Describe the change first: it becomes the commit message.');
+      const unsaved = st(this).docs.filter(dirty);
+      if (unsaved.length > 0) {
+        const answer = await ask(this, {
+          title: 'Save before committing?',
+          message: `${unsaved.map((d) => fileName(d.key)).join(', ')} ${unsaved.length === 1 ? 'has' : 'have'} unsaved changes, which would not be in the commit.`,
+          actions: [
+            { label: 'Cancel', action: 'cancel' },
+            { label: 'Commit without them', action: 'commit', type: 'warning' },
+            { label: 'Save and commit', action: 'save', type: 'affirmative' },
+          ],
+        });
+        if (answer.result === 'cancel') return;
+        if (answer.result === 'save') for (const doc of unsaved) if (!(await saveDoc(this, doc))) return;
+        refresh(this, { inspector: false });
+      }
+      const result = await runGit(this, 'Committing…', () => gitCommit(message));
+      if (result && result.ok !== false) {
+        this.$.commitMessage.setValue('');
+        setStatus(this, `Committed "${message}"${result.remote ? '. Push to send it to GitHub.' : '.'}`);
+      }
+    },
+
+    async pushChanges() {
+      const result = await runGit(this, 'Pushing…', gitPush);
+      if (!result || result.ok === false) return;
+      setStatus(this, `Pushed ${result.branch ?? 'the branch'}.`);
+      if (result.pullRequestUrl) {
+        const answer = await ask(this, {
+          title: `Pushed ${result.branch ?? ''}`,
+          message: 'Open a pull request for it on GitHub?',
+          actions: [
+            { label: 'Not now', action: 'cancel' },
+            { label: 'Open pull request', action: 'open', type: 'affirmative' },
+          ],
+        });
+        if (answer.result === 'open') window.open(result.pullRequestUrl, '_blank', 'noopener');
+      }
     },
 
     modeChanged(_sender, event) {

@@ -18,10 +18,11 @@
     "@codemirror/theme-one-dark": "^6.1.3",
     "@codemirror/view": "^6.43.15",
     "@duyo/core": "*",
-    "@duyo/remochi": "*",
     "@duyo/react": "*",
+    "@duyo/remochi": "*",
     "@duyo/views": "*",
     "codemirror": "^6.0.2",
+    "fflate": "^0.8.3",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },

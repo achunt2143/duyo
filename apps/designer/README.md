@@ -9,15 +9,38 @@ code-behind against what you designed.
 npm run designer
 ```
 
-This opens <http://localhost:5191> on the sampler's views. To point it at another project:
+This opens <http://localhost:5191> on the project you had open last, or the sampler the
+first time. Use the **Project** menu to work on another.
 
-```bash
-DUYO_DESIGNER_ROOT=../my-app/src DUYO_DESIGNER_KINDS=../my-app/src/kinds.ts npm run designer
+## Projects, GitHub and zips
+
+A project is a folder with a Duyo app in it. Its `duyo.config.json` says where its views are
+and which module registers its own kinds, so views built on them can be drawn:
+
+```json
+{ "views": "src", "kinds": "src/kinds.ts" }
 ```
 
-`DUYO_DESIGNER_ROOT` is the folder the designer manages. `DUYO_DESIGNER_KINDS` is a module
-that registers the project's own kinds, so views built on them can be drawn; it defaults to
-`<root>/sections.ts`.
+Without one, views are looked for in `src`; **Project settings** writes it for you. Opening a
+folder inside a project opens the project.
+
+| | |
+| --- | --- |
+| **Open a folder** | Any project on this computer. Recent projects are in the same menu. |
+| **Clone from GitHub** | Paste the repository's URL. It is cloned into `~/DuyoProjects` with your own git, so it uses the GitHub login you already have; the designer never asks for or keeps a token. |
+| **Changes** tab | The project's branch and the files changed in it. Commit (it offers to save first), push (it then offers to open a pull request on GitHub), pull, start a branch, or start a repository. Commits take only the project's folder, even in a larger repository; the tab shows which repository and branch they go to. |
+| **Import a zip** | A zipped project, such as GitHub's *Download ZIP*, unpacked into `~/DuyoProjects`. |
+| **Download as a zip** | The project's saved files, without `node_modules`, build output or `.git`: the way to hand work off without git. |
+
+The designer's API answers only its own page: the dev server puts a key in the page and
+refuses requests without it, so other sites open in the same browser cannot use it. Zips are
+checked as untrusted input: nothing is written outside the new folder, and size is limited.
+
+| Variable | |
+| --- | --- |
+| `DUYO_DESIGNER_ROOT` | Start on this project instead of the last one. |
+| `DUYO_DESIGNER_WORKSPACE` | Where clones and imports go. Default `~/DuyoProjects`. |
+| `DUYO_DESIGNER_HOME` | Where the designer remembers projects. Default `~/.duyo-designer`. |
 
 ## Layout
 
@@ -51,6 +74,7 @@ dialogs.
 | Open documents | Tabs, one per open view or file, each with its own undo history; a dot marks unsaved work. Save (Ctrl+S) and Save all (Ctrl+Shift+S). |
 | Preview | Run mode: the view running for real, code-behind and all, in the chosen device frame; Reload picks up changes made outside the designer; Open in window. |
 | Problems | The spec checked against the registry with JSON paths, runtime diagnostics, and handlers the spec names that the code-behind lacks. |
+| Project list, Git integration | The Project menu (open, recent, clone from GitHub, import and download zips, settings) and the Changes tab (commit, push, pull, branch, pull request), through your own git. |
 | PhoneGap build, remote debugging, project templates, accounts | Not here: Duyo apps build with Vite, debug in the browser's own tools, and projects will start from `create-duyo`. |
 
 Keyboard: Ctrl+S, Ctrl+Shift+S, Ctrl+Z, Ctrl+Shift+Z / Ctrl+Y, Ctrl+C, Ctrl+X, Ctrl+V,
@@ -75,4 +99,5 @@ pack gets that pack's kinds in the palette and inspector.
 | `src/preview.ts` | Draws a spec under a throwaway kind name and maps runtime ids to spec paths. |
 | `src/canvas.tsx`, `src/widgets/` | The designer's own kinds, each a hand-written binding: canvas, run frame, palette, tree, files, tabs, code editor. |
 | `src/run.ts`, `run.html` | Run mode. |
-| `server/files.ts`, `server/paths.ts` | Dev-server API for the project folder: never outside it, only views and code, never generated files. |
+| `server/files.ts`, `server/paths.ts` | Dev-server API: file routes stay in the project's views folder, take only views and code, and never write generated files. |
+| `server/project.ts`, `server/git.ts`, `server/zip.ts` | The current project and its config, git through the local `git`, and zips in and out. |
