@@ -5,6 +5,7 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState, type CSSProp
 import { codeBinding, codeKind } from './widgets/code.js';
 import { filesBinding, filesKind } from './widgets/files.js';
 import { paletteBinding, paletteKind } from './widgets/palette.js';
+import { splitterBinding, splitterKind } from './widgets/splitter.js';
 import { DRAG_KIND, DRAG_PATH, accent, placeFor, type DropPlace } from './widgets/shared.js';
 import { tabsBinding, tabsKind } from './widgets/tabs.js';
 import { treeBinding, treeKind } from './widgets/tree.js';
@@ -324,7 +325,7 @@ function RunView({ node, hostProps }: BindingProps) {
 
 /** The designer's own kinds: each a hand-written binding, as any pack may have. */
 export const designerPack: KindPack = createPack('designer', [], {
-  kinds: [canvasKind, runKind, paletteKind, treeKind, filesKind, tabsKind, codeKind],
+  kinds: [canvasKind, runKind, paletteKind, treeKind, filesKind, tabsKind, codeKind, splitterKind],
   bindings: {
     'Designer.Canvas': { component: CanvasView },
     'Designer.Run': { component: RunView },
@@ -333,5 +334,6 @@ export const designerPack: KindPack = createPack('designer', [], {
     'Designer.Files': filesBinding,
     'Designer.Tabs': tabsBinding,
     'Designer.Code': codeBinding,
+    'Designer.Splitter': splitterBinding,
   },
 });

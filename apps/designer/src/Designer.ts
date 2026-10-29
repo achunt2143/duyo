@@ -70,6 +70,38 @@ interface State {
   zoom: number;
   clipboard: Json[];
   runRevision: number;
+  sizes: Sizes;
+  /** Size at the start of the drag in progress. */
+  dragStart: number;
+  /** Settles the dialog that is open, if one is. */
+  answer: ((answer: Answer) => void) | undefined;
+}
+
+interface Sizes {
+  explorer: number;
+  inspector: number;
+  /** Height of Files / Palette above the Components tree. */
+  browse: number;
+}
+
+const DEFAULT_SIZES: Sizes = { explorer: 270, inspector: 380, browse: 300 };
+const SIZES_KEY = 'duyo-designer-sizes';
+
+/** How a dialog was answered: `confirm` (with the prompt's text), `cancel`, or a custom action. */
+interface Answer {
+  result: string;
+  value?: string;
+}
+
+interface Question {
+  title: string;
+  message?: string;
+  /** A prompt: the dialog asks for text, starting with this. */
+  value?: string;
+  confirmText?: string;
+  confirmType?: 'normal' | 'warning' | 'affirmative' | 'blue';
+  /** Buttons of its own instead of OK / Cancel: `{ label, action, type }`. */
+  actions?: Array<{ label: string; action: string; type?: string }>;
 }
 
 const DEVICES: Array<{ value: string; label: string; width: number; height: number }> = [
@@ -114,6 +146,81 @@ function isHorizontal(node: Json | undefined, isRoot: boolean): boolean {
   if (!node) return false;
   const kind = kindOfNode(node, isRoot);
   return registry.has(kind) && registry.resolve(kind).ancestry.includes('duyo.FittableColumns');
+}
+
+// --- Dialogs -----------------------------------------------------------------------------
+
+/**
+ * Asks with the designer's Remochi dialog and resolves when it is answered. A dialog still
+ * open is cancelled first, so at most one question is ever pending.
+ */
+function ask(self: Component, question: Question): Promise<Answer> {
+  const state = st(self);
+  state.answer?.({ result: 'cancel' });
+  const dialog = self.$.dialog;
+  const prompting = question.value !== undefined;
+  dialog.setTitle(question.title);
+  dialog.setDialogType(question.actions ? 'default' : prompting ? 'prompt' : 'confirm');
+  dialog.setConfirmText(question.confirmText ?? 'OK');
+  dialog.setConfirmType(question.confirmType ?? 'affirmative');
+  dialog.setPromptValue(question.value ?? '');
+  dialog.setActions(question.actions);
+  dialog.setSize(question.actions ? 'medium' : 'small');
+  self.$.dialogMessage.setContent(question.message ?? '');
+  self.$.dialogMessage.setShowing(!!question.message);
+  dialog.setOpen(true);
+  return new Promise((resolve) => {
+    state.answer = (answer) => {
+      state.answer = undefined;
+      dialog.setOpen(false);
+      resolve(answer);
+    };
+  });
+}
+
+/** Asks for a name until it is a plain identifier, or the question is cancelled. */
+async function askName(self: Component, title: string, value: string, message?: string): Promise<string | undefined> {
+  let hint = message;
+  for (;;) {
+    const answer = await ask(self, { title, value, ...(hint ? { message: hint } : {}), confirmText: 'Create' });
+    if (answer.result !== 'confirm') return undefined;
+    const name = String(answer.value ?? '').trim();
+    if (/^[A-Za-z_$][\w$]*$/.test(name)) return name;
+    hint = `"${name}" is not a usable name. Use letters, digits and _, starting with a letter: Settings, OrderList.`;
+  }
+}
+
+// --- Column sizes -------------------------------------------------------------------------
+
+function loadSizes(): Sizes {
+  try {
+    const saved = JSON.parse(localStorage.getItem(SIZES_KEY) ?? 'null') as Partial<Sizes> | null;
+    return { ...DEFAULT_SIZES, ...(saved ?? {}) };
+  } catch {
+    return { ...DEFAULT_SIZES };
+  }
+}
+
+function applySizes(self: Component) {
+  const { explorer, inspector, browse } = st(self).sizes;
+  self.$.explorer.setStyle(`width: ${explorer}px; flex: none; min-height: 0; background: var(--mochi-surface);`);
+  self.$.inspectorColumn.setStyle(`width: ${inspector}px; flex: none; min-height: 0; background: var(--mochi-surface);`);
+  self.$.browse.setStyle(`height: ${browse}px; flex: none; min-height: 0;`);
+  try {
+    localStorage.setItem(SIZES_KEY, JSON.stringify(st(self).sizes));
+  } catch {
+    // Sizes are a convenience; without storage they reset next time.
+  }
+}
+
+/** Handles a splitter drag for one size: `direction` is +1 if dragging right or down grows it. */
+function resize(self: Component, key: keyof Sizes, event: ComponentEvent, direction: 1 | -1, min: number, max: number) {
+  const state = st(self);
+  const phase = String(event['phase']);
+  if (phase === 'reset') state.sizes[key] = DEFAULT_SIZES[key];
+  else if (phase === 'start') state.dragStart = state.sizes[key];
+  else state.sizes[key] = Math.round(Math.max(min, Math.min(max, state.dragStart + direction * Number(event['delta']))));
+  applySizes(self);
 }
 
 // --- Documents ---------------------------------------------------------------------------
@@ -194,7 +301,19 @@ async function closeDoc(self: Component, key: string) {
   const state = st(self);
   const doc = state.docs.find((d) => d.key === key);
   if (!doc) return;
-  if (dirty(doc) && !confirm(`${fileName(key)} has unsaved changes. Close it anyway?`)) return;
+  if (dirty(doc)) {
+    const answer = await ask(self, {
+      title: `Close ${fileName(key)}?`,
+      message: 'It has changes that are not saved.',
+      actions: [
+        { label: 'Cancel', action: 'cancel' },
+        { label: 'Close without saving', action: 'discard', type: 'warning' },
+        { label: 'Save and close', action: 'save', type: 'affirmative' },
+      ],
+    });
+    if (answer.result === 'cancel') return;
+    if (answer.result === 'save' && !(await saveDoc(self, doc))) return;
+  }
   const index = state.docs.indexOf(doc);
   state.docs.splice(index, 1);
   if (state.active === key) {
@@ -219,7 +338,7 @@ async function saveDoc(self: Component, doc: Doc): Promise<boolean> {
     if (!result) return false;
     if (!result.ok) {
       setStatus(self, `${fileName(doc.key)} not saved: ${result.diagnostics.length} problem(s) below`);
-      self.$.problems.setContent(result.diagnostics.map((d) => `${d.severity} ${d.code} at ${d.path}: ${d.message}`).join('\n'));
+      showProblems(self, result.diagnostics.map((d) => `${d.severity} ${d.code} at ${d.path}: ${d.message}`));
       return false;
     }
     doc.view.markSaved();
@@ -305,7 +424,7 @@ function refresh(self: Component, parts: { inspector?: boolean } = {}) {
     target.setZoom(state.zoom);
   }
 
-  self.$.problems.setContent(problems(self).join('\n') || 'No problems.');
+  showProblems(self, problems(self));
   drawTree(self);
   if (parts.inspector !== false) drawInspector(self);
   drawTabs(self);
@@ -357,6 +476,13 @@ function drawInspector(self: Component) {
     methods: doc.code ? methodsIn(doc.code.text).map((m) => m.name) : undefined,
   });
   self.$.inspector.createComponents(defs, { owner: self });
+}
+
+/** The problems strip shows only while there is something in it. */
+function showProblems(self: Component, lines: string[]) {
+  self.$.problems.setContent(lines.join('\n'));
+  self.$.problems.setShowing(lines.length > 0);
+  self.$.problemsDivider.setShowing(lines.length > 0);
 }
 
 function problems(self: Component): string[] {
@@ -481,6 +607,9 @@ export default view(
         zoom: 1,
         clipboard: [],
         runRevision: 0,
+        sizes: loadSizes(),
+        dragStart: 0,
+        answer: undefined,
       });
 
       const canvas = this.$.canvas;
@@ -497,6 +626,7 @@ export default view(
         return { container: isContainer(node, path.length === 0), horizontal: isHorizontal(parent, path.length === 1) };
       };
 
+      applySizes(this);
       this.$.palette['kinds'] = palette;
       this.$.palette.setRevision(1);
       this.$.device.setOptions(DEVICES.map(({ value, label }) => ({ value, label })));
@@ -533,9 +663,8 @@ export default view(
 
     async newView(_sender, event) {
       const dir = String(event['dir'] ?? '');
-      const name = prompt(`New view${dir ? ` in ${dir}` : ''}. Its name, such as Settings:`, 'NewView');
+      const name = await askName(this, 'New view', 'NewView', `Creates its spec, a code-behind and its types${dir ? ` in ${dir}` : ''}.`);
       if (!name) return;
-      if (!/^[A-Za-z_$][\w$]*$/.test(name)) return setStatus(this, 'A view name is a plain identifier, such as Settings.');
       const path = `${dir ? `${dir}/` : ''}${name}.view.json`;
       try {
         const created = await createView(path);
@@ -549,7 +678,8 @@ export default view(
 
     async newFolder(_sender, event) {
       const dir = String(event['dir'] ?? '');
-      const name = prompt(`New folder${dir ? ` in ${dir}` : ''}:`, 'views');
+      const answer = await ask(this, { title: 'New folder', value: 'views', confirmText: 'Create', ...(dir ? { message: `In ${dir}.` } : {}) });
+      const name = answer.result === 'confirm' ? String(answer.value ?? '').trim() : '';
       if (!name) return;
       try {
         await makeFolder(`${dir ? `${dir}/` : ''}${name}`);
@@ -563,9 +693,8 @@ export default view(
       const from = String(event['path']);
       const open = st(this).docs.find((d) => d.key === from);
       if (open && dirty(open)) return setStatus(this, `Save ${fileName(from)} before renaming it.`);
-      const name = prompt(`Rename ${fileName(from)} to:`, viewBase(from));
+      const name = await askName(this, `Rename ${fileName(from)}`, viewBase(from), 'Its code-behind and types are renamed with it.');
       if (!name || name === viewBase(from)) return;
-      if (!/^[A-Za-z_$][\w$]*$/.test(name)) return setStatus(this, 'A view name is a plain identifier, such as Settings.');
       const to = from.replace(/[^/]+\.view\.json$/, `${name}.view.json`);
       try {
         const result = await renameView(from, to);
@@ -583,9 +712,20 @@ export default view(
 
     async deleteFile(_sender, event) {
       const path = String(event['path']);
-      if (!confirm(`Delete ${path}? This cannot be undone.`)) return;
       const companion = await companionOf(path).catch(() => ({ path: null }));
-      const code = companion.path ? confirm(`Also delete its code-behind, ${companion.path}?`) : false;
+      const answer = await ask(this, {
+        title: `Delete ${fileName(path)}?`,
+        message: companion.path
+          ? `This cannot be undone. Its code-behind, ${fileName(companion.path)}, can go with it or stay.`
+          : 'This cannot be undone.',
+        actions: [
+          { label: 'Cancel', action: 'cancel' },
+          ...(companion.path ? [{ label: 'Keep code', action: 'view', type: 'warning' }] : []),
+          { label: companion.path ? 'Delete both' : 'Delete', action: 'both', type: 'warning' },
+        ],
+      });
+      if (answer.result === 'cancel') return;
+      const code = answer.result === 'both' && companion.path !== null;
       try {
         await deleteView(path, code);
         const open = st(this).docs.find((d) => d.key === path);
@@ -599,6 +739,34 @@ export default view(
       } catch (error) {
         setStatus(this, `Could not delete: ${String(error)}`);
       }
+    },
+
+    dialogConfirmed(_sender, event) {
+      st(this).answer?.({ result: 'confirm', value: typeof event['value'] === 'string' ? event['value'] : String(this.$.dialog.promptValue ?? '') });
+    },
+
+    dialogCancelled() {
+      st(this).answer?.({ result: 'cancel' });
+    },
+
+    dialogClosed() {
+      st(this).answer?.({ result: 'cancel' });
+    },
+
+    dialogAction(_sender, event) {
+      st(this).answer?.({ result: String(event['action']) });
+    },
+
+    explorerResized(_sender, event) {
+      resize(this, 'explorer', event, 1, 180, 520);
+    },
+
+    inspectorResized(_sender, event) {
+      resize(this, 'inspector', event, -1, 280, 640);
+    },
+
+    browseResized(_sender, event) {
+      resize(this, 'browse', event, 1, 120, Math.max(160, window.innerHeight - 320));
     },
 
     tabActivated(_sender, event) {

@@ -21,14 +21,20 @@ that registers the project's own kinds, so views built on them can be drawn; it 
 
 ## Layout
 
-Three Remochi `Repanel` columns between a toolbar and a problems strip, separated by Remochi
-dividers:
+Three columns between a toolbar and a problems strip, built from Remochi's own pieces:
 
 - **Explorer**, on the left: Files or the Palette above, the Components tree below, with its
   move, cut, copy, paste, duplicate and delete actions in a compact row.
 - **Workspace**, in the middle: open documents as tabs; Design, Code, JSON and Run; the
   device size and zoom.
 - **Inspector**, on the right, at full height: Properties, Layout, Events and View.
+
+The side columns sit on the theme's surface colour and the workspace on its background.
+Remochi dividers separate them, and they are handles: drag one to resize a column, or the
+nubbin divider in the explorer to share it between Files and Components; double-click to
+reset. Sizes are remembered in the browser. The problems strip appears only when there is a
+problem. Questions (new view, new folder, rename, delete, closing unsaved work) are Remochi
+dialogs.
 
 ## Against Ares
 

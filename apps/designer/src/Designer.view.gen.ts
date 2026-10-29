@@ -13,18 +13,24 @@ export type Named = {
   saveAllButton: Instance<"remochi.Button">;
   /** remochi.Button */
   saveButton: Instance<"remochi.Button">;
-  /** remochi.Repanel */
-  explorer: Instance<"remochi.Repanel">;
+  /** duyo.FittableRows */
+  explorer: Instance<"duyo.FittableRows">;
   /** remochi.ViewSelectButton */
   leftTabs: Instance<"remochi.ViewSelectButton">;
+  /** duyo.FittableRows */
+  browse: Instance<"duyo.FittableRows">;
   /** Designer.Files */
   files: Instance<"Designer.Files">;
   /** Designer.Palette */
   palette: Instance<"Designer.Palette">;
+  /** Designer.Splitter */
+  browseSplit: Instance<"Designer.Splitter">;
   /** Designer.Tree */
   tree: Instance<"Designer.Tree">;
-  /** remochi.Repanel */
-  workspace: Instance<"remochi.Repanel">;
+  /** Designer.Splitter */
+  explorerSplit: Instance<"Designer.Splitter">;
+  /** duyo.FittableRows */
+  workspace: Instance<"duyo.FittableRows">;
   /** Designer.Tabs */
   tabs: Instance<"Designer.Tabs">;
   /** remochi.ViewSelectButton */
@@ -47,18 +53,26 @@ export type Named = {
   json: Instance<"Designer.Code">;
   /** Designer.Run */
   run: Instance<"Designer.Run">;
-  /** remochi.Repanel */
-  inspectorPanel: Instance<"remochi.Repanel">;
+  /** Designer.Splitter */
+  inspectorSplit: Instance<"Designer.Splitter">;
+  /** duyo.FittableRows */
+  inspectorColumn: Instance<"duyo.FittableRows">;
   /** remochi.ViewSelectButton */
   inspectorTabs: Instance<"remochi.ViewSelectButton">;
   /** duyo.Control */
   inspector: Instance<"duyo.Control">;
+  /** remochi.Divider */
+  problemsDivider: Instance<"remochi.Divider">;
   /** duyo.Control */
   problems: Instance<"duyo.Control">;
+  /** remochi.Dialog */
+  dialog: Instance<"remochi.Dialog">;
+  /** duyo.Control */
+  dialogMessage: Instance<"duyo.Control">;
 };
 
 /** Handlers the spec names. The code-behind must implement every one. */
-export type Handlers = 'canvasDrop' | 'codeEdited' | 'deleteFile' | 'deviceChanged' | 'fileOpened' | 'help' | 'inspectorTabChanged' | 'jsonEdited' | 'leftTabChanged' | 'modeChanged' | 'newFolder' | 'newView' | 'openRunWindow' | 'paletteAdd' | 'picked' | 'redo' | 'reloadRun' | 'renameFile' | 'rotate' | 'save' | 'saveAll' | 'tabActivated' | 'tabClosed' | 'treeAction' | 'treeDroppedKind' | 'treeMoved' | 'treeSelected' | 'undo' | 'zoomChanged';
+export type Handlers = 'browseResized' | 'canvasDrop' | 'codeEdited' | 'deleteFile' | 'deviceChanged' | 'dialogAction' | 'dialogCancelled' | 'dialogClosed' | 'dialogConfirmed' | 'explorerResized' | 'fileOpened' | 'help' | 'inspectorResized' | 'inspectorTabChanged' | 'jsonEdited' | 'leftTabChanged' | 'modeChanged' | 'newFolder' | 'newView' | 'openRunWindow' | 'paletteAdd' | 'picked' | 'redo' | 'reloadRun' | 'renameFile' | 'rotate' | 'save' | 'saveAll' | 'tabActivated' | 'tabClosed' | 'treeAction' | 'treeDroppedKind' | 'treeMoved' | 'treeSelected' | 'undo' | 'zoomChanged';
 
 /** `this` inside the code-behind. */
 export type Self = ViewComponent<Named>;
