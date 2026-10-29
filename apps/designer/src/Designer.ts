@@ -200,10 +200,10 @@ function ask(self: Component, question: Question): Promise<Answer> {
 }
 
 /** Asks for a name until it is a plain identifier, or the question is cancelled. */
-async function askName(self: Component, title: string, value: string, message?: string): Promise<string | undefined> {
+async function askName(self: Component, title: string, value: string, message?: string, confirmText = 'Create'): Promise<string | undefined> {
   let hint = message;
   for (;;) {
-    const answer = await ask(self, { title, value, ...(hint ? { message: hint } : {}), confirmText: 'Create' });
+    const answer = await ask(self, { title, value, ...(hint ? { message: hint } : {}), confirmText });
     if (answer.result !== 'confirm') return undefined;
     const name = String(answer.value ?? '').trim();
     if (/^[A-Za-z_$][\w$]*$/.test(name)) return name;
@@ -935,8 +935,20 @@ export default view(
     async renameFile(_sender, event) {
       const from = String(event['path']);
       const open = st(this).docs.find((d) => d.key === from);
-      if (open && dirty(open)) return setStatus(this, `Save ${fileName(from)} before renaming it.`);
-      const name = await askName(this, `Rename ${fileName(from)}`, viewBase(from), 'Its code-behind and types are renamed with it.');
+      // A rename moves the files on disk, so unsaved changes are saved first, if the user agrees.
+      if (open && dirty(open)) {
+        const answer = await ask(this, {
+          title: `Rename ${fileName(from)}`,
+          message: `${fileName(from)} has changes that are not saved. They are saved before it is renamed.`,
+          actions: [
+            { label: 'Cancel', action: 'cancel' },
+            { label: 'Save and rename', action: 'save', type: 'affirmative' },
+          ],
+        });
+        if (answer.result !== 'save' || !(await saveDoc(this, open))) return;
+        refresh(this, { inspector: false });
+      }
+      const name = await askName(this, `Rename ${fileName(from)}`, viewBase(from), 'Its code-behind and types are renamed with it.', 'Rename');
       if (!name || name === viewBase(from)) return;
       const to = from.replace(/[^/]+\.view\.json$/, `${name}.view.json`);
       try {
