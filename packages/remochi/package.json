@@ -1,9 +1,18 @@
 {
   "name": "@duyo/remochi",
-  "version": "0.4.0-alpha.0",
+  "version": "1.0.0",
   "description": "Duyo kind pack for Remochi: its controls, panels and popups as Duyo kinds.",
   "license": "Apache-2.0",
   "author": "achunt2143",
+  "homepage": "https://github.com/achunt2143/duyo/tree/main/packages/remochi#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/achunt2143/duyo.git",
+    "directory": "packages/remochi"
+  },
+  "bugs": {
+    "url": "https://github.com/achunt2143/duyo/issues"
+  },
   "keywords": [
     "duyo",
     "mochi",
@@ -17,7 +26,8 @@
     "./css": "./src/css.ts"
   },
   "files": [
-    "src/"
+    "src/",
+    "CHANGELOG.md"
   ],
   "scripts": {
     "typecheck": "tsc -p tsconfig.json",
@@ -25,8 +35,8 @@
     "gen:kinds": "vite-node scripts/generate.ts"
   },
   "dependencies": {
-    "@duyo/core": "*",
-    "@duyo/react": "*"
+    "@duyo/core": "^1.0.0",
+    "@duyo/react": "^1.0.0"
   },
   "peerDependencies": {
     "react": "^18.0.0 || ^19.0.0",
@@ -35,7 +45,7 @@
   },
   "devDependencies": {
     "remochi": "0.4.0",
-    "@duyo/views": "*"
+    "@duyo/views": "^1.0.0"
   },
   "engines": {
     "node": ">=18.0.0"

@@ -1,8 +1,19 @@
 {
   "name": "duyo-designer",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
   "description": "A visual designer for Duyo views: edits .view.json files with a live preview, as Ares did for Enyo.",
+  "license": "Apache-2.0",
+  "author": "achunt2143",
+  "homepage": "https://github.com/achunt2143/duyo/tree/main/apps/designer#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/achunt2143/duyo.git",
+    "directory": "apps/designer"
+  },
+  "bugs": {
+    "url": "https://github.com/achunt2143/duyo/issues"
+  },
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -17,10 +28,10 @@
     "@codemirror/state": "^6.7.6",
     "@codemirror/theme-one-dark": "^6.1.3",
     "@codemirror/view": "^6.43.15",
-    "@duyo/core": "*",
-    "@duyo/react": "*",
-    "@duyo/remochi": "*",
-    "@duyo/views": "*",
+    "@duyo/core": "^1.0.0",
+    "@duyo/react": "^1.0.0",
+    "@duyo/remochi": "^1.0.0",
+    "@duyo/views": "^1.0.0",
     "codemirror": "^6.0.2",
     "fflate": "^0.8.3",
     "react": "^18.3.1",

@@ -1,8 +1,19 @@
 {
   "name": "duyo-sampler",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
   "description": "Every Duyo kind in one app, as Enyo's Sampler was.",
+  "license": "Apache-2.0",
+  "author": "achunt2143",
+  "homepage": "https://github.com/achunt2143/duyo/tree/main/apps/sampler#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/achunt2143/duyo.git",
+    "directory": "apps/sampler"
+  },
+  "bugs": {
+    "url": "https://github.com/achunt2143/duyo/issues"
+  },
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -12,14 +23,14 @@
     "typecheck": "duyo-views src --check && tsc -p tsconfig.json"
   },
   "dependencies": {
-    "@duyo/core": "*",
-    "@duyo/remochi": "*",
-    "@duyo/react": "*",
+    "@duyo/core": "^1.0.0",
+    "@duyo/remochi": "^1.0.0",
+    "@duyo/react": "^1.0.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },
   "devDependencies": {
-    "@duyo/views": "^0.4.0-alpha.0",
+    "@duyo/views": "^1.0.0",
     "vite": "^6.0.0"
   }
 }

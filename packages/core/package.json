@@ -1,25 +1,35 @@
 {
   "name": "@duyo/core",
-  "version": "0.4.0-alpha.0",
+  "version": "1.0.0",
   "description": "Duyo core: Enyo-style kinds, component ownership, published props and event bubbling. No DOM, no React.",
   "license": "Apache-2.0",
   "author": "achunt2143",
+  "homepage": "https://github.com/achunt2143/duyo/tree/main/packages/core#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/achunt2143/duyo.git",
+    "directory": "packages/core"
+  },
+  "bugs": {
+    "url": "https://github.com/achunt2143/duyo/issues"
+  },
   "type": "module",
   "exports": {
     ".": "./src/index.ts"
   },
   "files": [
-    "src/"
+    "src/",
+    "CHANGELOG.md"
   ],
   "scripts": {
     "typecheck": "tsc -p tsconfig.json",
     "test": "vitest run",
     "gen:kinds": "vite-node scripts/generate.ts"
   },
+  "devDependencies": {
+    "@duyo/views": "^1.0.0"
+  },
   "engines": {
     "node": ">=18.0.0"
-  },
-  "devDependencies": {
-    "@duyo/views": "*"
   }
 }

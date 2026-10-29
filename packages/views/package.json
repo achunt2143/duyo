@@ -1,9 +1,18 @@
 {
   "name": "@duyo/views",
-  "version": "0.4.0-alpha.0",
+  "version": "1.0.0",
   "description": "Duyo views: the design as a JSON spec, the behaviour as a code-behind. Spec validation, generated types, a CLI and a Vite plugin.",
   "license": "Apache-2.0",
   "author": "achunt2143",
+  "homepage": "https://github.com/achunt2143/duyo/tree/main/packages/views#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/achunt2143/duyo.git",
+    "directory": "packages/views"
+  },
+  "bugs": {
+    "url": "https://github.com/achunt2143/duyo/issues"
+  },
   "type": "module",
   "exports": {
     ".": {
@@ -28,7 +37,8 @@
   },
   "files": [
     "src/",
-    "bin/"
+    "bin/",
+    "CHANGELOG.md"
   ],
   "scripts": {
     "typecheck": "tsc -p tsconfig.json",
