@@ -385,10 +385,6 @@ function updateToolbar(self: Component) {
   self.$.redoButton.setDisabled(!doc?.view?.canRedo);
   self.$.saveButton.setDisabled(!doc || !dirty(doc));
   self.$.saveAllButton.setDisabled(!state.docs.some(dirty));
-  const selected = !!doc?.view && doc.selected.length > 0;
-  self.$.cutButton.setDisabled(!selected);
-  self.$.copyButton.setDisabled(!selected);
-  self.$.pasteButton.setDisabled(!doc?.view || state.clipboard.length === 0);
   document.title = `${doc && dirty(doc) ? '• ' : ''}${doc ? fileName(doc.key) : 'Duyo Designer'}`;
 }
 
@@ -782,6 +778,13 @@ export default view(
     },
     remove() {
       edit(this, (doc, at) => doc.remove(at));
+    },
+
+    /** The tree's action row: each action is one of the methods above. */
+    treeAction(_sender, event) {
+      const actions = ['moveUp', 'moveDown', 'indent', 'outdent', 'cut', 'copy', 'paste', 'duplicate', 'remove'];
+      const action = String(event['action']);
+      if (actions.includes(action)) this[action]();
     },
 
     paletteAdd(_sender, event) {

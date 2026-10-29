@@ -3,28 +3,28 @@ import type { Component, ComponentEvent, Instance, ViewComponent } from '@duyo/c
 
 /** `this.$` in the code-behind: every named component in the spec. */
 export type Named = {
-  /** remochi.Button */
-  saveButton: Instance<"remochi.Button">;
-  /** remochi.Button */
-  saveAllButton: Instance<"remochi.Button">;
+  /** duyo.Control */
+  status: Instance<"duyo.Control">;
   /** remochi.Button */
   undoButton: Instance<"remochi.Button">;
   /** remochi.Button */
   redoButton: Instance<"remochi.Button">;
   /** remochi.Button */
-  cutButton: Instance<"remochi.Button">;
+  saveAllButton: Instance<"remochi.Button">;
   /** remochi.Button */
-  copyButton: Instance<"remochi.Button">;
-  /** remochi.Button */
-  pasteButton: Instance<"remochi.Button">;
-  /** duyo.Control */
-  status: Instance<"duyo.Control">;
+  saveButton: Instance<"remochi.Button">;
+  /** remochi.Repanel */
+  explorer: Instance<"remochi.Repanel">;
   /** remochi.ViewSelectButton */
   leftTabs: Instance<"remochi.ViewSelectButton">;
   /** Designer.Files */
   files: Instance<"Designer.Files">;
   /** Designer.Palette */
   palette: Instance<"Designer.Palette">;
+  /** Designer.Tree */
+  tree: Instance<"Designer.Tree">;
+  /** remochi.Repanel */
+  workspace: Instance<"remochi.Repanel">;
   /** Designer.Tabs */
   tabs: Instance<"Designer.Tabs">;
   /** remochi.ViewSelectButton */
@@ -47,8 +47,8 @@ export type Named = {
   json: Instance<"Designer.Code">;
   /** Designer.Run */
   run: Instance<"Designer.Run">;
-  /** Designer.Tree */
-  tree: Instance<"Designer.Tree">;
+  /** remochi.Repanel */
+  inspectorPanel: Instance<"remochi.Repanel">;
   /** remochi.ViewSelectButton */
   inspectorTabs: Instance<"remochi.ViewSelectButton">;
   /** duyo.Control */
@@ -58,7 +58,7 @@ export type Named = {
 };
 
 /** Handlers the spec names. The code-behind must implement every one. */
-export type Handlers = 'canvasDrop' | 'codeEdited' | 'copy' | 'cut' | 'deleteFile' | 'deviceChanged' | 'duplicate' | 'fileOpened' | 'help' | 'indent' | 'inspectorTabChanged' | 'jsonEdited' | 'leftTabChanged' | 'modeChanged' | 'moveDown' | 'moveUp' | 'newFolder' | 'newView' | 'openRunWindow' | 'outdent' | 'paletteAdd' | 'paste' | 'picked' | 'redo' | 'reloadRun' | 'remove' | 'renameFile' | 'rotate' | 'save' | 'saveAll' | 'tabActivated' | 'tabClosed' | 'treeDroppedKind' | 'treeMoved' | 'treeSelected' | 'undo' | 'zoomChanged';
+export type Handlers = 'canvasDrop' | 'codeEdited' | 'deleteFile' | 'deviceChanged' | 'fileOpened' | 'help' | 'inspectorTabChanged' | 'jsonEdited' | 'leftTabChanged' | 'modeChanged' | 'newFolder' | 'newView' | 'openRunWindow' | 'paletteAdd' | 'picked' | 'redo' | 'reloadRun' | 'renameFile' | 'rotate' | 'save' | 'saveAll' | 'tabActivated' | 'tabClosed' | 'treeAction' | 'treeDroppedKind' | 'treeMoved' | 'treeSelected' | 'undo' | 'zoomChanged';
 
 /** `this` inside the code-behind. */
 export type Self = ViewComponent<Named>;

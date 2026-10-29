@@ -19,6 +19,17 @@ DUYO_DESIGNER_ROOT=../my-app/src DUYO_DESIGNER_KINDS=../my-app/src/kinds.ts npm 
 that registers the project's own kinds, so views built on them can be drawn; it defaults to
 `<root>/sections.ts`.
 
+## Layout
+
+Three Remochi `Repanel` columns between a toolbar and a problems strip, separated by Remochi
+dividers:
+
+- **Explorer**, on the left: Files or the Palette above, the Components tree below, with its
+  move, cut, copy, paste, duplicate and delete actions in a compact row.
+- **Workspace**, in the middle: open documents as tabs; Design, Code, JSON and Run; the
+  device size and zoom.
+- **Inspector**, on the right, at full height: Properties, Layout, Events and View.
+
 ## Against Ares
 
 | Ares | Duyo Designer |

@@ -116,6 +116,8 @@ around the ones that affect it.
 - **`Wizard` throws with no steps.** It defaults `steps = []` but reads `steps[0].title`.
   The pack draws nothing until a `remochi.WizardStep` exists.
 - **`DateInput` reads `value` once.** The pack remounts it when the value changes.
+- **`Input` has a fixed width (268px).** `remochi.Input` adds a `width` property (any CSS width;
+  `'100%'` fills its column) that overrides it.
 - **`RepanelStack` finds panels with `child.type === Repanel`,** so the pack builds real
   `Repanel` elements for it. Inside a stack a panel's `classes` apply; its Duyo `style` does not.
 - **`RichText`'s placeholder is never styled or positioned.** `RichText.scss` nests

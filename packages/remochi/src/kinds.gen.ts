@@ -229,6 +229,9 @@ export interface Remochi_Input extends ControlMembers {
   maxLength: unknown;
   getMaxLength: () => unknown;
   setMaxLength: (value: unknown) => void;
+  width: string;
+  getWidth: () => string;
+  setWidth: (value: string) => void;
 }
 
 /** remochi.Item */

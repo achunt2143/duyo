@@ -59,6 +59,7 @@ const text = (name: string, value: unknown, placeholder: string, handler: string
   value: value === undefined ? '' : typeof value === 'string' ? value : JSON.stringify(value),
   placeholder,
   onchange: handler,
+  width: '100%',
   ...extra,
 });
 

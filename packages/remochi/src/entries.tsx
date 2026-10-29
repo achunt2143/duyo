@@ -202,9 +202,11 @@ export const fields: PackEntry[] = [
   adapt({
     name: 'remochi.Input',
     component: R.Input,
-    published: { value: '', placeholder: '', type: 'text', disabled: false, readOnly: false, maxLength: undefined },
+    // Remochi draws the field at a fixed width; `width` (any CSS width, '100%' to fill) overrides it.
+    published: { value: '', placeholder: '', type: 'text', disabled: false, readOnly: false, maxLength: undefined, width: '' },
     hostStyle: { display: 'inline-block' },
     props: (node): Props => ({
+      ...(node.width ? { style: { width: node.width } } : {}),
       value: node.value,
       placeholder: node.placeholder,
       type: node.type,
