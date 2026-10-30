@@ -205,11 +205,12 @@
                     {
                       "kind": "remochi.Button",
                       "name": "windowButton",
-                      "content": "Open in window",
+                      "content": "Pop out",
                       "showing": false,
                       "ontap": "openRunWindow"
                     }
-                  ]
+                  ],
+                  "style": "flex-wrap: wrap; row-gap: 4px;"
                 },
                 { "kind": "remochi.Divider", "thickness": 2 },
                 { "kind": "Designer.Canvas", "name": "canvas", "fit": true, "onPick": "picked", "onDropAt": "canvasDrop" },

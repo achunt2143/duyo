@@ -9,6 +9,8 @@ code-behind against what you designed.
 npm run designer
 ```
 
+![The designer: files and component outline on the left, the live canvas in the middle, the inspector on the right.](../../docs/images/designer-design.png)
+
 This opens <http://localhost:5191> on the project you had open last, or the sampler the
 first time. Use the **Project** menu to work on another.
 
@@ -50,6 +52,14 @@ checked as untrusted input: nothing is written outside the new folder, and size 
 | `DUYO_DESIGNER_WORKSPACE` | Where clones and imports go. Default `~/DuyoProjects`. |
 | `DUYO_DESIGNER_HOME` | Where the designer remembers projects. Default `~/.duyo-designer`. |
 | `DUYO_DESIGNER_GITHUB_API` | GitHub's API address. Default `https://api.github.com`; for GitHub Enterprise or tests. |
+
+### In pictures
+
+![A view in a phone-sized frame, with the palette of every registered kind open.](../../docs/images/designer-device.png)
+
+![The code-behind in the editor, beside the design.](../../docs/images/designer-code.png)
+
+![The view running with its real code-behind; the Flip button has switched the toggle on and ticked the checkbox.](../../docs/images/designer-run.png)
 
 ## Layout
 
@@ -105,7 +115,7 @@ that make dividers resizable, and the small × and → in the inspector's rows.
 | **Ace**, the code editor | CodeMirror for the code-behind, with TypeScript highlighting and completion of the view's component and handler names. A JSON view of the spec, editable, kept in step with the design. |
 | **Harmonia**, the file manager | The project's views and code as a tree. New view (writes the spec, a code-behind and its types), new folder, rename (moves all three and fixes the imports), delete. |
 | Open documents | Tabs, one per open view or file, each with its own undo history; a dot marks unsaved work. Save (Ctrl+S) and Save all (Ctrl+Shift+S). |
-| Preview | Run mode: the view running for real, code-behind and all, in the chosen device frame; Reload picks up changes made outside the designer; Open in window. |
+| Preview | Run mode: the view running for real, code-behind and all, in the chosen device frame; Reload picks up changes made outside the designer; Pop out opens it in its own window. |
 | Problems | The spec checked against the registry with JSON paths, runtime diagnostics, and handlers the spec names that the code-behind lacks. |
 | Project list, Git integration | The Project menu (open, recent, clone from GitHub, import and download zips, settings) and the Changes tab (commit, push, pull, branch, pull request), through your own git. |
 | PhoneGap build, remote debugging, project templates, accounts | Not here: Duyo apps build with Vite, debug in the browser's own tools, and projects will start from `create-duyo`. |
