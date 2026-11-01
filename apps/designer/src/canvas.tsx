@@ -2,7 +2,9 @@ import type { Component, KindDefinition } from '@duyo/core';
 import { RuntimeView, createPack, type BindingProps, type KindPack, type Renderer } from '@duyo/react';
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type DragEvent, type MouseEvent, type ReactNode, type Ref } from 'react';
 
+import { remochiMode, type ThemeId } from './theme.js';
 import { codeBinding, codeKind } from './widgets/code.js';
+import { ThemeWrapper } from './widgets/remochi.js';
 import { filesBinding, filesKind } from './widgets/files.js';
 import { changesBinding, changesKind } from './widgets/changes.js';
 import { paletteBinding, paletteKind } from './widgets/palette.js';
@@ -24,6 +26,8 @@ import { treeBinding, treeKind } from './widgets/tree.js';
 export interface CanvasContent {
   root: Component | undefined;
   renderer: Renderer;
+  /** The theme to draw it in (see theme.ts). */
+  theme?: ThemeId;
 }
 
 export const canvasKind: KindDefinition = {
@@ -77,13 +81,17 @@ function DeviceFrame(props: {
   hostProps: BindingProps['hostProps'];
   children: ReactNode;
   overlay?: ReactNode;
+  /** Let what is drawn have all of the frame, so an app's page (light, or Onyx's) fills it as it would a window. */
+  fill?: boolean;
 }) {
   const { width, height, zoom, hostProps } = props;
   const sized = width > 0 && height > 0;
   const { onClick: _tap, ...host } = hostProps;
   const screen: CSSProperties = sized
     ? { width, height, zoom, overflow: 'auto', boxShadow: '0 0 0 1px var(--mochi-border, rgba(127,127,127,0.5)), 0 8px 30px var(--mochi-shadow, rgba(0,0,0,0.35))', borderRadius: 6 }
-    : { height: '100%', zoom };
+    : props.fill
+      ? { flex: 1, display: 'flex', flexDirection: 'column', zoom }
+      : { height: '100%', zoom };
   return (
     <div {...host} style={{ ...hostProps.style, overflow: 'auto', position: 'relative', minHeight: 0 }}>
       <div
@@ -101,12 +109,24 @@ function DeviceFrame(props: {
             {width} × {height} · {Math.round(zoom * 100)}%
           </div>
         ) : null}
-        <div ref={props.frameRef} style={{ position: 'relative', flex: sized ? 'none' : 1 }}>
+        <div ref={props.frameRef} style={{ position: 'relative', flex: sized ? 'none' : 1, ...(props.fill && !sized ? { display: 'flex', flexDirection: 'column' } : {}) }}>
           <div style={screen}>{props.children}</div>
           {props.overlay}
         </div>
       </div>
     </div>
+  );
+}
+
+/** An app in Remochi's theme sits in a `ThemeWrapper` of that mode, so a light app shows light inside the designer's dark; Onyx's page is the class on the element around it. */
+function themed(theme: ThemeId | undefined, children: ReactNode): ReactNode {
+  const mode = remochiMode(theme ?? 'remochi-dark');
+  return mode ? (
+    <ThemeWrapper theme={mode} storageKey={null} style={{ flex: 1 }}>
+      {children}
+    </ThemeWrapper>
+  ) : (
+    children
   );
 }
 
@@ -242,12 +262,12 @@ function CanvasView({ node, hostProps, bubble }: BindingProps) {
   );
 
   return (
-    <DeviceFrame width={width} height={height} zoom={zoom} frameRef={frame} hostProps={hostProps} overlay={message ? null : overlay}>
+    <DeviceFrame fill width={width} height={height} zoom={zoom} frameRef={frame} hostProps={hostProps} overlay={message ? null : overlay}>
       {message ? (
         <div style={{ padding: 24, opacity: 0.8, whiteSpace: 'pre-wrap' }}>{message}</div>
       ) : content?.root ? (
-        <div ref={preview} data-designer-preview="" style={{ minHeight: '100%' }}>
-          <RuntimeView root={content.root} renderer={content.renderer} />
+        <div ref={preview} data-designer-preview="" className={content.theme === 'onyx' ? 'onyx' : undefined} style={{ minHeight: '100%', flex: 1, display: 'flex', flexDirection: 'column' }}>
+          {themed(content.theme, <RuntimeView root={content.root} renderer={content.renderer} />)}
         </div>
       ) : null}
     </DeviceFrame>

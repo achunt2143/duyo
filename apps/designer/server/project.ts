@@ -7,17 +7,26 @@ import { basename, dirname, join, resolve } from 'node:path';
  * is a folder; `duyo.config.json` in it says where its views are and which module registers
  * its own kinds:
  *
- *     { "views": "src", "kinds": "src/kinds.ts" }
+ *     { "views": "src", "kinds": "src/kinds.ts", "theme": "onyx" }
+ *
+ * `theme` is the theme the app is drawn in (see src/theme.ts); without one it is `remochi-dark`.
  *
  * Without one, views are looked for in `src` (or the folder itself) and only the packs'
  * kinds are known.
  */
+
+/** The themes an app can be drawn in. The same list, with labels, is in src/theme.ts, and a test keeps the two together. */
+export const THEMES = ['remochi-dark', 'remochi-light', 'onyx'] as const;
+export type Theme = (typeof THEMES)[number];
+export const isTheme = (value: unknown): value is Theme => (THEMES as readonly unknown[]).includes(value);
 
 export interface ProjectConfig {
   /** Folder of views and code, relative to the project. */
   views: string;
   /** Module that registers the project's kinds, relative to the project. */
   kinds?: string;
+  /** The theme the app is drawn in; the designer's own when there is none. */
+  theme?: Theme;
 }
 
 export interface ProjectInfo {
@@ -62,7 +71,11 @@ export function describe(folder: string): ProjectInfo {
   if (existsSync(file)) {
     try {
       const read = JSON.parse(readFileSync(file, 'utf8')) as Partial<ProjectConfig>;
-      config = { views: typeof read.views === 'string' ? read.views : config.views, ...(typeof read.kinds === 'string' ? { kinds: read.kinds } : {}) };
+      config = {
+        views: typeof read.views === 'string' ? read.views : config.views,
+        ...(typeof read.kinds === 'string' ? { kinds: read.kinds } : {}),
+        ...(isTheme(read.theme) ? { theme: read.theme } : {}),
+      };
       hasConfig = true;
     } catch {
       // A broken config is reported by leaving the defaults in place.

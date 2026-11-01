@@ -1,4 +1,4 @@
-import type { ComponentType, ReactNode } from 'react';
+import type { ComponentType, CSSProperties, ReactNode } from 'react';
 import * as R from 'remochi';
 
 /**
@@ -8,6 +8,15 @@ import * as R from 'remochi';
  * Re-declaring them here keeps the designer's widgets free of casts.
  */
 export const { Button, Input, Item, List, ListHeader, ListItem, Subheader } = R;
+
+/** `style` and `className` reach the wrapper's element, which Remochi 0.4.0's typings leave out. */
+export const ThemeWrapper = R.ThemeWrapper as unknown as ComponentType<{
+  theme?: 'dark' | 'light' | 'system';
+  storageKey?: string | null;
+  style?: CSSProperties;
+  className?: string;
+  children?: ReactNode;
+}>;
 
 export const Badge = R.Badge as unknown as ComponentType<{ children?: ReactNode; variant?: string; count?: number }>;
 

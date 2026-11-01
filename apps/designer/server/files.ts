@@ -10,7 +10,7 @@ import { listFolders } from './folders.js';
 import { GithubError, githubToken, listRepos } from './github.js';
 import { clone, cloneSource, commitAll, init, newBranch, pull, push, repoInfo, repoName, validBranch } from './git.js';
 import { folderPath, kindOfFile, readableFile, writableFile } from './paths.js';
-import { describe, freshFolder, isFolder, recentProjects, remember, startingProject, writeConfig, WORKSPACE, type ProjectInfo } from './project.js';
+import { describe, freshFolder, isFolder, isTheme, recentProjects, remember, startingProject, THEMES, writeConfig, WORKSPACE, type ProjectInfo } from './project.js';
 import { nameInZip, unzipProject, zipProject } from './zip.js';
 
 /**
@@ -24,7 +24,7 @@ import { nameInZip, unzipProject, zipProject } from './zip.js';
  *
  *   GET  /__designer/project                   -> the current project and recent ones
  *   POST /__designer/project/open    { path }
- *   POST /__designer/project/config  { views, kinds }
+ *   POST /__designer/project/config  { views, kinds, theme? }   (a theme left out is kept; '' takes it away)
  *   POST /__designer/project/clone   { url, name? }
  *   POST /__designer/project/import?name=      (body: a zip)
  *   GET  /__designer/project/export.zip
@@ -311,7 +311,10 @@ export function designerFiles(options: { root: string }): Plugin {
               const kinds = String(body['kinds'] ?? '').trim();
               if (!resolve(project.root, views).startsWith(project.root)) return refuse(response, 'The views folder must be inside the project.');
               if (kinds && !resolve(project.root, kinds).startsWith(project.root)) return refuse(response, 'The kinds module must be inside the project.');
-              writeConfig(project.root, { views, ...(kinds ? { kinds } : {}) });
+              const asked = body['theme'];
+              if (asked !== undefined && asked !== '' && !isTheme(asked)) return refuse(response, `The theme must be one of ${THEMES.join(', ')}.`);
+              const theme = asked === undefined ? project.config.theme : asked === '' ? undefined : asked;
+              writeConfig(project.root, { views, ...(kinds ? { kinds } : {}), ...(theme ? { theme } : {}) });
               open(project.root);
               return send(response, 200, await projectBody());
             }

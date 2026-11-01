@@ -35,6 +35,16 @@ describe('projects', () => {
     expect(info.hasConfig).toBe(true);
   });
 
+  it('reads the theme, and ignores one it does not know', () => {
+    const themed = join(base, 'themed');
+    mkdirSync(themed);
+    writeFileSync(join(themed, 'duyo.config.json'), '{ "views": "src", "theme": "onyx" }');
+    expect(describeProject(themed).config.theme).toBe('onyx');
+    writeFileSync(join(themed, 'duyo.config.json'), '{ "views": "src", "theme": "sepia" }');
+    expect(describeProject(themed).config.theme).toBeUndefined();
+    expect(describeProject(app).config.theme).toBeUndefined();
+  });
+
   it('keeps the views folder and kinds module inside the project', () => {
     const odd = join(base, 'odd');
     mkdirSync(odd);

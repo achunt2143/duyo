@@ -50,6 +50,8 @@ export type Named = {
   /** remochi.ViewSelectButton */
   modes: Instance<"remochi.ViewSelectButton">;
   /** remochi.Dropdown */
+  theme: Instance<"remochi.Dropdown">;
+  /** remochi.Dropdown */
   device: Instance<"remochi.Dropdown">;
   /** remochi.Button */
   rotateButton: Instance<"remochi.Button">;
@@ -88,7 +90,7 @@ export type Named = {
 };
 
 /** Handlers the spec names. The code-behind must implement every one. */
-export type Handlers = 'browseResized' | 'canvasDrop' | 'codeEdited' | 'commitChanges' | 'deleteFile' | 'deviceChanged' | 'dialogAction' | 'dialogCancelled' | 'dialogClosed' | 'dialogConfirmed' | 'explorerResized' | 'fileOpened' | 'gitAction' | 'help' | 'inspectorResized' | 'inspectorTabChanged' | 'jsonEdited' | 'leftTabChanged' | 'modeChanged' | 'newFolder' | 'newView' | 'openRunWindow' | 'paletteAdd' | 'picked' | 'pickerChose' | 'pickerDoubled' | 'pickerWent' | 'projectAction' | 'projectMenu' | 'projectMenuClosed' | 'pushChanges' | 'redo' | 'reloadRun' | 'renameFile' | 'rotate' | 'save' | 'saveAll' | 'tabActivated' | 'tabClosed' | 'treeAction' | 'treeDroppedKind' | 'treeMoved' | 'treeSelected' | 'undo' | 'zoomChanged';
+export type Handlers = 'browseResized' | 'canvasDrop' | 'codeEdited' | 'commitChanges' | 'deleteFile' | 'deviceChanged' | 'dialogAction' | 'dialogCancelled' | 'dialogClosed' | 'dialogConfirmed' | 'explorerResized' | 'fileOpened' | 'gitAction' | 'help' | 'inspectorResized' | 'inspectorTabChanged' | 'jsonEdited' | 'leftTabChanged' | 'modeChanged' | 'newFolder' | 'newView' | 'openRunWindow' | 'paletteAdd' | 'picked' | 'pickerChose' | 'pickerDoubled' | 'pickerWent' | 'projectAction' | 'projectMenu' | 'projectMenuClosed' | 'pushChanges' | 'redo' | 'reloadRun' | 'renameFile' | 'rotate' | 'save' | 'saveAll' | 'tabActivated' | 'tabClosed' | 'themeChanged' | 'treeAction' | 'treeDroppedKind' | 'treeMoved' | 'treeSelected' | 'undo' | 'zoomChanged';
 
 /** `this` inside the code-behind. */
 export type Self = ViewComponent<Named>;

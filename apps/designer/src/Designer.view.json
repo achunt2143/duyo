@@ -192,6 +192,7 @@
                       "onSelect": "modeChanged"
                     },
                     { "fit": true },
+                    { "kind": "remochi.Dropdown", "name": "theme", "maxHeight": 320, "onChange": "themeChanged" },
                     { "kind": "remochi.Dropdown", "name": "device", "maxHeight": 320, "onChange": "deviceChanged" },
                     { "kind": "remochi.Button", "name": "rotateButton", "content": "Rotate", "ontap": "rotate" },
                     { "kind": "remochi.Dropdown", "name": "zoom", "maxHeight": 320, "onChange": "zoomChanged" },

@@ -3,6 +3,7 @@ import { loadSpec } from '@duyo/views/load';
 import { formatSpec, handlersOf } from '@duyo/views/spec';
 
 import { kindInfo, newComponent, paletteKinds, type KindInfo } from './catalog.js';
+import { DEFAULT_THEME, THEMES, themeLabel, themeOf, type ThemeId } from './theme.js';
 import type { PickerItem } from './widgets/picker.js';
 import { addHandler, codeBehindTemplate, isGenerated, methodsIn, viewBase } from './codebehind.js';
 import type { CodeBehind } from './Designer.view.gen.js';
@@ -85,6 +86,8 @@ interface State {
   inspectorTab: InspectorTab;
   device: { width: number; height: number };
   zoom: number;
+  /** The theme the app is drawn in, a setting of the project. */
+  theme: ThemeId;
   clipboard: Json[];
   runRevision: number;
   sizes: Sizes;
@@ -608,7 +611,7 @@ function showMode(self: Component) {
   self.$.run.setShowing(mode === 'run');
   self.$.modes.setSelected(Math.max(0, MODES.indexOf(mode ?? 'design')));
   const framed = mode === 'design' || mode === 'run';
-  for (const control of [self.$.device, self.$.zoom, self.$.rotateButton]) control.setShowing(framed);
+  for (const control of [self.$.theme, self.$.device, self.$.zoom, self.$.rotateButton]) control.setShowing(framed);
   self.$.reloadButton.setShowing(mode === 'run');
   self.$.windowButton.setShowing(mode === 'run');
   if (mode === 'json' && doc?.view) {
@@ -633,7 +636,7 @@ function loadCodeIntoEditor(self: Component, jump?: number) {
 
 function startRun(self: Component, doc: Doc) {
   const state = st(self);
-  self.$.run.setSrc(`/run.html?view=${encodeURIComponent(doc.key)}&theme=dark`);
+  self.$.run.setSrc(`/run.html?view=${encodeURIComponent(doc.key)}&theme=${st(self).theme}`);
   self.$.run.setRevision(++state.runRevision);
   if (dirty(doc)) setStatus(self, 'Run shows the saved files. Save to run your latest changes.');
 }
@@ -647,7 +650,7 @@ function refresh(self: Component, parts: { inspector?: boolean } = {}) {
   if (doc?.view) {
     if (!nodeAt(doc.view.spec, doc.selected)) doc.selected = [];
     state.preview = buildPreview(doc.view.spec, registry, state.preview);
-    canvas['preview'] = { root: state.preview.root, renderer };
+    canvas['preview'] = { root: state.preview.root, renderer, theme: state.theme };
     canvas.setMessage(state.preview.error ? `This view cannot be drawn yet:\n\n${state.preview.error}` : '');
     canvas.setSelectedId(state.preview.idOf.get(pathKey(doc.selected)) ?? '');
   } else {
@@ -846,6 +849,7 @@ export default view(
         inspectorTab: 'properties',
         device: { width: 0, height: 0 },
         zoom: 1,
+        theme: DEFAULT_THEME,
         clipboard: [],
         runRevision: 0,
         sizes: loadSizes(),
@@ -870,6 +874,7 @@ export default view(
       applySizes(this);
       this.$.palette['kinds'] = palette;
       this.$.palette.setRevision(1);
+      this.$.theme.setOptions(THEMES.map(({ value, label }) => ({ value, label })));
       this.$.device.setOptions(DEVICES.map(({ value, label }) => ({ value, label })));
       this.$.device.setValue('fit');
       this.$.zoom.setOptions(ZOOMS.map((z) => ({ value: z, label: `${Math.round(z * 100)}%` })));
@@ -885,6 +890,9 @@ export default view(
 
     /** Called once the project's kinds have loaded; see main.ts. */
     async start() {
+      // the project is known by now (see main.ts), and with it the theme its app is drawn in
+      st(this).theme = themeOf(projectOf(this)?.config.theme);
+      this.$.theme.setValue(st(this).theme);
       showProject(this);
       await loadEntries(this);
       void refreshGit(this);
@@ -1265,6 +1273,24 @@ export default view(
       showMode(this);
     },
 
+    /** The app's theme is the project's: it is drawn in it at once, and written to `duyo.config.json`. */
+    async themeChanged(_sender, event) {
+      const theme = themeOf(event['value']);
+      if (theme === st(this).theme) return;
+      st(this).theme = theme;
+      refresh(this, { inspector: false });
+      const doc = activeDoc(this);
+      if (doc?.mode === 'run') startRun(this, doc);
+      const project = projectOf(this);
+      if (!project) return setStatus(this, `Drawing in ${themeLabel(theme)}. There is no project to save it in.`);
+      try {
+        this['project'] = await configureProject(project.config.views, project.config.kinds ?? '', theme);
+        setStatus(this, `Drawing in ${themeLabel(theme)}, saved in duyo.config.json.`);
+      } catch (error) {
+        setStatus(this, `Drawing in ${themeLabel(theme)}, but could not save it: ${error instanceof Error ? error.message : String(error)}`);
+      }
+    },
+
     deviceChanged(_sender, event) {
       const device = DEVICES.find((d) => d.value === event['value']) ?? DEVICES[0]!;
       st(this).device = { width: device.width, height: device.height };
@@ -1293,7 +1319,7 @@ export default view(
       if (!doc) return;
       const { width, height } = st(this).device;
       const size = width > 0 ? `,width=${width},height=${height}` : '';
-      window.open(`/run.html?view=${encodeURIComponent(doc.key)}&theme=dark`, '_blank', `noopener${size}`);
+      window.open(`/run.html?view=${encodeURIComponent(doc.key)}&theme=${st(this).theme}`, '_blank', `noopener${size}`);
     },
 
     // --- Code and JSON ----------------------------------------------------------------
