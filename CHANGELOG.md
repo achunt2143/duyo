@@ -2,6 +2,18 @@
 
 All notable changes to Duyo. Versions follow [Semantic Versioning](https://semver.org/).
 
+## Unreleased
+
+### @duyo/onyx (new)
+
+The Onyx theme from Enyo 2 as a kind pack: 56 `onyx.*` kinds (buttons, toggles, radio groups,
+inputs, sliders, progress, toolbars, popups, menus, pickers including date and time, tooltips,
+tab bars and more), with Onyx's LESS ported to CSS custom properties. It is built with the
+public `@duyo/react` API only, like `@duyo/remochi`, and the two share an app without knowing
+each other. A test now also keeps the framework packages from mentioning Onyx.
+
+The sampler gains two sections, "Onyx controls" and "Onyx menus and pickers".
+
 ## 1.0.0 — 2026-10-29
 
 The first release of Duyo: a modern, Enyo-style component framework in TypeScript, with

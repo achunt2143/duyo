@@ -121,7 +121,8 @@ adapt({
 
 `adapt` is a convenience. A pack is just `{ name, kinds, bindings, wrapper? }`, so a binding
 can be any component that takes `{ node, hostProps, children, bubble, ... }`. That is how the
-base pack's `duyo.Input` is written, and how you would target something that is not React.
+base pack's `duyo.Input` is written, how `@duyo/onyx` is written throughout (Onyx is CSS and
+DOM, with no React components to adapt), and how you would target something that is not React.
 
 ```tsx
 const myPack: KindPack = {
