@@ -1,0 +1,11 @@
+duyo
+Copyright 2026 achunt2143
+
+Duyo's Onyx pack (duyo/onyx) is a port of Onyx, the Enyo 2 theme, to Duyo. The stylesheets in
+lib/onyx/src/css and the images in lib/onyx/src/images are derived from the enyojs/onyx repository,
+version 2.7.0 (https://github.com/enyojs/onyx), and the kinds follow the behaviour of its controls.
+The images of `RowGroup`, `Header`, `Divider`, `DividerDrawer`, `ConfirmPrompt`, `Dialog`, `ModalDialog`,
+`SlidingPane` and `GrabButton` (lib/onyx/src/images/webos-*.png) and styles come from the Onyx theme of
+webOS's Enyo 1.0 (https://github.com/enyojs/enyo-1.0), also Apache-2.0 (the images are byte-identical to
+the ones in the webOS SDK).
+Onyx and Enyo are licensed under the Apache License, Version 2.0; see LICENSE.

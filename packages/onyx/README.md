@@ -1,4 +1,6 @@
-# @duyo/onyx
+# duyo/onyx
+
+> In this repository this is the workspace `@duyo/onyx` (private). It is published inside the one package `duyo`, and an app imports it as `duyo/onyx`. See [packages/duyo](../duyo).
 
 The Onyx theme, as a Duyo kind pack: its buttons, toolbars, inputs, menus, pickers and popups
 as `onyx.*` kinds.
@@ -8,20 +10,20 @@ Onyx is the light-grey-and-dark-toolbar look of Enyo 2. This is a port of
 from LESS to plain CSS with custom properties, its images are used as they were, and each
 control keeps the behaviour and vocabulary of the Enyo kind it comes from.
 
-It is an ordinary pack. It is built with the public `@duyo/react` API only, depends on the
-framework only through public exports, and is optional: nothing in `@duyo/core`,
-`@duyo/layout` or `@duyo/react` knows it exists. It does not know Remochi either, so the two
+It is an ordinary pack. It is built with the public `duyo/react` API only, depends on the
+framework only through public exports, and is optional: nothing in `duyo`,
+`duyo/layout` or `duyo/react` knows it exists. It does not know Remochi either, so the two
 packs can share an app. See [docs/writing-a-pack.md](../../docs/writing-a-pack.md).
 
 ```bash
-npm install @duyo/onyx
+npm install duyo
 ```
 
 ```tsx
-import '@duyo/onyx/css';
-import { kind, KindRegistry, createRuntime } from '@duyo/core';
-import { basePack, createRenderer, installPack, renderInto } from '@duyo/react';
-import { onyxPack } from '@duyo/onyx';
+import 'duyo/onyx/css';
+import { kind, KindRegistry, createRuntime } from 'duyo';
+import { basePack, createRenderer, installPack, renderInto } from 'duyo/react';
+import { onyxPack } from 'duyo/onyx';
 
 const packs = [basePack, onyxPack];
 const registry = new KindRegistry();
@@ -136,7 +138,7 @@ Not ported at all, because they are not look but behaviour or the webOS device: 
 
 Not ported: Enyo 2's `Panels` and its arrangers (Card, Carousel, Collapsing, DockRight and the rest),
 which belong to Enyo's *layout* library, not to Onyx. `TabPanels` is Onyx's panel kind and is
-ported; a general `Panels` would be a kind of its own in `@duyo/layout`. Also not ported: the
+ported; a general `Panels` would be a kind of its own in `duyo/layout`. Also not ported: the
 localised `DatePicker` and `TimePicker` of `enyo-ilib` (month names are English), `Popup`'s `showTransitions`, `allowDefault` and `targetPosition`, and
 `MoreToolbar`'s per-child `unmoveable`. A `RangeSlider`'s knobs stop at each other, where
 Enyo's swapped. Image paths no longer need `onyx-image-path`; Vite and other bundlers resolve

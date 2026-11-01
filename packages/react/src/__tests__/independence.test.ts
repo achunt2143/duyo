@@ -66,13 +66,8 @@ describe('the framework packages know no particular UI library', () => {
  * then fails on ("React is not defined"). A pragma in each file says how it is compiled, whatever the app does.
  */
 describe('the packages that ship JSX say how it is compiled', () => {
-  const shipped = readdirSync(packages).filter((name) => {
-    try {
-      return statSync(join(packages, name, 'src')).isDirectory() && !JSON.parse(readFileSync(join(packages, name, 'package.json'), 'utf8')).private;
-    } catch {
-      return false;
-    }
-  });
+  // what the `duyo` package is made of (packages/duyo/package.json): the libraries are private, and `duyo` is what is published
+  const shipped: string[] = JSON.parse(readFileSync(join(packages, 'duyo', 'package.json'), 'utf8')).duyo.includes;
 
   it('finds the packages it should', () => {
     expect(shipped).toEqual(expect.arrayContaining(['react', 'remochi', 'onyx']));

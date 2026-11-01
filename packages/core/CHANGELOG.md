@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.1.0 — 2026-11-01
+
+Part of Duyo 1.1.0, published as the one package `duyo` (see the repository CHANGELOG).
+
+- The generated `control.gen.ts` no longer imports `ComponentEvent` unused, so the package compiles under `noUnusedLocals`.
+
 ## 1.0.0 — 2026-10-29
 
 First release of `@duyo/core`, as part of Duyo 1.0.0.

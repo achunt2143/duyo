@@ -1,6 +1,7 @@
 {
   "name": "@duyo/core",
-  "version": "1.0.0",
+  "version": "1.1.0",
+  "private": true,
   "description": "Duyo core: Enyo-style kinds, component ownership, published props and event bubbling. No DOM, no React.",
   "license": "Apache-2.0",
   "author": "achunt2143",

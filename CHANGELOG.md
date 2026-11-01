@@ -2,9 +2,15 @@
 
 All notable changes to Duyo. Versions follow [Semantic Versioning](https://semver.org/).
 
-## Unreleased
+## 1.1.0 — 2026-11-01
 
-### @duyo/onyx (new)
+### One package: `duyo`
+
+Duyo is published as a single npm package. `@duyo/core` is `duyo`, and `@duyo/layout`, `@duyo/react`, `@duyo/views`, `@duyo/remochi` and `@duyo/onyx` are `duyo/layout`, `duyo/react`, `duyo/views`, `duyo/remochi` and `duyo/onyx` (each pack with `/css`), and `duyo-views` is its command. Installing it brings no other dependency: React and React DOM are peers, and Remochi and Vite are optional peers, needed only for `duyo/remochi` and `duyo/views/vite`.
+
+In the repository nothing moves: the libraries are still workspaces of their own, now private, and the apps use them as before. `packages/duyo` assembles the package from them when it is packed (`npm run assemble -w duyo`), writing their names as `duyo` and `duyo/<name>`, and `npm run smoke -w duyo` proves it by installing the tarball into a new project outside the repository, with a strict `tsconfig`, and building it. The guides now use the names an app imports.
+
+### Onyx (new)
 
 The Onyx theme from Enyo 2 as a kind pack: 56 `onyx.*` kinds (buttons, toggles, radio groups,
 inputs, sliders, progress, toolbars, popups, menus, pickers including date and time, tooltips,
@@ -18,7 +24,7 @@ The designer installs both first-party themes: the palette offers the `onyx` kin
 
 ### Fixed
 
-- **`@duyo/react`, `@duyo/remochi` and `@duyo/onyx` work in an app that has not turned on the automatic JSX runtime.** They ship their `.tsx` source, so an app compiles it with its own settings, and without that setting a file that does not import React failed with "React is not defined". Each `.tsx` file now says how it is compiled (`@jsxRuntime automatic`), and a test keeps it so.
+- **`duyo/react`, `duyo/remochi` and `duyo/onyx` work in an app that has not turned on the automatic JSX runtime.** They ship their `.tsx` source, so an app compiles it with its own settings, and without that setting a file that does not import React failed with "React is not defined". Each `.tsx` file now says how it is compiled (`@jsxRuntime automatic`), and a test keeps it so.
 - **`@duyo/core` compiles under `noUnusedLocals`.** The generator of kind types (`@duyo/views`) imported `ComponentEvent` into every file, used or not, so `control.gen.ts` failed an app's strict settings. It now imports only what a file uses, and the workspace compiles with `noUnusedLocals` and `noUnusedParameters` on, so it cannot come back.
 - Checked by installing the packed packages into a new Vite project outside the repository, with a strict `tsconfig`.
 

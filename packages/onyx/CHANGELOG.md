@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.1.0 — 2026-11-01
 
 First version of `@duyo/onyx`, a port of the Onyx theme (enyojs/onyx 2.7.0) to a Duyo pack.
 

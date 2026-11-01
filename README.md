@@ -13,8 +13,8 @@ Duyo is a replacement for EnyoJS built for today's tooling. It keeps what made E
 
 - **A TypeScript runtime.** Kinds are resolved as data, not prototype chains, with owner and parent trees, published properties, lifecycle, event bubbling, an action registry and Fittable layout. Definitions can be plain JSON.
 - **Pluggable kind packs.** The runtime knows no particular design system. A pack supplies kinds and how to draw them, as Onyx and Mochi did for Enyo, and `adapt()` turns any React component into a kind.
-- **[Onyx](packages/onyx) as a pack too.** The Enyo 2 theme, ported: 56 `onyx.*` kinds (including webOS's rounded `RowGroup`, `Header`, sliding panes, dialogs and toasters) with Onyx's look, as `@duyo/onyx`. It shares an app with Remochi without knowing it.
-- **[Remochi](https://www.npmjs.com/package/remochi) as the first-party pack.** Every Remochi component is a `remochi.*` kind (`@duyo/remochi`): the webOS look, panels, menus and popups, on React.
+- **[Onyx](packages/onyx) as a pack too.** The Enyo 2 theme, ported: 56 `onyx.*` kinds (including webOS's rounded `RowGroup`, `Header`, sliding panes, dialogs and toasters) with Onyx's look, as `duyo/onyx`. It shares an app with Remochi without knowing it.
+- **[Remochi](https://www.npmjs.com/package/remochi) as the first-party pack.** Every Remochi component is a `remochi.*` kind (`duyo/remochi`): the webOS look, panels, menus and popups, on React.
 - **Views.** A screen's *design* lives in a `.view.json` that people, tools and AI can edit; its *behaviour* lives in a code-behind. Generated types check the two against each other.
 - **A visual designer**, in the spirit of Ares: edit views on a live canvas, write their code, run them, and push the result to GitHub.
 
@@ -23,7 +23,7 @@ Duyo is a replacement for EnyoJS built for today's tooling. It keeps what made E
 If you know Enyo, this is already familiar.
 
 ```js
-import { kind } from '@duyo/core';
+import { kind } from 'duyo';
 
 kind({
   name: 'App.Counter',
@@ -69,7 +69,7 @@ For a screen, split the kind in two. `Buttons.view.json` is the design, plain da
 `Buttons.ts` is the behaviour. Handler names come from the spec, and `this.$.wifi` is typed from it:
 
 ```ts
-import { view } from '@duyo/core';
+import { view } from 'duyo';
 import spec from './Buttons.view.json';
 import type { CodeBehind } from './Buttons.view.gen.js';
 
@@ -88,10 +88,10 @@ Rename a handler in the spec and forget the code, or misspell `this.$.wifi`, and
 Put it on screen with a pack:
 
 ```ts
-import '@duyo/remochi/css';
-import { createRuntime, defaultKindRegistry } from '@duyo/core';
-import { basePack, createRenderer, installPack, renderInto } from '@duyo/react';
-import { remochiPack } from '@duyo/remochi';
+import 'duyo/remochi/css';
+import { createRuntime, defaultKindRegistry } from 'duyo';
+import { basePack, createRenderer, installPack, renderInto } from 'duyo/react';
+import { remochiPack } from 'duyo/remochi';
 
 const packs = [basePack, remochiPack];
 for (const pack of packs) installPack(defaultKindRegistry, pack);
@@ -119,16 +119,22 @@ renderInto(createRuntime().create({ kind: 'App.Buttons' }), createRenderer(packs
 
 It also manages projects: a file manager, a folder browser, **cloning from your GitHub repositories**, committing, pushing and opening pull requests through the git you already have, and importing or downloading a project as a **zip**. Details, and how it compares with Ares: [apps/designer](apps/designer/README.md).
 
-## Packages
+## What is in `duyo`
 
-| Package | |
-| --- | --- |
-| [`@duyo/core`](packages/core) | Kinds, components, ownership, published properties, events, inheritance. No DOM, no React. |
-| [`@duyo/layout`](packages/layout) | `FittableRows` / `FittableColumns` as a pure resolver plus kind definitions. |
-| [`@duyo/react`](packages/react) | Kind-pack interface, `adapt()` for porting any React component library, `RuntimeView` / `renderInto`, and a plain-DOM base pack. |
-| [`@duyo/remochi`](packages/remochi) | An optional pack: every Remochi component as a `remochi.*` kind, with typed properties. Built with the same public API anyone can use. |
-| [`@duyo/onyx`](packages/onyx) | An optional pack: the Onyx theme from Enyo 2 as 56 `onyx.*` kinds, its LESS ported to CSS with `--onyx-*` variables. |
-| [`@duyo/views`](packages/views) | Views: validation, generated types, the `duyo-views` CLI, a Vite plugin, a guarded loader for run-time specs. |
+One npm package, `duyo`, holds all of it. In this repository each library is a workspace of its own (named `@duyo/…`,
+and private) and the apps use them that way; in an app of yours they are imports from `duyo`:
+
+| Import | Library | |
+| --- | --- | --- |
+| `duyo` | [`packages/core`](packages/core) | Kinds, components, ownership, published properties, events, inheritance. No DOM, no React. |
+| `duyo/layout` | [`packages/layout`](packages/layout) | `FittableRows` / `FittableColumns` as a pure resolver plus kind definitions. |
+| `duyo/react` | [`packages/react`](packages/react) | Kind-pack interface, `adapt()` for porting any React component library, `RuntimeView` / `renderInto`, and a plain-DOM base pack. |
+| `duyo/remochi` | [`packages/remochi`](packages/remochi) | An optional pack: every Remochi component as a `remochi.*` kind, with typed properties. Built with the same public API anyone can use. |
+| `duyo/onyx` | [`packages/onyx`](packages/onyx) | An optional pack: the Onyx theme from Enyo 2 as 56 `onyx.*` kinds, its LESS ported to CSS with `--onyx-*` variables. |
+| `duyo/views` | [`packages/views`](packages/views) | Views: validation, generated types, the `duyo-views` CLI, a Vite plugin (`duyo/views/vite`), a guarded loader for run-time specs (`duyo/views/load`). |
+
+The package is assembled from them (`packages/duyo`, `npm run assemble -w duyo`), and installing it brings no other dependency:
+React and React DOM are peers, and Remochi and Vite are optional peers for `duyo/remochi` and `duyo/views/vite`.
 
 | App | |
 | --- | --- |
@@ -138,14 +144,21 @@ It also manages projects: a file manager, a folder browser, **cloning from your 
 ## Getting started
 
 ```bash
+npm install duyo react react-dom
+npm install remochi          # only if you use duyo/remochi
+```
+
+Requirements: Node 18 or later, and React 18 or 19. Duyo ships TypeScript and JSX source, so use a TypeScript-aware bundler such as Vite; nothing needs configuring.
+
+To work on Duyo itself, or to try the sampler and the designer:
+
+```bash
 git clone https://github.com/achunt2143/duyo.git
 cd duyo
 npm install
-npm run sampler     # every remochi.* kind
+npm run sampler     # every remochi.* and onyx.* kind
 npm run designer    # the visual designer
 ```
-
-Requirements: Node 18 or later, and React 18 or 19. The packages ship TypeScript source, so use a TypeScript-aware bundler such as Vite. They are not on npm yet; use them from this repository.
 
 To add your own UI library, see [docs/writing-a-pack.md](docs/writing-a-pack.md). Not built yet: a project scaffolder on the new runtime.
 
@@ -172,6 +185,7 @@ duyo/
 │   ├── react/          # React host, kind packs, adapt()
 │   ├── remochi/        # the pack over Remochi
 │   ├── onyx/           # the Onyx theme as a pack
+│   ├── duyo/           # the package that is published: assembled from the libraries above
 │   ├── views/          # .view.json specs + code-behind: validation, types, CLI, Vite plugin
 │   ├── runtime/        # ARCHIVED: vendored Enyo 2.7 + Rollup build
 │   ├── vite-plugin/    # ARCHIVED: injects the Enyo bundle as a classic script

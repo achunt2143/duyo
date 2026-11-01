@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.1.0 — 2026-11-01
+
+Part of Duyo 1.1.0, published as the one package `duyo` (see the repository CHANGELOG).
+
+- Each `.tsx` file says it uses the automatic JSX runtime, so the package works in an app that has not turned it on.
+
 ## 1.0.0 — 2026-10-29
 
 First release of `@duyo/react`, as part of Duyo 1.0.0.
