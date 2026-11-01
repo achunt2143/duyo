@@ -1,3 +1,4 @@
+/** @jsxRuntime automatic @jsxImportSource react */
 import { fittableAxis, layoutKinds, resolveFittable, FITTABLE_COLUMNS, FITTABLE_ROWS } from '@duyo/layout';
 import { createElement, type ChangeEvent, type KeyboardEvent } from 'react';
 

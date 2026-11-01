@@ -1,3 +1,4 @@
+/** @jsxRuntime automatic @jsxImportSource react */
 import type { Component, KindDefinition, KindReference } from '@duyo/core';
 import { createElement, type CSSProperties, type ElementType, type MouseEvent, type ReactNode } from 'react';
 

@@ -1,3 +1,4 @@
+/** @jsxRuntime automatic @jsxImportSource react */
 import type { Component, KindInput } from '@duyo/core';
 import type { BindingProps, PackEntry } from '@duyo/react';
 import { useRef, type PointerEvent as ReactPointerEvent, type ReactNode } from 'react';
@@ -101,7 +102,7 @@ const dividerDrawer: KindInput = {
   toggleOpen(this: Component) {
     this.setOpen(!this.get('open'));
   },
-  openChanged(this: Component, previous: boolean, open: boolean) {
+  openChanged(this: Component, _previous: boolean, open: boolean) {
     this.doOpenChanged({ open });
   },
 };
@@ -201,7 +202,7 @@ const swipeableItem: KindInput = {
     allowLeft: true,
   },
   events: { onConfirm: '', onCancel: '', onSwipe: '', onConfirmShowingChanged: '', onDrag: '' },
-  confirmShowingChanged(this: Component, previous: boolean, showing: boolean) {
+  confirmShowingChanged(this: Component, _previous: boolean, showing: boolean) {
     this.doConfirmShowingChanged({ showing, index: this.itemIndex() });
   },
   /** Where this item is among those beside it. */

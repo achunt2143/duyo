@@ -1,3 +1,4 @@
+/** @jsxRuntime automatic @jsxImportSource react */
 import type { Component, KindInput } from '@duyo/core';
 import type { BindingProps, PackEntry } from '@duyo/react';
 import { createElement, useRef, useState, type KeyboardEvent, type PointerEvent } from 'react';
@@ -532,7 +533,7 @@ function container(name: string, classes: string[], extra: Partial<KindInput> = 
  */
 const DRAG_THRESHOLD = 4;
 function GrabberView(props: BindingProps) {
-  const { node, bubble } = props;
+  const { bubble } = props;
   const drag = useRef<{ x: number; y: number; lastX: number; lastY: number; started: boolean } | null>(null);
   const suppressTap = useRef(false);
   const attributes = host(props, ['onyx-grabber']);

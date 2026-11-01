@@ -1,3 +1,4 @@
+/** @jsxRuntime automatic @jsxImportSource react */
 import { createPack, type KindPack, type PackEntry } from '@duyo/react';
 import { useEffect, type ReactNode } from 'react';
 

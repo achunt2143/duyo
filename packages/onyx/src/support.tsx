@@ -1,3 +1,4 @@
+/** @jsxRuntime automatic @jsxImportSource react */
 import type { Component, ComponentDefinition, KindInput } from '@duyo/core';
 import type { BindingProps, HostProps, PackEntry, RendererBinding } from '@duyo/react';
 import type { ComponentType, ReactNode } from 'react';

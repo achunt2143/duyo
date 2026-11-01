@@ -1,3 +1,4 @@
+/** @jsxRuntime automatic @jsxImportSource react */
 import type { Component, KindInput } from '@duyo/core';
 import type { BindingProps, PackEntry } from '@duyo/react';
 import { useLayoutEffect, useRef, useState, type PointerEvent } from 'react';

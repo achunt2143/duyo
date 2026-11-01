@@ -59,3 +59,31 @@ describe('the framework packages know no particular UI library', () => {
     expect(text(sources(join(packages, 'remochi', 'src')))).not.toMatch(/@duyo\/onyx|from 'onyx'/);
   });
 });
+
+/**
+ * A package ships its source, so an app compiles it with the app's own settings, and an app that has not turned on
+ * the automatic JSX runtime would compile `<div>` to `React.createElement`, which a file that does not import React
+ * then fails on ("React is not defined"). A pragma in each file says how it is compiled, whatever the app does.
+ */
+describe('the packages that ship JSX say how it is compiled', () => {
+  const shipped = readdirSync(packages).filter((name) => {
+    try {
+      return statSync(join(packages, name, 'src')).isDirectory() && !JSON.parse(readFileSync(join(packages, name, 'package.json'), 'utf8')).private;
+    } catch {
+      return false;
+    }
+  });
+
+  it('finds the packages it should', () => {
+    expect(shipped).toEqual(expect.arrayContaining(['react', 'remochi', 'onyx']));
+  });
+
+  for (const name of shipped) {
+    it(`every .tsx file of @duyo/${name} has the automatic JSX runtime pragma`, () => {
+      const offenders = sources(join(packages, name, 'src')).filter(
+        (file) => file.endsWith('.tsx') && !/@jsxRuntime\s+automatic/.test(readFileSync(file, 'utf8').slice(0, 400)),
+      );
+      expect(offenders).toEqual([]);
+    });
+  }
+});
