@@ -1,0 +1,11 @@
+/* Ensure portaled popups (Dropdown, DateInput, PopupPanel) stack above Dialog overlays.
+ * In remochi 0.4.0, .mochi-dialog-overlay is z-index: 9999 while .mochi-contextual-popup
+ * is z-index: 1000 (and its click-outside scrim is z-index: 999). */
+.mochi-dialog-overlay {
+  z-index: 900;
+}
+
+.mochi-contextual-popup,
+.mochi-contextual-popup.mochi-menu {
+  z-index: 10001 !important;
+}
