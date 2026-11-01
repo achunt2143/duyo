@@ -1,0 +1,101 @@
+/*
+ * RowGroup: from the Onyx theme of webOS's Enyo 1.0 (enyojs/enyo-1.0, Apache-2.0): Group.css and Item.css.
+ *
+ * Two changes for a modern engine. The theme gave the frame a border-image and a border-width but no
+ * border-style, which old webOS WebKit drew anyway; today a border needs a style (here an invisible
+ * one) or its image is not drawn. And sizes are in px, since the theme's rem was against a 20px root.
+ * The frame is drawn from an image, so the rows inside pull out over its border (a margin of -12px).
+ */
+
+.onyx-rowgroup {
+	border: 14px solid transparent;
+	border-image: url('../images/webos-group-unlabeled.png') 14 fill repeat;
+	margin: 8px 3px;
+}
+
+.onyx-rowgroup-labeled {
+	border-width: 36px 14px 14px 14px;
+	border-image: url('../images/webos-group-labeled.png') 36 14 14 14 fill repeat;
+}
+
+@media (min-resolution: 1.5dppx) {
+	.onyx-rowgroup {
+		border-image: url('../images/webos-group-unlabeled-1.5.png') 21 fill stretch;
+	}
+
+	.onyx-rowgroup-labeled {
+		border-image: url('../images/webos-group-labeled-1.5.png') 54 21 21 21 fill stretch;
+	}
+}
+
+.onyx-rowgroup-fit {
+	display: flex;
+	flex-direction: column;
+}
+
+.onyx-rowgroup-fit > .onyx-rowgroup-inner {
+	flex: 1;
+}
+
+.onyx-rowgroup-inner {
+	margin: -12px;
+}
+
+.onyx-rowgroup-label {
+	margin: -34px -12px;
+	padding: 4px 0 12px 10px;
+	font-size: 14px;
+	color: #fff;
+	text-shadow: #646454 0 1px 0;
+	font-weight: bold;
+	height: 44px;
+	text-transform: uppercase;
+}
+
+.onyx-rowgroup-label-fit {
+	margin-bottom: -21px;
+}
+
+/* A row: a thin light line above and a thin dark one below, as the theme's Item */
+.onyx-row {
+	border-top: 1px solid rgba(255, 255, 255, 0.5);
+	border-bottom: 1px solid rgba(0, 0, 0, 0.2);
+	padding: 10px;
+	font-size: 18px;
+}
+
+/* an onyx.Item given as a row is the row's content, and takes its padding from the row */
+.onyx-row > .onyx-item {
+	padding: 0;
+}
+
+.onyx-row-first {
+	border-top: 0;
+}
+
+.onyx-row-last {
+	border-bottom: 0;
+}
+
+.onyx-row-single {
+	border-top: 1px solid transparent;
+	border-bottom: 1px solid transparent;
+}
+
+.onyx-rowgroup-inner > .onyx-row {
+	border-radius: 8px;
+}
+
+.onyx-rowgroup-inner > .onyx-row-first {
+	border-bottom-right-radius: 0;
+	border-bottom-left-radius: 0;
+}
+
+.onyx-rowgroup-inner > .onyx-row-middle {
+	border-radius: 0;
+}
+
+.onyx-rowgroup-inner > .onyx-row-last {
+	border-top-right-radius: 0;
+	border-top-left-radius: 0;
+}

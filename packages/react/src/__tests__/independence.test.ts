@@ -18,9 +18,9 @@ function sources(dir: string): string[] {
  */
 describe('the framework packages know no particular UI library', () => {
   for (const name of ['core', 'layout', 'react']) {
-    it(`@duyo/${name} never mentions Mochi or Remochi`, () => {
+    it(`@duyo/${name} never mentions Mochi, Remochi or Onyx`, () => {
       const offenders = sources(join(packages, name, 'src')).filter((file) =>
-        /mochi/i.test(readFileSync(file, 'utf8')),
+        /mochi|onyx/i.test(readFileSync(file, 'utf8')),
       );
       expect(offenders).toEqual([]);
     });
@@ -32,7 +32,7 @@ describe('the framework packages know no particular UI library', () => {
         ...manifest.peerDependencies,
         ...manifest.devDependencies,
       });
-      expect(dependencies.filter((d) => /mochi/.test(d))).toEqual([]);
+      expect(dependencies.filter((d) => /mochi|onyx/.test(d))).toEqual([]);
     });
   }
 
@@ -44,5 +44,18 @@ describe('the framework packages know no particular UI library', () => {
     // No deep imports into another package's source.
     expect(imports.filter((i) => /^@duyo\/[^/]+\/.+/.test(i))).toEqual([]);
     expect(new Set(imports)).toEqual(new Set(['@duyo/react', '@duyo/core']));
+  });
+
+  it('@duyo/onyx reaches the framework only through its public exports, and knows no other pack', () => {
+    const files = sources(join(packages, 'onyx', 'src'));
+    const imports = files.flatMap((file) =>
+      [...readFileSync(file, 'utf8').matchAll(/from '(@duyo\/[^']+)'/g)].map((m) => m[1]!),
+    );
+    expect(imports.filter((i) => /^@duyo\/[^/]+\/.+/.test(i))).toEqual([]);
+    expect(new Set(imports)).toEqual(new Set(['@duyo/react', '@duyo/core']));
+    const text = (list: string[]) => list.map((file) => readFileSync(file, 'utf8')).join('\n');
+    expect(text(files)).not.toMatch(/from 'remochi'|@duyo\/remochi/);
+    // and the other way round: Remochi's pack does not know Onyx
+    expect(text(sources(join(packages, 'remochi', 'src')))).not.toMatch(/@duyo\/onyx|from 'onyx'/);
   });
 });

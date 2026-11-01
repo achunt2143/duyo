@@ -1,0 +1,90 @@
+/*
+ * Header and Divider: from the Onyx theme of webOS's Enyo 1.0 (enyojs/enyo-1.0, Apache-2.0): Header.css and Divider.css,
+ * with the flex boxes of its HFlexLayout written as flexbox.
+ *
+ * As with RowGroup, the theme gave the header a border-image and a border-width but no border-style, which old
+ * webOS WebKit drew anyway; today a border needs a style (here an invisible one) or the image's edges are not drawn.
+ */
+
+.onyx-header {
+	display: flex;
+	box-sizing: border-box;
+	min-height: 50px;
+	border: 2px solid transparent;
+	border-width: 2px 0;
+	border-image: url('../images/webos-header.png') 2 0 fill;
+	background-color: #ccc;
+	color: #444;
+}
+
+.onyx-header-inner {
+	display: flex;
+	flex: 1;
+	align-items: center;
+	box-sizing: border-box;
+	padding: 13px 12px;
+	min-height: 52px;
+}
+
+@media (min-resolution: 1.5dppx) {
+	.onyx-header {
+		border-image: url('../images/webos-header-1.5.png') 3 0 fill;
+	}
+}
+
+/* Divider: a caption between two rules (the second takes whatever room is left) */
+.onyx-divider {
+	display: flex;
+	align-items: center;
+}
+
+.onyx-divider-right-cap,
+.onyx-divider-left-cap {
+	height: 4px;
+	margin: 13px 0;
+}
+
+.onyx-divider-right-cap {
+	border-right-width: 0;
+	margin-right: 7px;
+}
+
+.onyx-divider-left-cap {
+	min-width: 3px;
+	border-width: 0;
+	background: url('../images/webos-divider.png') left top repeat-x;
+	background-size: 6px 4px;
+	margin-left: 6px;
+	/* effectively infinity next to the caption's, so this cap takes as much of the room as it can */
+	flex: 1000 1 auto;
+}
+
+@media (min-resolution: 1.5dppx) {
+	.onyx-divider-left-cap {
+		background-image: url('../images/webos-divider-1.5.png');
+	}
+}
+
+.onyx-divider-icon {
+	margin: 0 6px;
+}
+
+.onyx-divider-icon-collapse {
+	margin: 0 6px 0 0;
+}
+
+.onyx-divider-caption {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	font-weight: bold;
+	font-size: 12pt;
+	color: #3a8bcb;
+	/* next to the left cap's flex this is as good as none, so the caption takes only what it needs and still truncates */
+	flex: 0.1 1 auto;
+}
+
+.onyx-divider-client {
+	display: flex;
+	align-items: center;
+}

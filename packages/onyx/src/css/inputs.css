@@ -1,0 +1,82 @@
+/*
+ * Input, InputDecorator, TextArea and RichText (enyojs/onyx 2.7.0). The decorator's focused
+ * look is the :focus-within state; the onyx-focused class remains for alwaysLooksFocused.
+ */
+
+.onyx-input-decorator {
+	display: inline-block;
+	padding: 6px 8px 10px 8px;
+	border-radius: var(--onyx-input-border-radius);
+	border: 1px solid;
+	border-color: rgba(0, 0, 0, 0.1);
+	margin: 0;
+}
+
+.onyx-input-decorator.onyx-focused,
+.onyx-input-decorator:focus-within {
+	box-shadow: inset 0px 1px 4px rgba(0, 0, 0, 0.3);
+	border-color: rgba(0, 0, 0, 0.3);
+	background-color: var(--onyx-input-focused-background);
+}
+
+.onyx-input-decorator.onyx-disabled {
+	opacity: var(--onyx-disabled-opacity);
+}
+
+.onyx-input-decorator > input,
+.onyx-input-decorator > textarea,
+.onyx-input-decorator > .onyx-richtext {
+	/* reset */
+	margin: 0;
+	padding: 0;
+	border: none;
+	outline: none;
+	cursor: pointer;
+	background-color: var(--onyx-input-background);
+	background-image: none;
+	box-shadow: none;
+}
+
+.onyx-input-decorator > input {
+	font-size: var(--onyx-input-font-size);
+}
+
+.onyx-input-decorator.onyx-focused > input,
+.onyx-input-decorator.onyx-focused > textarea,
+.onyx-input-decorator.onyx-focused > .onyx-richtext,
+.onyx-input-decorator:focus-within > input,
+.onyx-input-decorator:focus-within > textarea,
+.onyx-input-decorator:focus-within > .onyx-richtext {
+	cursor: text;
+}
+
+.onyx-input-decorator.onyx-disabled > input,
+.onyx-input-decorator.onyx-disabled > textarea,
+.onyx-input-decorator.onyx-disabled > .onyx-richtext {
+	cursor: default;
+}
+
+.onyx-input-decorator > textarea {
+	font-size: var(--onyx-textarea-font-size);
+	/* Remove scrollbars and resize handle */
+	resize: none;
+	overflow: auto;
+}
+
+.onyx-textarea {
+	/* need >=50px for scrollbar to be usable on mac */
+	min-height: 50px;
+}
+
+.onyx-input-decorator > .onyx-richtext {
+	font-size: var(--onyx-richtext-font-size);
+	min-height: 20px;
+	min-width: 100px;
+	overflow: hidden;
+	word-wrap: break-word;
+}
+
+.onyx-input-decorator > .onyx-richtext[data-placeholder]:not([data-placeholder='']):empty::before {
+	content: attr(data-placeholder);
+	opacity: 0.5;
+}

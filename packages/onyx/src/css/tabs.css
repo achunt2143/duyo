@@ -1,0 +1,146 @@
+/* TabBar and TabBarItem (enyojs/onyx 2.7.0). The colours come from the --onyx-tab-* variables. */
+
+.onyx-tab-bar {
+	text-align: left;
+	display: flex;
+	align-items: stretch;
+	width: 100%;
+	z-index: 10;
+	background-color: var(--onyx-light-background);
+	padding-top: 1px;
+	box-sizing: border-box;
+}
+
+.onyx-tab-bar-fit {
+	flex: 1 1 auto;
+	min-width: 0;
+}
+
+.onyx-tab-bar-scroller {
+	padding-top: 2px;
+	overflow-x: auto;
+	overflow-y: hidden;
+}
+
+.onyx-tab-wrapper {
+	padding: 3px 0px 3px 0px;
+}
+
+.onyx-tab-holder {
+	text-align: left;
+	white-space: nowrap;
+}
+
+.onyx-tab-line {
+	position: relative;
+	margin-top: -0.1em;
+	border-top: 1px solid var(--onyx-tab-border);
+	z-index: 2;
+}
+
+.onyx-tab-rug {
+	position: relative;
+	padding: 0.3em;
+	background-color: var(--onyx-tab-strong);
+	z-index: 4;
+}
+
+.onyx-tab-item {
+	display: inline;
+	position: relative;
+	border: 1px solid var(--onyx-tab-border);
+	margin: 0px 2px 0px 2px;
+	border-top-right-radius: 5px;
+	border-top-left-radius: 5px;
+	background-color: var(--onyx-tab-inactive);
+	z-index: 1;
+	padding-top: 0.2em;
+	padding-bottom: 0.7em;
+	vertical-align: baseline;
+}
+
+.onyx-tab-item.active {
+	border-bottom: 1px solid var(--onyx-tab-strong);
+	background-color: var(--onyx-tab-strong);
+	z-index: 3;
+	padding-top: 0.3em;
+}
+
+.onyx-tab-item:hover {
+	background-color: var(--onyx-tab-strong);
+}
+
+.onyx-tab-item button {
+	overflow: hidden;
+	margin: 3px;
+	border: 1px solid transparent;
+	padding: 1px 8px;
+	background-color: transparent;
+	font-size: inherit;
+	font-family: inherit;
+	max-width: 12em;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.onyx-tab-item-close {
+	display: inline-block;
+	margin-right: 3px;
+	width: 16px;
+	height: 16px;
+	vertical-align: middle;
+	background-repeat: no-repeat;
+	background-image: var(--onyx-close-inactive-image);
+	background-size: 100% auto;
+}
+
+.onyx-tab-item-close:hover {
+	background-image: var(--onyx-close-active-image);
+}
+
+.onyx-tab-panels {
+	display: flex;
+	flex-direction: column;
+	min-height: 0;
+}
+
+.onyx-tab-panels-client {
+	flex: 1 1 auto;
+	min-height: 0;
+	position: relative;
+	/* the panels sit on top of one another, so one can fade into the next */
+	display: grid;
+	grid-template: minmax(0, 1fr) / minmax(0, 1fr);
+}
+
+/* as in Enyo, the current panel fills the room under the tabs */
+.onyx-tab-panels-client > * {
+	grid-area: 1 / 1;
+	min-height: 0;
+	box-sizing: border-box;
+}
+
+/* Enyo's CardArranger: the old panel fades out as the new one fades in */
+@keyframes onyx-panel-in {
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity: 1;
+	}
+}
+
+@keyframes onyx-panel-out {
+	from {
+		opacity: 1;
+	}
+	to {
+		opacity: 0;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.onyx-tab-panels-client > * {
+		animation: none !important;
+	}
+}

@@ -1,0 +1,151 @@
+/*
+ * Onyx root rules, from css/onyx-rules.less, plus the small pieces of Enyo core CSS that
+ * Onyx assumed (popup positioning, scrim, tool decorators, drawers).
+ */
+
+/* The root: put the `onyx` class on <body> (the pack does this by default) or on any element. */
+.onyx {
+	color: var(--onyx-text-color);
+	font-family: var(--onyx-font-family);
+	font-size: var(--onyx-font-size);
+	cursor: default;
+	background-color: var(--onyx-background);
+	/* remove automatic tap highlight color */
+	-webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+}
+
+.onyx .onyx-button,
+.onyx label,
+.onyx input {
+	line-height: normal;
+}
+
+.onyx .onyx-selected,
+.onyx.onyx-selected {
+	background-color: var(--onyx-selected-background);
+}
+
+/* some default colors */
+.onyx .onyx-dark,
+.onyx.onyx-dark {
+	background-color: var(--onyx-dark-background);
+}
+
+.onyx .onyx-light,
+.onyx.onyx-light {
+	background-color: var(--onyx-light-background);
+}
+
+.onyx .onyx-green,
+.onyx.onyx-green {
+	background-color: var(--onyx-green);
+}
+
+.onyx .onyx-red,
+.onyx.onyx-red {
+	background-color: var(--onyx-red);
+}
+
+.onyx .onyx-blue,
+.onyx.onyx-blue {
+	background-color: var(--onyx-blue);
+}
+
+/* Enyo's enyo-unselectable */
+.onyx-button,
+.onyx-radiobutton,
+.onyx-menu,
+.onyx-picker,
+.onyx-contextual-popup,
+.onyx-tab-bar,
+.onyx-popup-decorator {
+	-webkit-user-select: none;
+	user-select: none;
+}
+
+/* Enyo's enyo-tool-decorator, which InputDecorator and the picker decorators build on */
+.onyx-tool-decorator {
+	display: inline-block;
+}
+
+.onyx-tool-decorator > * {
+	display: inline-block;
+	vertical-align: middle;
+}
+
+/* Enyo's enyo-popup. Floating popups are drawn into <body>, above everything. */
+.onyx-popup,
+.onyx-contextual-popup {
+	position: absolute;
+	z-index: 120;
+}
+
+.onyx-floating {
+	position: fixed;
+}
+
+.onyx-centered {
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+}
+
+/* Enyo's enyo-scrim. */
+.onyx-scrim {
+	position: fixed;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	z-index: 119;
+}
+
+.onyx-scrim-translucent {
+	background-color: #000000;
+	opacity: 0.65;
+}
+
+.onyx-scrim-transparent {
+	background: transparent;
+}
+
+/* Enyo's scroller, as much of it as a menu needs. */
+.onyx-scroller {
+	overflow-x: hidden;
+	overflow-y: auto;
+	-webkit-overflow-scrolling: touch;
+}
+
+/* Enyo's drawer: the content takes its natural height when open and none when closed. */
+.onyx-drawer {
+	position: relative;
+	overflow: hidden;
+	display: grid;
+	grid-template-rows: 1fr;
+	transition: grid-template-rows 0.3s ease;
+}
+
+.onyx-drawer-horizontal {
+	grid-template-rows: none;
+	grid-template-columns: 1fr;
+	transition-property: grid-template-columns;
+}
+
+.onyx-drawer.onyx-drawer-closed {
+	grid-template-rows: 0fr;
+}
+
+.onyx-drawer-horizontal.onyx-drawer-closed {
+	grid-template-rows: none;
+	grid-template-columns: 0fr;
+}
+
+.onyx-drawer-instant {
+	transition: none;
+}
+
+.onyx-drawer-content {
+	min-width: 0;
+	min-height: 0;
+	overflow: hidden;
+}
