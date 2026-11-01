@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 // Assembles `duyo`, the one package, from the libraries of this repository.
 //
 //   node scripts/assemble.mjs          copies them into lib/ and checks package.json against them (this is `prepack`)
@@ -110,6 +109,15 @@ export function derivedDependencies() {
     }
   }
   return found;
+}
+
+// The first tsx example in a README, as text with Unix line endings. A checkout on Windows has CRLF endings,
+// so the fence is followed by either. The fence is built, not written out, to keep the source plain.
+const FENCE = String.fromCharCode(96).repeat(3);
+export function readmeExample(readme) {
+  const match = new RegExp(`${FENCE}tsx\\r?\\n([\\s\\S]*?)\\r?\\n${FENCE}`).exec(readme);
+  if (!match) throw new Error(`the README has no ${FENCE}tsx example`);
+  return `${match[1].split('\r\n').join('\n')}\n`;
 }
 
 const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);

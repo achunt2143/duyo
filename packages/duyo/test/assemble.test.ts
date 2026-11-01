@@ -3,10 +3,43 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
-// @ts-expect-error: a plain script, shared with `prepack`
-import { assemble, derivedBin, derivedDependencies, derivedExports, derivedPeers, filesUnder, includes, manifest, rewrite, root } from '../scripts/assemble.mjs';
+// @ts-expect-error: a plain script, shared with `prepack` and the smoke test
+import { assemble, derivedBin, derivedDependencies, derivedExports, derivedPeers, filesUnder, includes, manifest, readmeExample, rewrite, root } from '../scripts/assemble.mjs';
 
 const REWRITTEN = /\.(ts|tsx|js|mjs)$/;
+
+describe('the README example the smoke test compiles', () => {
+  const fence = String.fromCharCode(96).repeat(3);
+  const code = ["import { kind } from 'duyo';", "kind({ name: 'A' });"];
+  const readme = ['Intro', '', `${fence}sh`, 'npm install duyo', fence, '', `${fence}tsx`, ...code, fence, '', 'After.', ''].join('\n');
+  const example = `${code.join('\n')}\n`;
+
+  it('is found in a README with Unix line endings', () => {
+    expect(readmeExample(readme)).toBe(example);
+  });
+
+  it('is found in a README with Windows line endings, as a checkout on Windows has', () => {
+    expect(readmeExample(readme.split('\n').join('\r\n'))).toBe(example);
+  });
+
+  it('is the one in the package README, whichever line endings it has', () => {
+    const real = readFileSync(join(root, 'README.md'), 'utf8').split('\r\n').join('\n');
+    expect(readmeExample(real)).toContain("from 'duyo/onyx'");
+    expect(readmeExample(real.split('\n').join('\r\n'))).toBe(readmeExample(real));
+  });
+
+  it('says so when there is none', () => {
+    expect(() => readmeExample('no code here')).toThrow('tsx example');
+  });
+});
+
+describe('the scripts of the duyo package', () => {
+  it('start with no shebang: with Windows line endings its carriage return breaks them under the test runner, and they are run as node scripts/<name>.mjs', () => {
+    for (const script of ['assemble.mjs', 'smoke.mjs']) {
+      expect(readFileSync(join(root, 'scripts', script), 'utf8').startsWith('#!'), script).toBe(false);
+    }
+  });
+});
 
 describe('the duyo package', () => {
   let lib: string;
