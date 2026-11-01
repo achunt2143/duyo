@@ -10,7 +10,6 @@ import moreIcon from '../../../packages/onyx/src/images/more.png';
 
 const header = (content: string): ComponentDefinition => ({ kind: 'onyx.GroupboxHeader', content });
 const row = (components: ComponentDefinition[]): ComponentDefinition => ({ kind: 'duyo.FittableColumns', align: 'center', gap: 'md', components });
-const text = (content: string): ComponentDefinition => ({ tag: 'span', content });
 
 const FRUIT = ['Apple', 'Pear', 'Plum', 'Quince'];
 
