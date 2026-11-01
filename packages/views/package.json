@@ -1,6 +1,7 @@
 {
   "name": "@duyo/views",
-  "version": "1.0.0",
+  "version": "1.1.0",
+  "private": true,
   "description": "Duyo views: the design as a JSON spec, the behaviour as a code-behind. Spec validation, generated types, a CLI and a Vite plugin.",
   "license": "Apache-2.0",
   "author": "achunt2143",
