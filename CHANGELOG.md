@@ -14,6 +14,8 @@ each other. A test now also keeps the framework packages from mentioning Onyx.
 
 The sampler gains two sections, "Onyx controls" and "Onyx menus and pickers".
 
+The designer installs both first-party themes: the palette offers the `onyx` kinds, and a theme picker (Remochi dark, Remochi light, Onyx) says which one the app is drawn in, in the design canvas and in Run mode. It is saved as `theme` in the project's `duyo.config.json`.
+
 ## 1.0.0 — 2026-10-29
 
 The first release of Duyo: a modern, Enyo-style component framework in TypeScript, with
