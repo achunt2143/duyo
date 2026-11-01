@@ -13,6 +13,7 @@ Duyo is a replacement for EnyoJS built for today's tooling. It keeps what made E
 
 - **A TypeScript runtime.** Kinds are resolved as data, not prototype chains, with owner and parent trees, published properties, lifecycle, event bubbling, an action registry and Fittable layout. Definitions can be plain JSON.
 - **Pluggable kind packs.** The runtime knows no particular design system. A pack supplies kinds and how to draw them, as Onyx and Mochi did for Enyo, and `adapt()` turns any React component into a kind.
+- **[Onyx](packages/onyx) as a pack too.** The Enyo 2 theme, ported: 56 `onyx.*` kinds (including webOS's rounded `RowGroup`, `Header`, sliding panes, dialogs and toasters) with Onyx's look, as `@duyo/onyx`. It shares an app with Remochi without knowing it.
 - **[Remochi](https://www.npmjs.com/package/remochi) as the first-party pack.** Every Remochi component is a `remochi.*` kind (`@duyo/remochi`): the webOS look, panels, menus and popups, on React.
 - **Views.** A screen's *design* lives in a `.view.json` that people, tools and AI can edit; its *behaviour* lives in a code-behind. Generated types check the two against each other.
 - **A visual designer**, in the spirit of Ares: edit views on a live canvas, write their code, run them, and push the result to GitHub.
@@ -126,6 +127,7 @@ It also manages projects: a file manager, a folder browser, **cloning from your 
 | [`@duyo/layout`](packages/layout) | `FittableRows` / `FittableColumns` as a pure resolver plus kind definitions. |
 | [`@duyo/react`](packages/react) | Kind-pack interface, `adapt()` for porting any React component library, `RuntimeView` / `renderInto`, and a plain-DOM base pack. |
 | [`@duyo/remochi`](packages/remochi) | An optional pack: every Remochi component as a `remochi.*` kind, with typed properties. Built with the same public API anyone can use. |
+| [`@duyo/onyx`](packages/onyx) | An optional pack: the Onyx theme from Enyo 2 as 56 `onyx.*` kinds, its LESS ported to CSS with `--onyx-*` variables. |
 | [`@duyo/views`](packages/views) | Views: validation, generated types, the `duyo-views` CLI, a Vite plugin, a guarded loader for run-time specs. |
 
 | App | |
@@ -155,6 +157,7 @@ To add your own UI library, see [docs/writing-a-pack.md](docs/writing-a-pack.md)
 | [docs/writing-a-pack.md](docs/writing-a-pack.md) | Bring your own UI library. |
 | [docs/enyo-alignment.md](docs/enyo-alignment.md) | What maps from Enyo, and what differs. |
 | [packages/remochi](packages/remochi/README.md) | The Remochi pack: every kind, the renamed properties, and known Remochi issues. |
+| [packages/onyx](packages/onyx/README.md) | The Onyx pack: every kind, where it differs from Enyo's Onyx, and theming. |
 | [CHANGELOG.md](CHANGELOG.md) | Release notes. |
 
 ## Repository
@@ -168,6 +171,7 @@ duyo/
 │   ├── layout/         # Fittable layout
 │   ├── react/          # React host, kind packs, adapt()
 │   ├── remochi/        # the pack over Remochi
+│   ├── onyx/           # the Onyx theme as a pack
 │   ├── views/          # .view.json specs + code-behind: validation, types, CLI, Vite plugin
 │   ├── runtime/        # ARCHIVED: vendored Enyo 2.7 + Rollup build
 │   ├── vite-plugin/    # ARCHIVED: injects the Enyo bundle as a classic script
@@ -191,9 +195,11 @@ The 2.7 iteration does not work as shipped (the built bundle never exposes `enyo
 
 ## Attribution
 
-Duyo's programming model and vocabulary come from Enyo (Palm, HP and the Enyo team), released under Apache-2.0. Duyo's own code is written fresh rather than copied from Enyo; the only Enyo source in this repo is the vendored copy in `packages/runtime`.
+Duyo's programming model and vocabulary come from Enyo (Palm, HP and the Enyo team), released under Apache-2.0. Duyo's own code is written fresh rather than copied from Enyo. The Enyo source in this repo is the vendored copy in `packages/runtime`, and `packages/onyx`, which ports the stylesheets and images of Onyx (below).
 
 `packages/runtime` contains the **Enyo JavaScript framework**, originally developed by Palm, Inc. and HP and released under the Apache License, Version 2.0 (see [`packages/runtime/LICENSE-2.0.txt`](packages/runtime/LICENSE-2.0.txt)). Original sources: [enyojs/enyo](https://github.com/enyojs/enyo), [enyojs/enyo-1.0](https://github.com/enyojs/enyo-1.0).
+
+`packages/onyx` is a port of **Onyx**, the Enyo 2 theme ([enyojs/onyx](https://github.com/enyojs/onyx) 2.7.0, Apache-2.0). Its stylesheets are translated from LESS to CSS and its images are used unchanged; see [`packages/onyx/NOTICE`](packages/onyx/NOTICE).
 
 ## License
 

@@ -4,6 +4,7 @@ import { kind, type Component, type ComponentDefinition, type ComponentEvent } f
 // views/Buttons.ts the behaviour. The other sections are inline kinds, for comparison.
 import './views/Buttons.js';
 import './views/Loaded.js';
+import './onyx.js';
 
 /**
  * One kind per sampler section. Each extends Sampler.Section, whose `log()` bubbles an
@@ -25,6 +26,8 @@ export const SECTIONS: SectionInfo[] = [
   { key: 'panels', title: 'Panels', subtitle: 'RepanelStack, Repanel, FloatingPanel, Collapsable', kind: 'Sampler.Panels' },
   { key: 'overlays', title: 'Menus and overlays', subtitle: 'SlidingMenu, Dialog, PopupPanel', kind: 'Sampler.Overlays' },
   { key: 'flow', title: 'Media and flow', subtitle: 'Video, Wizard', kind: 'Sampler.Flow' },
+  { key: 'onyx', title: 'Onyx controls', subtitle: 'Button, RadioGroup, Checkbox, ToggleButton, Input, Slider, ProgressBar, Toolbar...', kind: 'Sampler.OnyxControls' },
+  { key: 'onyxOverlays', title: 'Onyx menus and pickers', subtitle: 'Menu, Picker, DatePicker, Popup, Tooltip, TabBar, TabPanels...', kind: 'Sampler.OnyxOverlays' },
   { key: 'loaded', title: 'Loaded specs', subtitle: 'A screen from JSON at run time, with allow-lists', kind: 'Sampler.Loaded' },
 ];
 

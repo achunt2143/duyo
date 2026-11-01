@@ -1,3 +1,4 @@
+import '@duyo/onyx/css';
 import '@duyo/remochi/css';
 
 import { createRuntime, kind, view } from '@duyo/core';
@@ -5,10 +6,11 @@ import { renderInto } from '@duyo/react';
 
 import { companionOf, currentProject, listTree, loadProjectKinds, readView } from './files.js';
 import { registry, renderer } from './setup.js';
+import { remochiMode, themeOf } from './theme.js';
 
 /**
  * Run mode: one view, running for real with its code-behind, as the project would run it.
- * `run.html?view=views/Buttons.view.json&theme=dark`. The designer shows this in a device
+ * `run.html?view=views/Buttons.view.json&theme=remochi-dark` (or `remochi-light`, or `onyx`). The designer shows this in a device
  * frame; it also works on its own in a window.
  *
  * The view's kind comes from the project if the project registers it; otherwise its
@@ -16,7 +18,9 @@ import { registry, renderer } from './setup.js';
  */
 const params = new URLSearchParams(location.search);
 const path = params.get('view') ?? '';
-const theme = params.get('theme') === 'light' ? 'light' : 'dark';
+// `dark` and `light` are the Remochi themes, as they were called before there was another
+const asked = params.get('theme');
+const theme = themeOf(asked === 'dark' ? 'remochi-dark' : asked === 'light' ? 'remochi-light' : asked);
 const element = document.getElementById('root')!;
 
 function notice(text: string) {
@@ -44,7 +48,14 @@ async function start() {
     }
   }
 
-  kind({ name: 'Designer.RunHost', kind: 'remochi.ThemeWrapper', theme, syncHtml: true, style: 'height: 100%;', components: [{ kind: name }] }, { registry });
+  // Onyx's page is a class on the element the app is in and on the page; Remochi's is a ThemeWrapper
+  const mode = remochiMode(theme);
+  if (!mode) {
+    document.body.classList.add('onyx');
+    kind({ name: 'Designer.RunHost', kind: 'duyo.Control', classes: 'onyx', style: 'height: 100%;', components: [{ kind: name }] }, { registry });
+  } else {
+    kind({ name: 'Designer.RunHost', kind: 'remochi.ThemeWrapper', theme: mode, syncHtml: true, style: 'height: 100%;', components: [{ kind: name }] }, { registry });
+  }
   const runtime = createRuntime({
     registry,
     onDiagnostic: (d) => console.warn(`[duyo] ${d.code} ${d.path ?? ''}: ${d.message}`, d.hint ?? ''),

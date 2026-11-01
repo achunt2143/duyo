@@ -1,3 +1,4 @@
+/** @jsxRuntime automatic @jsxImportSource react */
 import type { Component } from '@duyo/core';
 import { createRoot } from 'react-dom/client';
 

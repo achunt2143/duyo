@@ -1,6 +1,8 @@
+import '@duyo/onyx/css';
 import '@duyo/remochi/css';
 
 import { createRuntime, defaultKindRegistry } from '@duyo/core';
+import { createOnyxPack } from '@duyo/onyx';
 import { createRemochiPack } from '@duyo/remochi';
 import { basePack, createRenderer, installPack, renderInto } from '@duyo/react';
 
@@ -8,7 +10,8 @@ import './sections.js';
 import './shell.js';
 
 // The app controls the theme itself, with a remochi.ThemeWrapper at its root.
-const packs = [basePack, createRemochiPack({ theme: false })];
+// Onyx styles only what carries the `onyx` class; the Onyx sections put it on their own root.
+const packs = [basePack, createRemochiPack({ theme: false }), createOnyxPack({ body: false })];
 for (const pack of packs) installPack(defaultKindRegistry, pack);
 
 const runtime = createRuntime({

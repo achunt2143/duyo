@@ -1,0 +1,117 @@
+/*
+ * More of the Onyx theme of webOS's Enyo 1.0 (enyojs/enyo-1.0, Apache-2.0): the dark header (Header.css), AlphaDivider
+ * (Divider.css), DividerDrawer's arrow (DividerDrawer.css), ConfirmPrompt (ConfirmPrompt.css) and SwipeableItem
+ * (SwipeableItem.css). As elsewhere, an image border gets an invisible border-style, and sizes are in px.
+ */
+
+/* The dark header: the toolbar's own bar and colour. The theme drew its 1.5x one from the 1x image, sliced for the 1.5x one; here the 1.5x image is used. */
+.onyx-header-dark {
+	border-image: url('../images/webos-toolbar.png') 2 4 fill repeat stretch;
+	background-color: #343434;
+	color: #fff;
+}
+
+@media (min-resolution: 1.5dppx) {
+	.onyx-header-dark {
+		border-image: url('../images/webos-toolbar-1.5.png') 3 6 fill repeat stretch;
+	}
+}
+
+/* AlphaDivider: one letter, with a rule that starts after it */
+.onyx-divider-alpha {
+	background: url('../images/webos-divider.png') left center repeat-x;
+	background-size: 6px 4px;
+	height: 30px;
+	line-height: 30px;
+	margin: 0 0 0 30px;
+}
+
+.onyx-divider-alpha-caption {
+	margin-left: -23px;
+	font-size: 12pt;
+	font-weight: bold;
+	color: #4299ea;
+}
+
+@media (min-resolution: 1.5dppx) {
+	.onyx-divider-alpha {
+		background-image: url('../images/webos-divider-1.5.png');
+	}
+}
+
+/* DividerDrawer: the arrow is one of four frames of a sprite: open, closed, and each of them pressed */
+.onyx-collapsible-arrow {
+	height: 40px;
+	width: 50px;
+	background: url('../images/webos-divider-arrow.png') center -80px;
+	background-size: 50px 160px;
+}
+
+.onyx-collapsible-arrow-switched {
+	background-position: center 0;
+}
+
+.onyx-collapsible-arrow:active {
+	background-position: center -120px;
+}
+
+.onyx-collapsible-arrow-switched:active {
+	background-position: center -40px;
+}
+
+@media (min-resolution: 1.5dppx) {
+	.onyx-collapsible-arrow {
+		background-image: url('../images/webos-divider-arrow-1.5.png');
+	}
+}
+
+/* ConfirmPrompt: a cancel button and a confirm one, the second in red */
+.onyx-confirmprompt {
+	position: relative;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.onyx-confirmprompt-spacer {
+	width: 14px;
+}
+
+/* what Enyo's core CSS called enyo-fit: all of the container it is in */
+.onyx-confirmprompt-fit {
+	position: absolute;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
+}
+
+/* the dark band that a prompt over an item draws behind its buttons */
+.onyx-confirmprompt-scrim {
+	z-index: 1;
+	box-sizing: border-box;
+	border: 20px solid transparent;
+	border-width: 20px 0;
+	border-image: url('../images/webos-confirmprompt-background.png') 20 0 fill repeat;
+	background-color: #fff;
+}
+
+.onyx-confirmprompt-fit.onyx-confirmprompt {
+	z-index: 2;
+}
+
+@media (min-resolution: 1.5dppx) {
+	.onyx-confirmprompt-scrim {
+		border-image: url('../images/webos-confirmprompt-background-1.5.png') 30 0 fill stretch;
+	}
+}
+
+/* SwipeableItem */
+.onyx-swipeableitem {
+	min-height: 44px;
+	padding: 8px 14px;
+	/* a swipe is across, and up and down is the list scrolling */
+	touch-action: pan-y;
+	-webkit-user-select: none;
+	user-select: none;
+}

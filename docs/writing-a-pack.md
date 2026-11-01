@@ -121,7 +121,8 @@ adapt({
 
 `adapt` is a convenience. A pack is just `{ name, kinds, bindings, wrapper? }`, so a binding
 can be any component that takes `{ node, hostProps, children, bubble, ... }`. That is how the
-base pack's `duyo.Input` is written, and how you would target something that is not React.
+base pack's `duyo.Input` is written, how `@duyo/onyx` is written throughout (Onyx is CSS and
+DOM, with no React components to adapt), and how you would target something that is not React.
 
 ```tsx
 const myPack: KindPack = {
@@ -146,6 +147,10 @@ in its chain is reported as `DUYO_RENDER_001` and draws nothing.
 - The UI library is a *peer* dependency, so the app controls its version.
 - Packs later in the list override earlier ones for the same kind name. That is how you
   restyle a single kind without forking a library.
+- A pack that ships its `.tsx` source puts `/** @jsxRuntime automatic @jsxImportSource react */` at
+  the top of each file. An app compiles a package's source with the app's own settings, and one
+  that has not turned on the automatic runtime would otherwise fail with "React is not defined".
+  Keep unused imports and parameters out too: an app may compile with `noUnusedLocals`.
 
 ## Typing your kinds
 

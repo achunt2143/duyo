@@ -80,7 +80,7 @@ export interface Project {
   name: string;
   /** Absolute folder of the project's views and code. */
   source: string;
-  config: { views: string; kinds?: string };
+  config: { views: string; kinds?: string; theme?: string };
   kindsFile?: string;
   hasConfig: boolean;
   recent: string[];
@@ -90,7 +90,8 @@ export interface Project {
 
 export const currentProject = () => send(`${BASE}/project`).then(call<Project>);
 export const openProject = (path: string) => post<Project>('project/open', { path });
-export const configureProject = (views: string, kinds: string) => post<Project>('project/config', { views, kinds });
+/** Saves `duyo.config.json`. A `theme` left out stays as it was. */
+export const configureProject = (views: string, kinds: string, theme?: string) => post<Project>('project/config', { views, kinds, ...(theme !== undefined ? { theme } : {}) });
 export const cloneProject = (url: string, name?: string) => post<Project>('project/clone', { url, ...(name ? { name } : {}) });
 
 export async function importProject(zip: ArrayBuffer, name: string): Promise<Project & { imported: { files: number; skipped: string[] } }> {

@@ -1,3 +1,4 @@
+/** @jsxRuntime automatic @jsxImportSource react */
 import { warningDiagnostic, type Component, type RuntimeInternals } from '@duyo/core';
 import type { ResolvedLayout } from '@duyo/layout';
 import {

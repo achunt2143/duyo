@@ -1,3 +1,4 @@
+/** @jsxRuntime automatic @jsxImportSource react */
 import { createPack, type KindPack } from '@duyo/react';
 import { ThemeWrapper, type ThemeWrapperProps } from 'remochi';
 import type { ReactNode } from 'react';

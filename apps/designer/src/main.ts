@@ -1,3 +1,4 @@
+import '@duyo/onyx/css';
 import '@duyo/remochi/css';
 
 import { createRuntime } from '@duyo/core';

@@ -1,3 +1,4 @@
+/** @jsxRuntime automatic @jsxImportSource react */
 import type { Component, KindDefinition } from '@duyo/core';
 import { adapt, type AdaptContext, type BindingProps, type PackEntry } from '@duyo/react';
 import { useEffect, type ReactNode } from 'react';

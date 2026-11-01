@@ -1,0 +1,186 @@
+/*
+ * Toaster, Dialog, DialogPrompt and ModalDialog: from the Onyx theme of webOS's Enyo 1.0 (enyojs/enyo-1.0, Apache-2.0):
+ * Toaster.css, Dialog.css, DialogPrompt.css and ModalDialog.css, and Scrim.css for the fade of the scrim.
+ *
+ * Their frames are drawn from border-images, which get an invisible border-style, as elsewhere. The toaster's slide
+ * is Enyo's Animator (350ms, cubic ease-out) written as a CSS animation, and a popup that is hidden stays for as
+ * long as it takes, with the class onyx-leaving.
+ */
+
+.onyx-toaster {
+	position: absolute;
+	z-index: 120;
+	box-sizing: border-box;
+	transform-style: preserve-3d;
+	animation: onyx-toaster-in 350ms cubic-bezier(0.215, 0.61, 0.355, 1) both;
+}
+
+/* a toaster that is floating is fixed to the screen */
+.onyx-toaster.onyx-floating {
+	position: fixed;
+}
+
+.onyx-toaster-from-bottom {
+	bottom: 0;
+	--onyx-toaster-from: translateY(100%);
+}
+
+.onyx-toaster-from-top {
+	top: 0;
+	--onyx-toaster-from: translateY(-100%);
+}
+
+.onyx-toaster-from-left {
+	left: 0;
+	--onyx-toaster-from: translateX(-100%);
+}
+
+.onyx-toaster-from-right {
+	right: 0;
+	--onyx-toaster-from: translateX(100%);
+}
+
+.onyx-toaster.onyx-leaving {
+	animation-name: onyx-toaster-out;
+}
+
+.onyx-leaving {
+	pointer-events: none;
+}
+
+@keyframes onyx-toaster-in {
+	from {
+		transform: var(--onyx-toaster-from);
+	}
+}
+
+@keyframes onyx-toaster-out {
+	to {
+		transform: var(--onyx-toaster-from);
+	}
+}
+
+@keyframes onyx-fade-in {
+	from {
+		opacity: 0;
+	}
+}
+
+@keyframes onyx-fade-out {
+	to {
+		opacity: 0;
+	}
+}
+
+/* what the webOS scrim did: fade in and out over half a second */
+.onyx-scrim-fade {
+	animation: onyx-fade-in 0.5s both;
+}
+
+.onyx-scrim-fade.onyx-leaving {
+	animation-name: onyx-fade-out;
+}
+
+.onyx-dialog {
+	left: 0;
+	right: 0;
+	bottom: 0;
+	border: 32px solid transparent;
+	border-width: 32px 24px 32px 24px;
+	border-image: url('../images/webos-toaster-dialog.png') 32 24 32 24 fill stretch;
+}
+
+/* the 1.5x one is in the theme, but under a class that no kind has, so there it is never drawn */
+@media (min-resolution: 1.5dppx) {
+	.onyx-dialog {
+		border-image: url('../images/webos-toaster-dialog-1.5.png') 48 36 48 36 fill stretch;
+	}
+}
+
+.onyx-dialog-inner {
+	margin: -32px -24px -32px -24px;
+	padding-top: 23px;
+}
+
+.onyx-dialog-prompt-title {
+	color: #4c4c4c;
+	text-shadow: #f2f2f2 0 0 1px;
+	font-size: 21px;
+	padding: 0 0 10px 10px;
+	word-wrap: break-word;
+	border-bottom: 1px solid gray;
+}
+
+.onyx-dialog-prompt-message {
+	color: #222;
+	font-size: 16px;
+	padding: 10px;
+}
+
+.onyx-dialog-prompt-content {
+	padding: 10px;
+}
+
+.onyx-dialog-prompt-content > .onyx-button {
+	display: block;
+	width: calc(100% - 6px);
+	margin: 3px;
+}
+
+/* a modal dialog is in the middle of the screen */
+.onyx-modaldialog {
+	position: fixed;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	margin: auto;
+	height: fit-content;
+	z-index: 120;
+	box-sizing: border-box;
+	width: 320px;
+	border: 24px solid transparent;
+	border-width: 42px 24px 24px;
+	border-image: url('../images/webos-dialog.png') 42 24 24 24 fill stretch;
+	animation: onyx-fade-in 0.5s both;
+}
+
+.onyx-modaldialog.onyx-leaving {
+	animation-name: onyx-fade-out;
+}
+
+.onyx-modaldialog-container {
+	margin: -22px -4px -4px;
+}
+
+.onyx-modaldialog-title {
+	font-size: 20px;
+	margin: 0 0 10px;
+	text-align: center;
+}
+
+/* a RowGroup in a dialog has the dialog's own frame */
+.onyx-modaldialog-container .onyx-rowgroup {
+	border-width: 14px;
+	border-image: url('../images/webos-dialog-group-unlabeled.png') 14 14 fill repeat;
+	margin: 8px 0;
+}
+
+.onyx-modaldialog-container .onyx-rowgroup.onyx-rowgroup-labeled {
+	border-width: 36px 14px 14px 14px;
+	border-image: url('../images/webos-dialog-group-labeled.png') 36 14 14 14 fill repeat;
+}
+
+@media (min-resolution: 1.5dppx) {
+	.onyx-modaldialog {
+		border-image: url('../images/webos-dialog-1.5.png') 63 36 36 36 fill stretch;
+	}
+
+	.onyx-modaldialog-container .onyx-rowgroup {
+		border-image: url('../images/webos-dialog-group-unlabeled-1.5.png') 21 fill stretch;
+	}
+
+	.onyx-modaldialog-container .onyx-rowgroup.onyx-rowgroup-labeled {
+		border-image: url('../images/webos-dialog-group-labeled-1.5.png') 54 21 21 21 fill stretch;
+	}
+}

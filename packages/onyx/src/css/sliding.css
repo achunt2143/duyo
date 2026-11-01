@@ -1,0 +1,105 @@
+/*
+ * SlidingPane, SlidingView and GrabButton: from the Onyx theme of webOS's Enyo 1.0 (enyojs/enyo-1.0, Apache-2.0):
+ * SlidingPane.css, SlidingView.css and GrabButton.css, with the flex boxes of its HFlexLayout and VFlexLayout
+ * written as flexbox. The grab button's image is webOS's own, not the Enyo 2 one used by onyx.Grabber.
+ */
+
+.onyx-sliding-pane {
+	overflow: hidden;
+	/* a drag across it must not start selecting text, which would take the drag away */
+	-webkit-user-select: none;
+	user-select: none;
+}
+
+/* the row of views (enyo-sliding-pane-client, an HFlexLayout) */
+.onyx-sliding-pane-client {
+	display: flex;
+	position: relative;
+	height: 100%;
+}
+
+/* a single column: every view is as wide as the pane, and nothing flexes */
+.onyx-sliding-pane-single > .onyx-sliding-pane-client > .onyx-sliding-view {
+	width: 100% !important;
+	flex: none !important;
+}
+
+.onyx-sliding-view {
+	position: relative;
+	/* a VFlexLayout */
+	display: flex;
+	flex-direction: column;
+	/* the view's layer exists from the start, so it behaves the same the first time it is dragged */
+	transform: translate3d(0, 0, 0);
+	touch-action: pan-y;
+}
+
+.onyx-sliding-view-client {
+	flex: 1;
+	/* the view's own layout, a VFlexLayout, passed on to its client: what is in a view stacks, and a child with `fit` fills */
+	display: flex;
+	flex-direction: column;
+	min-height: 0;
+	/* the theme's enyo-bg */
+	background-color: #d8d8d8;
+}
+
+.onyx-sliding-view-shadow {
+	position: absolute;
+	z-index: 2;
+	height: 100%;
+	width: 20px;
+	left: -20px;
+	background: url('../images/webos-sliding-shadow.png') repeat-y;
+	background-size: 20px 2px;
+	pointer-events: none;
+}
+
+/* a hidden surface along the view's left edge, to drag it from */
+.onyx-sliding-view-nub {
+	position: absolute;
+	box-sizing: border-box;
+	cursor: pointer;
+	z-index: 2;
+	left: -20px;
+	width: 40px;
+	top: 0;
+	bottom: 0;
+}
+
+.onyx-grabbutton {
+	background-image: url('../images/webos-grabbutton.png');
+	background-size: 46px 54px;
+	width: 46px;
+	height: 54px;
+	position: absolute;
+	left: 0;
+}
+
+/*
+ * A grab button sits in the Toolbar along the bottom of a view, as in Enyo 1.0 (whose toolbar was position: relative
+ * "to host a GrabButton"). A toolbar with one is at least as tall as the button, so it is the same bar with or
+ * without buttons beside it.
+ */
+.onyx-toolbar:has(> .onyx-grabbutton) {
+	position: relative;
+	box-sizing: border-box;
+	min-height: 54px;
+}
+
+/* the whole height of the bar, and 4px in from its left edge, where the webOS toolbar's own border ended */
+.onyx-toolbar > .onyx-grabbutton {
+	top: -1px;
+	left: 3px;
+	margin: 0;
+}
+
+@media (min-resolution: 1.5dppx) {
+	.onyx-sliding-view-shadow {
+		background-image: url('../images/webos-sliding-shadow-1.5.png');
+	}
+
+	.onyx-grabbutton {
+		background-image: url('../images/webos-grabbutton-1.5.png');
+	}
+}

@@ -2,6 +2,26 @@
 
 All notable changes to Duyo. Versions follow [Semantic Versioning](https://semver.org/).
 
+## Unreleased
+
+### @duyo/onyx (new)
+
+The Onyx theme from Enyo 2 as a kind pack: 56 `onyx.*` kinds (buttons, toggles, radio groups,
+inputs, sliders, progress, toolbars, popups, menus, pickers including date and time, tooltips,
+tab bars and more), with Onyx's LESS ported to CSS custom properties. It is built with the
+public `@duyo/react` API only, like `@duyo/remochi`, and the two share an app without knowing
+each other. A test now also keeps the framework packages from mentioning Onyx.
+
+The sampler gains two sections, "Onyx controls" and "Onyx menus and pickers".
+
+The designer installs both first-party themes: the palette offers the `onyx` kinds, and a theme picker (Remochi dark, Remochi light, Onyx) says which one the app is drawn in, in the design canvas and in Run mode. It is saved as `theme` in the project's `duyo.config.json`.
+
+### Fixed
+
+- **`@duyo/react`, `@duyo/remochi` and `@duyo/onyx` work in an app that has not turned on the automatic JSX runtime.** They ship their `.tsx` source, so an app compiles it with its own settings, and without that setting a file that does not import React failed with "React is not defined". Each `.tsx` file now says how it is compiled (`@jsxRuntime automatic`), and a test keeps it so.
+- **`@duyo/core` compiles under `noUnusedLocals`.** The generator of kind types (`@duyo/views`) imported `ComponentEvent` into every file, used or not, so `control.gen.ts` failed an app's strict settings. It now imports only what a file uses, and the workspace compiles with `noUnusedLocals` and `noUnusedParameters` on, so it cannot come back.
+- Checked by installing the packed packages into a new Vite project outside the repository, with a strict `tsconfig`.
+
 ## 1.0.0 — 2026-10-29
 
 The first release of Duyo: a modern, Enyo-style component framework in TypeScript, with

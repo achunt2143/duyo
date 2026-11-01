@@ -1,0 +1,138 @@
+/*
+ * Onyx variables, from css/onyx-variables.less (enyojs/onyx 2.7.0) as CSS custom properties.
+ * They live on :root so popups drawn into <body> inherit them; override any of them on an
+ * element to retheme everything under it.
+ */
+:root {
+	/* Fonts */
+	--onyx-font-family: 'Helvetica Neue', 'Nimbus Sans L', Arial, sans-serif;
+	--onyx-font-size-small: 14px;
+	--onyx-font-size-medium: 16px;
+	--onyx-font-size-large: 20px;
+
+	--onyx-button-font-size: var(--onyx-font-size-medium);
+	--onyx-font-size: var(--onyx-font-size-large);
+	--onyx-groupbox-font-size: var(--onyx-font-size-medium);
+	--onyx-groupbox-header-font-size: var(--onyx-font-size-small);
+	--onyx-input-font-size: var(--onyx-font-size-medium);
+	--onyx-popup-font-size: var(--onyx-font-size-medium);
+	--onyx-progressbutton-font-size: var(--onyx-font-size-medium);
+	--onyx-radiobutton-font-size: var(--onyx-font-size-medium);
+	--onyx-richtext-font-size: var(--onyx-font-size-medium);
+	--onyx-tabbutton-font-size: var(--onyx-font-size-large);
+	--onyx-textarea-font-size: var(--onyx-font-size-medium);
+	--onyx-togglebutton-font-size: var(--onyx-font-size-small);
+	--onyx-toolbar-font-size: var(--onyx-font-size-large);
+	--onyx-toolbar-input-font-size: var(--onyx-font-size-small);
+
+	/* Text colours */
+	--onyx-button-text-color: #292929;
+	--onyx-groupbox-text-color: white;
+	--onyx-picker-text-color: black;
+	--onyx-popup-text-color: white;
+	--onyx-progressbutton-text-color: #F1F1F1;
+	--onyx-radiobutton-active-text-color: white;
+	--onyx-text-color: #333333;
+	--onyx-togglebutton-text-color: white;
+	--onyx-toolbar-button-text-color: #F2F2F2;
+	--onyx-toolbar-input-focus-text-color: #000;
+	--onyx-toolbar-input-placeholder-text-color: #ddd;
+	--onyx-toolbar-input-text-color: #e5e5e5;
+	--onyx-toolbar-text-color: white;
+	--onyx-tooltip-text-color: white;
+
+	/* Background colours */
+	--onyx-background: #EAEAEA;
+	--onyx-light-background: #CACACA;
+	--onyx-dark-background: #555656;
+	--onyx-selected-background: #C4E3FE;
+
+	--onyx-button-background: #E1E1E1;
+	--onyx-groupbox-background: #4C4C4C;
+	--onyx-highlight-background: #DEDFDF;
+	--onyx-input-background: transparent;
+	--onyx-input-focused-background: white;
+	--onyx-menu-item-hover: #284152;
+	--onyx-picker-background: #E1E1E1;
+	--onyx-picker-item-background: #cde7fe;
+	--onyx-popup-background: #4C4C4C;
+	--onyx-progressbar-background: #B8B8B8;
+	--onyx-progressbar-bar-background: #58ABEF;
+	--onyx-radiobutton-active-background: #0091F2;
+	--onyx-radiobutton-background: #E7E7E7;
+	--onyx-swipeable-item-background: #EAEAEA;
+	--onyx-togglebutton-background: #8BBA3D;
+	--onyx-togglebutton-knob-background: #F6F6F6;
+	--onyx-togglebutton-off-background: #B1B1B1;
+	--onyx-toolbar-background: #4C4C4C;
+	--onyx-toolbar-button-background: #555656;
+	--onyx-toolbar-input-background: rgba(0, 0, 0, 0.1);
+	--onyx-toolbar-input-focused-background: white;
+	--onyx-tooltip-background: #216593;
+
+	/* Colours the stock classes use */
+	--onyx-blue: #35A8EE;
+	--onyx-green: #91BA07;
+	--onyx-red: #C51616;
+
+	/* Tabs, derived in the original from --onyx-light-background */
+	--onyx-tab-strong: #CACACA;
+	--onyx-tab-border: #646464;
+	--onyx-tab-inactive: #B1B1B1;
+
+	/* Border radius */
+	--onyx-border-radius: 4px;
+	--onyx-border-radius-tight: 3px;
+	--onyx-button-border-radius: var(--onyx-border-radius-tight);
+	--onyx-groupbox-border-radius: var(--onyx-border-radius);
+	--onyx-input-border-radius: var(--onyx-border-radius-tight);
+	--onyx-menu-border-radius: var(--onyx-border-radius-tight);
+	--onyx-progressbar-border-radius: var(--onyx-border-radius-tight);
+	--onyx-radiobutton-border-radius: var(--onyx-border-radius-tight);
+	--onyx-togglebutton-border-radius: var(--onyx-border-radius-tight);
+	--onyx-tooltip-border-radius: var(--onyx-border-radius-tight);
+
+	/* Padding */
+	--onyx-button-padding-lr: 18px;
+	--onyx-button-padding-tb: 6px;
+	--onyx-tabbutton-padding-lr: 34px;
+	--onyx-tabbutton-padding-tb: 8px;
+
+	--onyx-icon-size: 32px;
+	--onyx-disabled-opacity: 0.4;
+
+	/* Gradient overlays */
+	--onyx-gradient: url('../images/gradient.png');
+	--onyx-gradient-invert: url('../images/gradient-invert.png');
+
+	--onyx-button-active-gradient: var(--onyx-gradient-invert);
+	--onyx-button-gradient: var(--onyx-gradient);
+	--onyx-groupbox-gradient: var(--onyx-gradient);
+	--onyx-popup-gradient: var(--onyx-gradient);
+	--onyx-progressbar-bar-gradient: var(--onyx-gradient);
+	--onyx-progressbar-gradient: var(--onyx-gradient-invert);
+	--onyx-radiobutton-active-gradient: var(--onyx-gradient-invert);
+	--onyx-radiobutton-gradient: var(--onyx-gradient);
+	--onyx-togglebutton-gradient: var(--onyx-gradient-invert);
+	--onyx-togglebutton-knob-gradient: var(--onyx-gradient);
+	--onyx-toolbar-gradient: var(--onyx-gradient);
+	--onyx-tooltip-gradient: var(--onyx-gradient);
+
+	/* Images */
+	--onyx-checkbox-image: url('../images/checkbox.png');
+	--onyx-checkbox-image-size: 32px;
+	--onyx-grabber-image: url('../images/grabbutton.png');
+	--onyx-grabber-image-width: 23px;
+	--onyx-grabber-image-height: 27px;
+	--onyx-more-toolbar-button-image: url('../images/more.png');
+	--onyx-more-toolbar-button-image-size: 32px;
+	--onyx-slider-knob-image: url('../images/slider-handle.png');
+	--onyx-slider-knob-image-size: 40px;
+	--onyx-spinner-dark-image: url('../images/spinner-dark.gif');
+	--onyx-spinner-light-image: url('../images/spinner-light.gif');
+	--onyx-spinner-image-width: 59px;
+	--onyx-spinner-image-height: 58px;
+	--onyx-close-inactive-image: url('../images/close-inactive.png');
+	--onyx-close-active-image: url('../images/close-active.png');
+	--onyx-progress-cancel-image: url('../images/progress-button-cancel.png');
+}

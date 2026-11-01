@@ -17,7 +17,7 @@ export default defineConfig({
   resolve: {
     // A project's modules import Duyo and React too; they must be the designer's copies, or the
     // project's kinds would register in a registry of their own.
-    dedupe: ['@duyo/core', '@duyo/layout', '@duyo/react', '@duyo/remochi', '@duyo/views', 'react', 'react-dom', 'remochi'],
+    dedupe: ['@duyo/core', '@duyo/layout', '@duyo/onyx', '@duyo/react', '@duyo/remochi', '@duyo/views', 'react', 'react-dom', 'remochi'],
   },
   server: {
     port: 5191,

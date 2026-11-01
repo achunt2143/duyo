@@ -20,7 +20,7 @@ A project is a folder with a Duyo app in it. Its `duyo.config.json` says where i
 and which module registers its own kinds, so views built on them can be drawn:
 
 ```json
-{ "views": "src", "kinds": "src/kinds.ts" }
+{ "views": "src", "kinds": "src/kinds.ts", "theme": "onyx" }
 ```
 
 Without one, views are looked for in `src`; **Project settings** writes it for you. Opening a
@@ -130,8 +130,25 @@ loading its code-behind directly if not.
 ## How it is built
 
 The designer is a Duyo app, and itself a view: `src/Designer.view.json` is its layout and
-`src/Designer.ts` its code-behind. Nothing in it knows about Remochi; a project using another
+`src/Designer.ts` its code-behind. Nothing in a view knows about a theme; a project using another
 pack gets that pack's kinds in the palette and inspector.
+
+### The app's theme
+
+The designer's own screens are Remochi's, always. What it draws is the app you are designing, and the theme
+*that* is drawn in is the project's to say. A **theme picker** beside Device and Zoom in the toolbar chooses it:
+
+| Theme | The app is drawn |
+| --- | --- |
+| Remochi dark (the default) | in Remochi's dark theme |
+| Remochi light | in Remochi's light theme, inside the designer's dark one |
+| Onyx | on Onyx's page: its colour, font and background, from an `onyx` class on the element it is drawn in |
+
+It applies to the design canvas and to Run mode, and it is saved in the project's `duyo.config.json`
+(`"theme": "onyx"`), so it is the same the next time the project is opened. Nothing is worked out from the kinds a
+view uses: a view of Onyx kinds drawn in Remochi dark looks like what it is, an Onyx view on the wrong page. Both
+themes' kinds are always in the palette. The setting is the designer's: the app's own entry still loads the pack and
+styles it uses.
 
 | File | |
 | --- | --- |
@@ -140,6 +157,7 @@ pack gets that pack's kinds in the palette and inspector.
 | `src/inspector.ts` | The inspector's editors, built from a kind's declarations. |
 | `src/codebehind.ts` | The code-behind as text: its methods, adding a handler, the starting file. Pure and tested. |
 | `src/preview.ts` | Draws a spec under a throwaway kind name and maps runtime ids to spec paths. |
+| `src/theme.ts` | The themes an app can be drawn in, and the default. Pure and tested. |
 | `src/canvas.tsx`, `src/widgets/` | The designer's own kinds, each a hand-written binding: canvas, run frame, palette, tree, files, tabs, code editor. |
 | `src/run.ts`, `run.html` | Run mode. |
 | `server/files.ts`, `server/paths.ts` | Dev-server API: file routes stay in the project's views folder, take only views and code, and never write generated files. |
