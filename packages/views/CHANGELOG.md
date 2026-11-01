@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.1.0 — 2026-11-01
+
+Part of Duyo 1.1.0, published as the one package `duyo` (see the repository CHANGELOG).
+
+- `generateKindTypes` imports only what a generated file uses (it imported `ComponentEvent` into every file, used or not).
+
 ## 1.0.0 — 2026-10-29
 
 First release of `@duyo/views`, as part of Duyo 1.0.0.

@@ -26,7 +26,7 @@ is the copy vendored in `packages/runtime/framework/src` (Enyo 2.7), mainly
 | `createComponent(s)`, `rendered()` | same | A renderer calls `rendered()` once drawn, children first. |
 | `content`, `classes`, `style`, `tag`, `showing`, `fit` | same | `show()`, `hide()`, `addClass()`, `removeClass()`, `hasClass()`, `addRemoveClass()`. |
 | `FittableRows`, `FittableColumns`, `fit`, `noStretch` | `duyo.FittableRows`, `duyo.FittableColumns` | |
-| `renderInto(node)` | `renderInto(root, renderer, element)` in `@duyo/react` | |
+| `renderInto(node)` | `renderInto(root, renderer, element)` in `duyo/react` | |
 
 ## Deliberate differences
 
