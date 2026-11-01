@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 // Proves the package the way an app would meet it. Run it before a release:   npm run smoke -w duyo
 //
 // It packs `duyo`, installs the tarball into a new project in the temp folder (outside this repository), and in that project:
@@ -12,6 +11,8 @@ import { mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSyn
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+
+import { readmeExample } from './assemble.mjs';
 
 const root = resolve(fileURLToPath(import.meta.url), '..', '..');
 const keep = process.argv.includes('--keep');
@@ -42,9 +43,7 @@ try {
   const tarball = join(work, packed);
 
   // 2. a new project that uses it
-  const readme = readFileSync(join(root, 'README.md'), 'utf8');
-  const example = /```tsx\n([\s\S]*?)```/.exec(readme)?.[1];
-  if (!example) throw new Error("the README has no ```tsx example");
+  const example = readmeExample(readFileSync(join(root, 'README.md'), 'utf8'));
   write(join(app, 'package.json'), JSON.stringify({
     name: 'duyo-smoke', private: true, type: 'module',
     dependencies: { duyo: `file:${tarball.replace(/\\/g, '/')}`, react: '^18.3.1', 'react-dom': '^18.3.1', remochi: '^0.4.0' },
