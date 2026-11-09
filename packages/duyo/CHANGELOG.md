@@ -2,10 +2,10 @@
 
 ## 1.1.0
 
-First release as one package: `duyo`. It holds what were the libraries of this repository, now its imports:
-`duyo` (the core), `duyo/layout`, `duyo/react`, `duyo/views` (with `spec`, `load` and `vite`), `duyo/remochi`
-and `duyo/onyx` (each with `/css`), and the `duyo-views` command. Installing it brings no dependencies; React and
-React DOM are peers, and Remochi and Vite are optional peers, needed only for `duyo/remochi` and `duyo/views/vite`.
+First release as one package: `duyojs`. It holds what were the libraries of this repository, now its imports:
+`duyojs` (the core), `duyojs/layout`, `duyojs/react`, `duyojs/views` (with `spec`, `load` and `vite`), `duyojs/remochi`
+and `duyojs/onyx` (each with `/css`), and the `duyo-views` command. Installing it brings no dependencies; React and
+React DOM are peers, and Remochi and Vite are optional peers, needed only for `duyojs/remochi` and `duyojs/views/vite`.
 
 What is new in 1.1.0 is the Onyx pack. The rest is the 1.0.0 libraries, with these fixes:
 

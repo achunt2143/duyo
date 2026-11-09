@@ -1,12 +1,13 @@
-// Assembles `duyo`, the one package, from the libraries of this repository.
+// Assembles the one package (its name is the `name` in package.json) from the libraries of this repository.
 //
 //   node scripts/assemble.mjs          copies them into lib/ and checks package.json against them (this is `prepack`)
 //   node scripts/assemble.mjs --sync   also rewrites the exports, bin and peerDependencies in package.json
 //
 // Each library keeps its own folder, tests and name (@duyo/core, @duyo/react, ...) here, where the apps use
-// them as workspaces. What is published is the one package `duyo`: their `src` (and `bin`) copied into lib/<name>/,
-// with every `@duyo/core` written as `duyo` and every `@duyo/<name>` as `duyo/<name>`. The package is installed
-// as node_modules/duyo, so a file inside it that imports `duyo` finds itself, and an app and the packs share one copy.
+// them as workspaces. What is published is the one package: their `src` (and `bin`) copied into lib/<name>/,
+// with every `@duyo/core` written as the package's name and every `@duyo/<name>` as `<package>/<name>`. The package
+// is installed as node_modules/<package>, so a file inside it that imports the package finds itself, and an app and
+// the packs share one copy.
 import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -22,9 +23,9 @@ export const includes = () => manifest().duyo.includes;
 const REWRITTEN = /\.(ts|tsx|js|mjs)$/;
 const SKIPPED = new Set(['__tests__', 'node_modules']);
 
-/** `@duyo/core` is `duyo`; `@duyo/react` is `duyo/react`. */
-export function rewrite(text, names = includes()) {
-  return text.replace(new RegExp(`@duyo/(${names.join('|')})\\b`, 'g'), (_, name) => (name === 'core' ? 'duyo' : `duyo/${name}`));
+/** `@duyo/core` is the package (`duyojs`); `@duyo/react` is `duyojs/react`. */
+export function rewrite(text, names = includes(), pkg = manifest().name) {
+  return text.replace(new RegExp(`@duyo/(${names.join('|')})\\b`, 'g'), (_, name) => (name === 'core' ? pkg : `${pkg}/${name}`));
 }
 
 function copyTree(from, to, names) {

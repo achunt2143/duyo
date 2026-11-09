@@ -24,7 +24,7 @@ describe('the README example the smoke test compiles', () => {
 
   it('is the one in the package README, whichever line endings it has', () => {
     const real = readFileSync(join(root, 'README.md'), 'utf8').split('\r\n').join('\n');
-    expect(readmeExample(real)).toContain("from 'duyo/onyx'");
+    expect(readmeExample(real)).toContain(`from '${manifest().name}/onyx'`);
     expect(readmeExample(real.split('\n').join('\r\n'))).toBe(readmeExample(real));
   });
 
@@ -33,7 +33,7 @@ describe('the README example the smoke test compiles', () => {
   });
 });
 
-describe('the scripts of the duyo package', () => {
+describe('the scripts of the one package', () => {
   it('start with no shebang: with Windows line endings its carriage return breaks them under the test runner, and they are run as node scripts/<name>.mjs', () => {
     for (const script of ['assemble.mjs', 'smoke.mjs']) {
       expect(readFileSync(join(root, 'scripts', script), 'utf8').startsWith('#!'), script).toBe(false);
@@ -41,7 +41,7 @@ describe('the scripts of the duyo package', () => {
   });
 });
 
-describe('the duyo package', () => {
+describe('the one package', () => {
   let lib: string;
   let files: string[];
   beforeAll(() => {
@@ -52,14 +52,17 @@ describe('the duyo package', () => {
 
   it('is the one package: the libraries of the repository, in the order of their layers', () => {
     expect(includes()).toEqual(['core', 'layout', 'react', 'views', 'remochi', 'onyx']);
-    expect(manifest().name).toBe('duyo');
+    expect(manifest().name).toBe('duyojs');
   });
 
-  it('names the libraries as the package itself: @duyo/core is duyo, and the others are subpaths', () => {
-    expect(rewrite("import { kind } from '@duyo/core';")).toBe("import { kind } from 'duyo';");
-    expect(rewrite("import { adapt } from '@duyo/react';")).toBe("import { adapt } from 'duyo/react';");
-    expect(rewrite("import '@duyo/onyx/css';")).toBe("import 'duyo/onyx/css';");
-    expect(rewrite("declare module '@duyo/core' {}")).toBe("declare module 'duyo' {}");
+  it('names the libraries as the package itself: @duyo/core is the package, and the others are subpaths', () => {
+    const pkg = manifest().name;
+    expect(rewrite("import { kind } from '@duyo/core';")).toBe(`import { kind } from '${pkg}';`);
+    expect(rewrite("import { adapt } from '@duyo/react';")).toBe(`import { adapt } from '${pkg}/react';`);
+    expect(rewrite("import '@duyo/onyx/css';")).toBe(`import '${pkg}/onyx/css';`);
+    expect(rewrite("declare module '@duyo/core' {}")).toBe(`declare module '${pkg}' {}`);
+    // the name is a parameter, so a package under another name is written under that one
+    expect(rewrite("import { kind } from '@duyo/core';", undefined, 'other')).toBe("import { kind } from 'other';");
     // a name that only starts like one of them is left alone
     expect(rewrite('@duyo/coreish and @duyo/vite-plugin')).toBe('@duyo/coreish and @duyo/vite-plugin');
   });

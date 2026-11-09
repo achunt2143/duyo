@@ -2,7 +2,7 @@
 
 ## 1.1.0 — 2026-11-01
 
-Part of Duyo 1.1.0, published as the one package `duyo` (see the repository CHANGELOG).
+Part of Duyo 1.1.0, published as the one package `duyojs` (see the repository CHANGELOG).
 
 - `generateKindTypes` imports only what a generated file uses (it imported `ComponentEvent` into every file, used or not).
 

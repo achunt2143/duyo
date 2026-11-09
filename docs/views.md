@@ -30,7 +30,7 @@ owner. A view simply keeps the strings in one file and the methods in another.
 and `(sender, event)` handlers.
 
 ```ts
-import { view } from 'duyo';
+import { view } from 'duyojs';
 import spec from './Buttons.view.json';
 import type { CodeBehind } from './Buttons.view.gen.js';
 
@@ -49,7 +49,7 @@ code-behind, and any member defined in both.
 
 ## The contract between them
 
-`duyo/views` reads each spec and writes `Buttons.view.gen.ts` beside it:
+`duyojs/views` reads each spec and writes `Buttons.view.gen.ts` beside it:
 
 - `Named`: every named component, which becomes the type of `this.$`;
 - `Handlers`: every method the spec names (`on…` properties and the `handlers` block;
@@ -80,7 +80,7 @@ contract.
 
 | | |
 | --- | --- |
-| Vite plugin | `plugins: [duyoViews()]` from `duyo/views/vite`. Validates and regenerates on every save; a spec error shows in the browser overlay and fails a production build. |
+| Vite plugin | `plugins: [duyoViews()]` from `duyojs/views/vite`. Validates and regenerates on every save; a spec error shows in the browser overlay and fails a production build. |
 | CLI | `duyo-views src` regenerates; `duyo-views src --check` fails on an invalid spec or a stale types file. Run it before `tsc` in CI. |
 | Generated files | `*.view.gen.ts` are committed, so the code-behind type-checks in any editor and on GitHub; `--check` keeps them honest. |
 
@@ -100,11 +100,11 @@ this.$.big.setVariant('x')   // error: not one of "normal" | "warning" | ...
 
 The types come from the kinds themselves: published properties with their `getX` / `setX`
 (the `allowed` values become a union), event helpers (`doChange`) and methods.
-`duyo/remochi` ships its own as `kinds.gen.ts`. For your own pack, generate them from a
+`duyojs/remochi` ships its own as `kinds.gen.ts`. For your own pack, generate them from a
 registry that has the pack installed:
 
 ```ts
-import { generateKindTypes } from 'duyo/views';
+import { generateKindTypes } from 'duyojs/views';
 
 const registry = new KindRegistry();
 installPack(registry, myPack);
@@ -115,8 +115,8 @@ writeFileSync('src/kinds.gen.ts', generateKindTypes(registry, myPack.kinds.map((
 ```
 
 then `export type * from './kinds.gen.js'` from the pack's entry point so TypeScript loads
-the `declare module 'duyo'` registration. Add a test that regenerates and compares, as
-`duyo/remochi` does, so the file cannot go stale. Kinds nobody has described are plain
+the `declare module 'duyojs'` registration. Add a test that regenerates and compares, as
+`duyojs/remochi` does, so the file cannot go stale. Kinds nobody has described are plain
 `Component`s.
 
 Limit: a component keeps its open index signature, so a misspelled *property* on a typed
@@ -135,11 +135,11 @@ instance (`wifi.valeu`) is still `any`; wrong *types* are caught, unknown *names
 
 A spec can also arrive when the app is running: from a server, a CMS or a user. It is still
 data, so it cannot run code, but it can still name kinds, set properties and name handlers.
-`loadSpec` (from `duyo/views/load`, which has no Node dependencies) checks it before it
+`loadSpec` (from `duyojs/views/load`, which has no Node dependencies) checks it before it
 becomes a kind:
 
 ```ts
-import { loadSpec } from 'duyo/views/load';
+import { loadSpec } from 'duyojs/views/load';
 
 const result = loadSpec(await response.text(), {
   registry,                              // a KindRegistry, with your packs installed
