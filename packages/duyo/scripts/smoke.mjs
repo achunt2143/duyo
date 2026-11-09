@@ -70,7 +70,10 @@ try {
   write(join(app, 'src', 'main.tsx'), "import '__PKG__/onyx/css';\nimport '__PKG__/remochi/css';\n\nimport { createRuntime, defaultKindRegistry } from '__PKG__';\nimport { basePack, createRenderer, installPack, renderInto } from '__PKG__/react';\nimport { createOnyxPack } from '__PKG__/onyx';\nimport { createRemochiPack } from '__PKG__/remochi';\n\nimport './Hello.js';\n\nconst packs = [basePack, createRemochiPack({ theme: false }), createOnyxPack({ body: false })];\npacks.forEach((pack) => installPack(defaultKindRegistry, pack));\nrenderInto(createRuntime().create({ kind: 'Smoke.Hello' }), createRenderer(packs), document.getElementById('root')!);\n(window as unknown as { __ok: boolean }).__ok = true;\n");
 
   run('npm', ['install', '--no-audit', '--no-fund'], app, 'npm install the tarball into a new project');
-  const installed = readdirSync(join(app, 'node_modules')).filter((name) => name === PKG || name.startsWith('@duyo'));
+  const modules = join(app, 'node_modules');
+  const installed = readdirSync(modules)
+    .flatMap((name) => (name.startsWith('@') ? readdirSync(join(modules, name)).map((inner) => `${name}/${inner}`) : [name]))
+    .filter((name) => name === PKG || name.startsWith('@duyo/'));
   if (installed.join() !== PKG) throw new Error(`expected only ${PKG} to be installed, found: ${installed.join(', ')}`);
   console.log(`ok  only \`${PKG}\` is installed (no @duyo/* packages came with it)`);
 

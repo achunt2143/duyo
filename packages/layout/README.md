@@ -1,6 +1,6 @@
-# duyojs/layout
+# @duyojs/duyo/layout
 
-> In this repository this is the workspace `@duyo/layout` (private). It is published inside the one package `duyojs`, and an app imports it as `duyojs/layout`. See [packages/duyo](../duyo).
+> In this repository this is the workspace `@duyo/layout` (private). It is published inside the one package `@duyojs/duyo`, and an app imports it as `@duyojs/duyo/layout`. See [packages/duyo](../duyo).
 
 Enyo's Fittable layout for Duyo, resolved as flexbox.
 
@@ -24,6 +24,6 @@ Enyo's Fittable layout for Duyo, resolved as flexbox.
 | `fill` | The container fills its parent. |
 | `noStretch` | Children keep their own size across the axis. |
 
-The resolver (`resolveFittable`) is pure, so any renderer can use it; `duyojs/react` does.
+The resolver (`resolveFittable`) is pure, so any renderer can use it; `@duyojs/duyo/react` does.
 
 Apache-2.0.

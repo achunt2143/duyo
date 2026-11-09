@@ -2,7 +2,7 @@
 
 ## 1.1.0 — 2026-11-01
 
-Part of Duyo 1.1.0, published as the one package `duyojs` (see the repository CHANGELOG).
+Part of Duyo 1.1.0, published as the one package `@duyojs/duyo` (see the repository CHANGELOG).
 
 ## 1.0.0 — 2026-10-29
 

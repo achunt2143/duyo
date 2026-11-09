@@ -1,25 +1,25 @@
-# duyojs/remochi
+# @duyojs/duyo/remochi
 
-> In this repository this is the workspace `@duyo/remochi` (private). It is published inside the one package `duyojs`, and an app imports it as `duyojs/remochi`. See [packages/duyo](../duyo).
+> In this repository this is the workspace `@duyo/remochi` (private). It is published inside the one package `@duyojs/duyo`, and an app imports it as `@duyojs/duyo/remochi`. See [packages/duyo](../duyo).
 
 Every [Remochi](https://www.npmjs.com/package/remochi) component as a Duyo kind.
 
-This is an ordinary pack. It is built with `adapt()` from `duyojs/react`, depends on the
-framework only through public exports, and is optional: nothing in `duyojs`,
-`duyojs/layout` or `duyojs/react` knows it exists. See [docs/writing-a-pack.md](../../docs/writing-a-pack.md)
+This is an ordinary pack. It is built with `adapt()` from `@duyojs/duyo/react`, depends on the
+framework only through public exports, and is optional: nothing in `@duyojs/duyo`,
+`@duyojs/duyo/layout` or `@duyojs/duyo/react` knows it exists. See [docs/writing-a-pack.md](../../docs/writing-a-pack.md)
 to build one for another library.
 
 Requires `remochi` ^0.4.0, a peer dependency, so your app chooses the version:
 
 ```bash
-npm install duyojs remochi
+npm install @duyojs/duyo remochi
 ```
 
 ```tsx
-import 'duyojs/remochi/css';
-import { kind, KindRegistry, createRuntime } from 'duyojs';
-import { basePack, createRenderer, installPack, renderInto } from 'duyojs/react';
-import { createRemochiPack } from 'duyojs/remochi';
+import '@duyojs/duyo/remochi/css';
+import { kind, KindRegistry, createRuntime } from '@duyojs/duyo';
+import { basePack, createRenderer, installPack, renderInto } from '@duyojs/duyo/react';
+import { createRemochiPack } from '@duyojs/duyo/remochi';
 
 const mochi = createRemochiPack({ theme: { defaultTheme: 'dark' } });
 const packs = [basePack, mochi];
