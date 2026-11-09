@@ -3,6 +3,8 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
+// @ts-expect-error: a plain script, `npm run rename`
+import { isPackageName, renameInText, renamedManifest } from '../scripts/rename.mjs';
 // @ts-expect-error: a plain script, shared with `prepack` and the smoke test
 import { assemble, derivedBin, derivedDependencies, derivedExports, derivedPeers, filesUnder, includes, manifest, readmeExample, rewrite, root } from '../scripts/assemble.mjs';
 
@@ -33,6 +35,73 @@ describe('the README example the smoke test compiles', () => {
   });
 });
 
+describe('renaming the package', () => {
+  const docs = [
+    "import { kind } from 'duyojs';",
+    "import { renderInto } from 'duyojs/react';",
+    "import 'duyojs/onyx/css';",
+    "declare module 'duyojs' {}",
+    'npm install duyojs react react-dom',
+    'npm run smoke -w duyojs',
+    'the package `duyojs` and `duyojs/views/vite`',
+    '# duyojs',
+  ].join('\n');
+
+  it('writes the new name where an app uses the old one', () => {
+    expect(renameInText(docs, 'duyojs', '@duyojs/duyo')).toBe(
+      [
+        "import { kind } from '@duyojs/duyo';",
+        "import { renderInto } from '@duyojs/duyo/react';",
+        "import '@duyojs/duyo/onyx/css';",
+        "declare module '@duyojs/duyo' {}",
+        'npm install @duyojs/duyo react react-dom',
+        'npm run smoke -w @duyojs/duyo',
+        'the package `@duyojs/duyo` and `@duyojs/duyo/views/vite`',
+        '# @duyojs/duyo',
+      ].join('\n'),
+    );
+  });
+
+  it('leaves what is not the package alone: the workspaces, the command, the kinds, the config, the folder', () => {
+    const same = [
+      "import { kind } from '@duyo/core';",
+      'the workspace `@duyo/react`, the command `duyo-views`, and duyo.config.json',
+      "kind: 'duyo.FittableRows'",
+      'see [packages/duyo](../duyo) and packages/duyo/scripts',
+      'npm run smoke -w duyojs-other',
+      'create-duyo/templates',
+    ].join('\n');
+    expect(renameInText(same, 'duyo', 'duyojs')).toBe(same);
+    expect(renameInText(same, 'duyojs', '@duyojs/duyo')).toBe(same);
+  });
+
+  it('goes back and forth, between a scoped name and a plain one', () => {
+    const scoped = renameInText(docs, 'duyojs', '@duyojs/duyo');
+    expect(renameInText(scoped, '@duyojs/duyo', 'duyojs')).toBe(docs);
+  });
+
+  it('knows a valid package name', () => {
+    for (const ok of ['duyo', 'duyojs', '@duyojs/duyo', 'duyo-framework']) expect(isPackageName(ok), ok).toBe(true);
+    for (const bad of ['', 'Duyo', '@duyojs', '@/duyo', 'du yo', 'duyo/react']) expect(isPackageName(bad), bad).toBe(false);
+  });
+
+  it('makes a scoped package public, as npm would otherwise publish it as private, and an unscoped one needs nothing', () => {
+    const current = { name: 'duyojs', version: '1.1.0', engines: { node: '>=18' }, bin: { x: 'y' } };
+    const scoped = renamedManifest(current, '@duyojs/duyo');
+    expect(scoped.name).toBe('@duyojs/duyo');
+    expect(scoped.publishConfig).toEqual({ access: 'public' });
+    expect(Object.keys(scoped)).toEqual(['name', 'version', 'engines', 'publishConfig', 'bin']);
+    const plain = renamedManifest(scoped, 'duyo');
+    expect(plain.name).toBe('duyo');
+    expect(plain.publishConfig).toBeUndefined();
+  });
+
+  it('has public access in package.json if the package is scoped', () => {
+    const { name, publishConfig } = manifest();
+    if (name.startsWith('@')) expect(publishConfig).toEqual({ access: 'public' });
+  });
+});
+
 describe('the scripts of the one package', () => {
   it('start with no shebang: with Windows line endings its carriage return breaks them under the test runner, and they are run as node scripts/<name>.mjs', () => {
     for (const script of ['assemble.mjs', 'smoke.mjs']) {
@@ -52,7 +121,7 @@ describe('the one package', () => {
 
   it('is the one package: the libraries of the repository, in the order of their layers', () => {
     expect(includes()).toEqual(['core', 'layout', 'react', 'views', 'remochi', 'onyx']);
-    expect(manifest().name).toBe('duyojs');
+    expect(manifest().name).toMatch(/^(@[a-z0-9][\w.-]*\/)?[a-z0-9][\w.-]*$/);
   });
 
   it('names the libraries as the package itself: @duyo/core is the package, and the others are subpaths', () => {

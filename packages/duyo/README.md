@@ -1,4 +1,4 @@
-# duyojs
+# @duyojs/duyo
 
 An EnyoJS-style framework for React: **kinds**, **components** and **events** as data, with
 published properties, inheritance, `bubble` and `waterfall`, rendered by a pack for the UI library
@@ -6,20 +6,20 @@ you choose. Remochi and Onyx are the first-party packs, and views can be designe
 Designer. All of it is this one package.
 
 ```sh
-npm install duyojs react react-dom
-npm install remochi        # only if you use duyojs/remochi
+npm install @duyojs/duyo react react-dom
+npm install remochi        # only if you use @duyojs/duyo/remochi
 ```
 
 ## What is in it
 
 | Import | What it is |
 | --- | --- |
-| `duyojs` | The core: kinds, components, ownership, published properties, events, inheritance. No DOM, no React. |
-| `duyojs/layout` | `FittableRows` and `FittableColumns` as a pure resolver plus kind definitions. |
-| `duyojs/react` | The kind-pack interface, `adapt()` for porting a React component library, `RuntimeView` and `renderInto`, and a plain-DOM base pack. |
-| `duyojs/remochi`, `duyojs/remochi/css` | The Remochi pack: every Remochi component as a `remochi.*` kind. Needs the `remochi` package. |
-| `duyojs/onyx`, `duyojs/onyx/css` | The Onyx pack: the Onyx theme of Enyo 2, and the kinds of webOS's Enyo 1.0 that it lacks, as 56 `onyx.*` kinds. |
-| `duyojs/views`, `duyojs/views/spec`, `duyojs/views/load`, `duyojs/views/vite` | Views: validation, generated types, a guarded loader for run-time specs and a Vite plugin. |
+| `@duyojs/duyo` | The core: kinds, components, ownership, published properties, events, inheritance. No DOM, no React. |
+| `@duyojs/duyo/layout` | `FittableRows` and `FittableColumns` as a pure resolver plus kind definitions. |
+| `@duyojs/duyo/react` | The kind-pack interface, `adapt()` for porting a React component library, `RuntimeView` and `renderInto`, and a plain-DOM base pack. |
+| `@duyojs/duyo/remochi`, `@duyojs/duyo/remochi/css` | The Remochi pack: every Remochi component as a `remochi.*` kind. Needs the `remochi` package. |
+| `@duyojs/duyo/onyx`, `@duyojs/duyo/onyx/css` | The Onyx pack: the Onyx theme of Enyo 2, and the kinds of webOS's Enyo 1.0 that it lacks, as 56 `onyx.*` kinds. |
+| `@duyojs/duyo/views`, `@duyojs/duyo/views/spec`, `@duyojs/duyo/views/load`, `@duyojs/duyo/views/vite` | Views: validation, generated types, a guarded loader for run-time specs and a Vite plugin. |
 
 It also installs the `duyo-views` command, which validates your `*.view.json` files and writes
 their types.
@@ -30,10 +30,10 @@ Packs do not know each other, and neither does the core: use one, or both, or wr
 ## A first look
 
 ```tsx
-import 'duyojs/onyx/css';
-import { kind, createRuntime, defaultKindRegistry } from 'duyojs';
-import { basePack, createRenderer, installPack, renderInto } from 'duyojs/react';
-import { createOnyxPack } from 'duyojs/onyx';
+import '@duyojs/duyo/onyx/css';
+import { kind, createRuntime, defaultKindRegistry } from '@duyojs/duyo';
+import { basePack, createRenderer, installPack, renderInto } from '@duyojs/duyo/react';
+import { createOnyxPack } from '@duyojs/duyo/onyx';
 
 const packs = [basePack, createOnyxPack()];
 packs.forEach((pack) => installPack(defaultKindRegistry, pack));
@@ -65,7 +65,7 @@ Duyo ships TypeScript and JSX source, which your bundler compiles (Vite does out
 
 In the repository the libraries are separate workspaces, `@duyo/core`, `@duyo/layout`, `@duyo/react`,
 `@duyo/views`, `@duyo/remochi` and `@duyo/onyx`, and its guides use those names. What is published is only this
-package, and in an app they are `duyojs`, `duyojs/layout`, `duyojs/react`, `duyojs/views`, `duyojs/remochi` and `duyojs/onyx`.
+package, and in an app they are `@duyojs/duyo`, `@duyojs/duyo/layout`, `@duyojs/duyo/react`, `@duyojs/duyo/views`, `@duyojs/duyo/remochi` and `@duyojs/duyo/onyx`.
 
 ## More
 

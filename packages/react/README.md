@@ -1,14 +1,14 @@
-# duyojs/react
+# @duyojs/duyo/react
 
-> In this repository this is the workspace `@duyo/react` (private). It is published inside the one package `duyojs`, and an app imports it as `duyojs/react`. See [packages/duyo](../duyo).
+> In this repository this is the workspace `@duyo/react` (private). It is published inside the one package `@duyojs/duyo`, and an app imports it as `@duyojs/duyo/react`. See [packages/duyo](../duyo).
 
 Draws Duyo components with React, through *kind packs*: a pack is the kinds a UI library
 provides and how to draw them. The framework knows no particular library.
 
 ```tsx
-import { createRuntime, defaultKindRegistry } from 'duyojs';
-import { basePack, createRenderer, installPack, renderInto } from 'duyojs/react';
-import { remochiPack } from 'duyojs/remochi';
+import { createRuntime, defaultKindRegistry } from '@duyojs/duyo';
+import { basePack, createRenderer, installPack, renderInto } from '@duyojs/duyo/react';
+import { remochiPack } from '@duyojs/duyo/remochi';
 
 const packs = [basePack, remochiPack];
 for (const pack of packs) installPack(defaultKindRegistry, pack);
@@ -20,7 +20,7 @@ renderInto(app, createRenderer(packs), document.getElementById('root')!);
 Bring your own library with `adapt()`:
 
 ```ts
-import { adapt, createPack } from 'duyojs/react';
+import { adapt, createPack } from '@duyojs/duyo/react';
 
 export const acmePack = createPack('acme', [
   adapt({

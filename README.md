@@ -13,8 +13,8 @@ Duyo is a replacement for EnyoJS built for today's tooling. It keeps what made E
 
 - **A TypeScript runtime.** Kinds are resolved as data, not prototype chains, with owner and parent trees, published properties, lifecycle, event bubbling, an action registry and Fittable layout. Definitions can be plain JSON.
 - **Pluggable kind packs.** The runtime knows no particular design system. A pack supplies kinds and how to draw them, as Onyx and Mochi did for Enyo, and `adapt()` turns any React component into a kind.
-- **[Onyx](packages/onyx) as a pack too.** The Enyo 2 theme, ported: 56 `onyx.*` kinds (including webOS's rounded `RowGroup`, `Header`, sliding panes, dialogs and toasters) with Onyx's look, as `duyojs/onyx`. It shares an app with Remochi without knowing it.
-- **[Remochi](https://www.npmjs.com/package/remochi) as the first-party pack.** Every Remochi component is a `remochi.*` kind (`duyojs/remochi`): the webOS look, panels, menus and popups, on React.
+- **[Onyx](packages/onyx) as a pack too.** The Enyo 2 theme, ported: 56 `onyx.*` kinds (including webOS's rounded `RowGroup`, `Header`, sliding panes, dialogs and toasters) with Onyx's look, as `@duyojs/duyo/onyx`. It shares an app with Remochi without knowing it.
+- **[Remochi](https://www.npmjs.com/package/remochi) as the first-party pack.** Every Remochi component is a `remochi.*` kind (`@duyojs/duyo/remochi`): the webOS look, panels, menus and popups, on React.
 - **Views.** A screen's *design* lives in a `.view.json` that people, tools and AI can edit; its *behaviour* lives in a code-behind. Generated types check the two against each other.
 - **A visual designer**, in the spirit of Ares: edit views on a live canvas, write their code, run them, and push the result to GitHub.
 
@@ -23,7 +23,7 @@ Duyo is a replacement for EnyoJS built for today's tooling. It keeps what made E
 If you know Enyo, this is already familiar.
 
 ```js
-import { kind } from 'duyojs';
+import { kind } from '@duyojs/duyo';
 
 kind({
   name: 'App.Counter',
@@ -69,7 +69,7 @@ For a screen, split the kind in two. `Buttons.view.json` is the design, plain da
 `Buttons.ts` is the behaviour. Handler names come from the spec, and `this.$.wifi` is typed from it:
 
 ```ts
-import { view } from 'duyojs';
+import { view } from '@duyojs/duyo';
 import spec from './Buttons.view.json';
 import type { CodeBehind } from './Buttons.view.gen.js';
 
@@ -88,10 +88,10 @@ Rename a handler in the spec and forget the code, or misspell `this.$.wifi`, and
 Put it on screen with a pack:
 
 ```ts
-import 'duyojs/remochi/css';
-import { createRuntime, defaultKindRegistry } from 'duyojs';
-import { basePack, createRenderer, installPack, renderInto } from 'duyojs/react';
-import { remochiPack } from 'duyojs/remochi';
+import '@duyojs/duyo/remochi/css';
+import { createRuntime, defaultKindRegistry } from '@duyojs/duyo';
+import { basePack, createRenderer, installPack, renderInto } from '@duyojs/duyo/react';
+import { remochiPack } from '@duyojs/duyo/remochi';
 
 const packs = [basePack, remochiPack];
 for (const pack of packs) installPack(defaultKindRegistry, pack);
@@ -119,22 +119,22 @@ renderInto(createRuntime().create({ kind: 'App.Buttons' }), createRenderer(packs
 
 It also manages projects: a file manager, a folder browser, **cloning from your GitHub repositories**, committing, pushing and opening pull requests through the git you already have, and importing or downloading a project as a **zip**. Details, and how it compares with Ares: [apps/designer](apps/designer/README.md).
 
-## What is in `duyojs`
+## What is in `@duyojs/duyo`
 
-One npm package, `duyojs`, holds all of it. In this repository each library is a workspace of its own (named `@duyo/…`,
-and private) and the apps use them that way; in an app of yours they are imports from `duyojs`:
+One npm package, `@duyojs/duyo`, holds all of it. In this repository each library is a workspace of its own (named `@duyo/…`,
+and private) and the apps use them that way; in an app of yours they are imports from `@duyojs/duyo`:
 
 | Import | Library | |
 | --- | --- | --- |
-| `duyojs` | [`packages/core`](packages/core) | Kinds, components, ownership, published properties, events, inheritance. No DOM, no React. |
-| `duyojs/layout` | [`packages/layout`](packages/layout) | `FittableRows` / `FittableColumns` as a pure resolver plus kind definitions. |
-| `duyojs/react` | [`packages/react`](packages/react) | Kind-pack interface, `adapt()` for porting any React component library, `RuntimeView` / `renderInto`, and a plain-DOM base pack. |
-| `duyojs/remochi` | [`packages/remochi`](packages/remochi) | An optional pack: every Remochi component as a `remochi.*` kind, with typed properties. Built with the same public API anyone can use. |
-| `duyojs/onyx` | [`packages/onyx`](packages/onyx) | An optional pack: the Onyx theme from Enyo 2 as 56 `onyx.*` kinds, its LESS ported to CSS with `--onyx-*` variables. |
-| `duyojs/views` | [`packages/views`](packages/views) | Views: validation, generated types, the `duyo-views` CLI, a Vite plugin (`duyojs/views/vite`), a guarded loader for run-time specs (`duyojs/views/load`). |
+| `@duyojs/duyo` | [`packages/core`](packages/core) | Kinds, components, ownership, published properties, events, inheritance. No DOM, no React. |
+| `@duyojs/duyo/layout` | [`packages/layout`](packages/layout) | `FittableRows` / `FittableColumns` as a pure resolver plus kind definitions. |
+| `@duyojs/duyo/react` | [`packages/react`](packages/react) | Kind-pack interface, `adapt()` for porting any React component library, `RuntimeView` / `renderInto`, and a plain-DOM base pack. |
+| `@duyojs/duyo/remochi` | [`packages/remochi`](packages/remochi) | An optional pack: every Remochi component as a `remochi.*` kind, with typed properties. Built with the same public API anyone can use. |
+| `@duyojs/duyo/onyx` | [`packages/onyx`](packages/onyx) | An optional pack: the Onyx theme from Enyo 2 as 56 `onyx.*` kinds, its LESS ported to CSS with `--onyx-*` variables. |
+| `@duyojs/duyo/views` | [`packages/views`](packages/views) | Views: validation, generated types, the `duyo-views` CLI, a Vite plugin (`@duyojs/duyo/views/vite`), a guarded loader for run-time specs (`@duyojs/duyo/views/load`). |
 
-The package is assembled from them (`packages/duyo`, `npm run assemble -w duyojs`), and installing it brings no other dependency:
-React and React DOM are peers, and Remochi and Vite are optional peers for `duyojs/remochi` and `duyojs/views/vite`.
+The package is assembled from them (`packages/duyo`, `npm run assemble -w @duyojs/duyo`), and installing it brings no other dependency:
+React and React DOM are peers, and Remochi and Vite are optional peers for `@duyojs/duyo/remochi` and `@duyojs/duyo/views/vite`.
 
 | App | |
 | --- | --- |
@@ -144,8 +144,8 @@ React and React DOM are peers, and Remochi and Vite are optional peers for `duyo
 ## Getting started
 
 ```bash
-npm install duyojs react react-dom
-npm install remochi          # only if you use duyojs/remochi
+npm install @duyojs/duyo react react-dom
+npm install remochi          # only if you use @duyojs/duyo/remochi
 ```
 
 Requirements: Node 18 or later, and React 18 or 19. Duyo ships TypeScript and JSX source, so use a TypeScript-aware bundler such as Vite; nothing needs configuring.

@@ -4,11 +4,11 @@ All notable changes to Duyo. Versions follow [Semantic Versioning](https://semve
 
 ## 1.1.0 — 2026-11-01
 
-### One package: `duyojs`
+### One package: `@duyojs/duyo`
 
-Duyo is published as a single npm package. `@duyo/core` is `duyojs`, and `@duyo/layout`, `@duyo/react`, `@duyo/views`, `@duyo/remochi` and `@duyo/onyx` are `duyojs/layout`, `duyojs/react`, `duyojs/views`, `duyojs/remochi` and `duyojs/onyx` (each pack with `/css`), and `duyo-views` is its command. Installing it brings no other dependency: React and React DOM are peers, and Remochi and Vite are optional peers, needed only for `duyojs/remochi` and `duyojs/views/vite`.
+Duyo is published as a single npm package. `@duyo/core` is `@duyojs/duyo`, and `@duyo/layout`, `@duyo/react`, `@duyo/views`, `@duyo/remochi` and `@duyo/onyx` are `@duyojs/duyo/layout`, `@duyojs/duyo/react`, `@duyojs/duyo/views`, `@duyojs/duyo/remochi` and `@duyojs/duyo/onyx` (each pack with `/css`), and `duyo-views` is its command. Installing it brings no other dependency: React and React DOM are peers, and Remochi and Vite are optional peers, needed only for `@duyojs/duyo/remochi` and `@duyojs/duyo/views/vite`.
 
-In the repository nothing moves: the libraries are still workspaces of their own, now private, and the apps use them as before. `packages/duyo` assembles the package from them when it is packed (`npm run assemble -w duyojs`), writing their names as `duyojs` and `duyo/<name>`, and `npm run smoke -w duyojs` proves it by installing the tarball into a new project outside the repository, with a strict `tsconfig`, and building it. The guides now use the names an app imports.
+In the repository nothing moves: the libraries are still workspaces of their own, now private, and the apps use them as before. `packages/duyo` assembles the package from them when it is packed (`npm run assemble -w @duyojs/duyo`), writing their names as `@duyojs/duyo` and `duyo/<name>`, and `npm run smoke -w @duyojs/duyo` proves it by installing the tarball into a new project outside the repository, with a strict `tsconfig`, and building it. The guides now use the names an app imports.
 
 ### Onyx (new)
 
@@ -24,7 +24,7 @@ The designer installs both first-party themes: the palette offers the `onyx` kin
 
 ### Fixed
 
-- **`duyojs/react`, `duyojs/remochi` and `duyojs/onyx` work in an app that has not turned on the automatic JSX runtime.** They ship their `.tsx` source, so an app compiles it with its own settings, and without that setting a file that does not import React failed with "React is not defined". Each `.tsx` file now says how it is compiled (`@jsxRuntime automatic`), and a test keeps it so.
+- **`@duyojs/duyo/react`, `@duyojs/duyo/remochi` and `@duyojs/duyo/onyx` work in an app that has not turned on the automatic JSX runtime.** They ship their `.tsx` source, so an app compiles it with its own settings, and without that setting a file that does not import React failed with "React is not defined". Each `.tsx` file now says how it is compiled (`@jsxRuntime automatic`), and a test keeps it so.
 - **`@duyo/core` compiles under `noUnusedLocals`.** The generator of kind types (`@duyo/views`) imported `ComponentEvent` into every file, used or not, so `control.gen.ts` failed an app's strict settings. It now imports only what a file uses, and the workspace compiles with `noUnusedLocals` and `noUnusedParameters` on, so it cannot come back.
 - Checked by installing the packed packages into a new Vite project outside the repository, with a strict `tsconfig`.
 
