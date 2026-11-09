@@ -1,12 +1,12 @@
 # duyo
 
-> In this repository this is the workspace `@duyo/core` (private). It is published inside the one package `duyo`, and an app imports it as `duyo`. See [packages/duyo](../duyo).
+> In this repository this is the workspace `@duyo/core` (private). It is published inside the one package `duyojs`, and an app imports it as `duyojs`. See [packages/duyo](../duyo).
 
 Kinds, components, ownership, published properties and events, as Enyo had them, in
 TypeScript. No DOM and no React: rendering is a separate package.
 
 ```ts
-import { kind, createRuntime } from 'duyo';
+import { kind, createRuntime } from 'duyojs';
 
 kind({
   name: 'App.Counter',
@@ -37,10 +37,10 @@ counter.increment();
 | `published` | Properties with `getX` / `setX` and `xChanged(previous, value)`; `{ default, allowed, required }` declares more. |
 | `events`, `handlers`, `on…` delegates | Bubbling to the owner, as in Enyo; a registered action is the fallback. |
 | `createRuntime()` | Creates components; collects diagnostics with codes and hints. |
-| `view(spec, codeBehind)` | A kind from a JSON design and a behaviour; see `duyo/views`. |
+| `view(spec, codeBehind)` | A kind from a JSON design and a behaviour; see `duyojs/views`. |
 | `Instance<'kind'>` | A component typed by what its pack declares. |
 
-Draw components with [`duyo/react`](https://github.com/achunt2143/duyo/tree/main/packages/react) and a pack such as [`duyo/remochi`](https://github.com/achunt2143/duyo/tree/main/packages/remochi).
+Draw components with [`duyojs/react`](https://github.com/achunt2143/duyo/tree/main/packages/react) and a pack such as [`duyojs/remochi`](https://github.com/achunt2143/duyo/tree/main/packages/remochi).
 What maps from Enyo, and what differs:
 [docs/enyo-alignment.md](https://github.com/achunt2143/duyo/blob/main/docs/enyo-alignment.md).
 

@@ -1,8 +1,8 @@
 # Writing a kind pack
 
 A *pack* is how a UI library plugs into Duyo, the way Onyx, Moonstone and Mochi plugged
-into Enyo. The framework (`duyo`, `duyo/layout`, `duyo/react`) knows no particular
-library; a test enforces it (`packages/react/src/__tests__/independence.test.ts`). `duyo/remochi`
+into Enyo. The framework (`duyojs`, `duyojs/layout`, `duyojs/react`) knows no particular
+library; a test enforces it (`packages/react/src/__tests__/independence.test.ts`). `duyojs/remochi`
 is built with exactly the API below, with nothing private, so your pack is on equal terms.
 
 A pack is two things:
@@ -15,7 +15,7 @@ A pack is two things:
 If the library is React components, `adapt` makes one component into one kind.
 
 ```tsx
-import { adapt, createPack } from 'duyo/react';
+import { adapt, createPack } from 'duyojs/react';
 import { AcmeButton, AcmeSwitch, AcmeProvider } from 'acme-ui';
 
 export const acmePack = createPack(
@@ -54,8 +54,8 @@ export const acmePack = createPack(
 Use it:
 
 ```ts
-import { KindRegistry, createRuntime } from 'duyo';
-import { basePack, createRenderer, installPack, renderInto } from 'duyo/react';
+import { KindRegistry, createRuntime } from 'duyojs';
+import { basePack, createRenderer, installPack, renderInto } from 'duyojs/react';
 
 const registry = new KindRegistry();
 const packs = [basePack, acmePack];
@@ -121,7 +121,7 @@ adapt({
 
 `adapt` is a convenience. A pack is just `{ name, kinds, bindings, wrapper? }`, so a binding
 can be any component that takes `{ node, hostProps, children, bubble, ... }`. That is how the
-base pack's `duyo.Input` is written, how `duyo/onyx` is written throughout (Onyx is CSS and
+base pack's `duyo.Input` is written, how `duyojs/onyx` is written throughout (Onyx is CSS and
 DOM, with no React components to adapt), and how you would target something that is not React.
 
 ```tsx
@@ -143,7 +143,7 @@ in its chain is reported as `DUYO_RENDER_001` and draws nothing.
 ## Rules of the road
 
 - Packs must not import each other, and the framework must not import packs.
-- Packs depend on `duyo` and `duyo/react` through their public exports only.
+- Packs depend on `duyojs` and `duyojs/react` through their public exports only.
 - The UI library is a *peer* dependency, so the app controls its version.
 - Packs later in the list override earlier ones for the same kind name. That is how you
   restyle a single kind without forking a library.
