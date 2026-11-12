@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.1.2 — 2026-11-12
+
+- Version bump for clean `@duyojs/duyo` `1.1.2` workspace release.
+
 ## 1.1.1 — 2026-11-12
 
 Part of Duyo 1.1.1, published as the one package `@duyojs/duyo` (see the repository CHANGELOG).

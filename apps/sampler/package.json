@@ -1,6 +1,6 @@
 {
   "name": "duyo-sampler",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "private": true,
   "description": "Every Duyo kind in one app, as Enyo's Sampler was.",
   "license": "Apache-2.0",

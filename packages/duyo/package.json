@@ -1,6 +1,6 @@
 {
   "name": "@duyojs/duyo",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "Duyo: an EnyoJS-style framework for React. Kinds, components and events as data, with Remochi and Onyx as first-party packs, and views you can design.",
   "license": "Apache-2.0",
   "author": "achunt2143",
