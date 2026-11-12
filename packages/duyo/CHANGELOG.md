@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.1.2 — 2026-11-12
+
+Patch release republishing `@duyojs/duyo` from the `packages/duyo` workspace (`npm publish -w @duyojs/duyo`) with the assembled `lib/` entry points, `exports` map, and `duyo-views` CLI binary (`1.1.1` was accidentally published from the monorepo root without `-w`). See the repository [CHANGELOG.md](https://github.com/achunt2143/duyo/blob/main/CHANGELOG.md) for full details.
+
 ## 1.1.1 — 2026-11-12
 
 Patch release rolling up fixes across core, React host, views, and the Remochi/Onyx packs, and updating the `remochi` optional peer dependency to `^0.5.0`. See the repository [CHANGELOG.md](https://github.com/achunt2143/duyo/blob/main/CHANGELOG.md) for full details.

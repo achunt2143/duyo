@@ -1,6 +1,6 @@
 {
   "name": "duyo-designer",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "private": true,
   "description": "A visual designer for Duyo views: edits .view.json files with a live preview, as Ares did for Enyo.",
   "license": "Apache-2.0",

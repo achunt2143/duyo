@@ -2,6 +2,10 @@
 
 All notable changes to Duyo. Versions follow [Semantic Versioning](https://semver.org/).
 
+## 1.1.2 — 2026-11-12
+
+- Republish `@duyojs/duyo` cleanly from the `packages/duyo` workspace (`npm publish -w @duyojs/duyo`) with assembled `lib/` entry points and `duyo-views` binary (`1.1.1` was accidentally published from the monorepo root without `-w`).
+
 ## 1.1.1 — 2026-11-12
 
 ### Core (`@duyo/core`)
