@@ -83,7 +83,7 @@ export default view(spec, {
 } satisfies CodeBehind);
 ```
 
-Rename a handler in the spec and forget the code, or misspell `this.$.wifi`, and TypeScript says so. Specs can also arrive at run time, under allow-lists, so a server can send a screen as data. See [docs/views.md](docs/views.md).
+Rename a handler in the spec and forget the code, or misspell `this.$.wifi`, and TypeScript says so (enable `"resolveJsonModule": true` in `tsconfig.json` for `*.view.json` imports). Under React `StrictMode`, `rendered()` runs twice in development — attach external subscriptions or timers in `create()` and clean them up via `this.onDestroy()`, and use `this.inherited(...args)` when ESLint enforces `prefer-rest-params`. Specs can also arrive at run time, under allow-lists, so a server can send a screen as data. See [docs/views.md](docs/views.md).
 
 Put it on screen with a pack:
 

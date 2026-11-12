@@ -27,7 +27,9 @@ owner. A view simply keeps the strings in one file and the methods in another.
 ```
 
 `Buttons.ts`, the behaviour: Enyo-style methods, with `this.$`, `this.inherited(arguments)`
-and `(sender, event)` handlers.
+(or `this.inherited(...args)` under ESLint `prefer-rest-params`) and `(sender, event)` handlers.
+
+> **TypeScript config:** importing `*.view.json` requires `"resolveJsonModule": true` in your `tsconfig.json`.
 
 ```ts
 import { view } from '@duyojs/duyo';

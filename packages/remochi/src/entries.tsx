@@ -27,6 +27,20 @@ type Props = Record<string, unknown>;
 const label = (node: Component, ctx: AdaptContext) =>
   node.get('content') !== '' ? node.get('content') : ctx.childNodes.length > 0 ? ctx.children : undefined;
 
+/** Panels rendered by `RepanelStack`, omitting hidden ones (`showing: false`). */
+const visiblePanels = (panels: readonly Component[]): readonly Component[] =>
+  panels.filter((panel) => panel.get('showing') !== false);
+
+/**
+ * Closes an overlay locally (delivering `onClose` on the overlay itself without bubbling
+ * to an app root's `onClose` handler) and bubbles `onDismiss` up the tree.
+ */
+const dismissOverlay = (node: Component): void => {
+  node.set('open', false);
+  node.dispatchEvent('onClose', { originator: node }, node);
+  node.bubble('onDismiss', {});
+};
+
 /** A component owned by the same kind instance, found by name: `anchor: 'moreButton'`. */
 const sibling = (node: Component, name: unknown): Component | undefined =>
   typeof name === 'string' && name !== '' ? (node.owner ?? node).$[name] : undefined;
@@ -68,12 +82,14 @@ export const buttons: PackEntry[] = [
     published: {
       variant: { default: 'normal', allowed: [...VARIANTS, 'dropdown'] },
       htmlType: { default: 'button', allowed: ['button', 'submit', 'reset'] },
+      appearance: { default: 'caps', allowed: ['caps', 'drop'] },
       disabled: false,
     },
     hostStyle: { display: 'inline-block' },
     props: (node, ctx): Props => ({
       type: node.variant,
       htmlType: node.htmlType,
+      appearance: node.appearance,
       disabled: node.disabled,
       children: label(node, ctx),
     }),
@@ -205,7 +221,8 @@ export const fields: PackEntry[] = [
     component: R.Input,
     // Remochi draws the field at a fixed width; `width` (any CSS width, '100%' to fill) overrides it.
     published: { value: '', placeholder: '', type: 'text', disabled: false, readOnly: false, maxLength: undefined, width: '' },
-    hostStyle: { display: 'inline-block' },
+    events: { onenter: '' },
+    host: 'props',
     props: (node): Props => ({
       ...(node.width ? { style: { width: node.width } } : {}),
       value: node.value,
@@ -216,7 +233,10 @@ export const fields: PackEntry[] = [
       maxLength: node.maxLength,
       ...textEvents(node, (event) => event.target.value),
       onKeyDown: (event: { key: string }) => {
-        if (event.key === 'Enter') node.bubble('onchange', { type: 'change', value: node.value });
+        if (event.key === 'Enter') {
+          node.bubble('onchange', { type: 'change', value: node.value });
+          node.doEnter({ type: 'enter', value: node.value });
+        }
       },
     }),
   }),
@@ -404,7 +424,11 @@ export const display: PackEntry[] = [
   adapt({
     name: 'remochi.Header',
     component: R.Header,
-    props: (node): Props => ({ content: node.content }),
+    published: { customClasses: '' },
+    props: (node): Props => ({
+      content: node.content,
+      customClasses: node.customClasses || undefined,
+    }),
   }),
 
   adapt({
@@ -618,12 +642,14 @@ export const panels: PackEntry[] = [
     members: {
       /** Moves the front panel forward one, as Enyo's Panels `next()`. */
       next() {
-        const last = this.children.length - 1;
+        const last = visiblePanels(this.children).length - 1;
+        if (last < 0) return;
         this.setActiveIndex(Math.min((this.activeIndex ?? last) + 1, last));
       },
       previous() {
-        const last = this.children.length - 1;
-        this.setActiveIndex(Math.max((this.activeIndex ?? last) - 1, 0));
+        const last = visiblePanels(this.children).length - 1;
+        if (last < 0) return;
+        this.setActiveIndex(Math.min(Math.max((this.activeIndex ?? last) - 1, 0), last));
       },
     },
     props: (node, ctx): Props => ({
@@ -649,7 +675,7 @@ export const panels: PackEntry[] = [
       },
       // The stack inspects its children and decorates `Repanel`s, so it must receive
       // real `Repanel` elements rather than Duyo's per-component wrappers.
-      children: ctx.childNodes.map((panel) => (
+      children: visiblePanels(ctx.childNodes).map((panel) => (
         <R.Repanel
           key={panel.id}
           data-duyo-id={panel.id}
@@ -807,7 +833,7 @@ export const overlays: PackEntry[] = [
       actions: undefined,
       promptValue: '',
     },
-    events: { onClose: '', onConfirm: '', onCancel: '', onAction: '', onPromptChange: '' },
+    events: { onClose: '', onDismiss: '', onConfirm: '', onCancel: '', onAction: '', onPromptChange: '' },
     host: 'none',
     props: (node): Props => ({
       isOpen: node.open,
@@ -821,10 +847,7 @@ export const overlays: PackEntry[] = [
       actions: node.actions ? withActions(node, node.actions) : undefined,
       promptValue: node.promptValue,
       // Any way out of a dialog closes it; a handler can open it again.
-      onClose: () => {
-        node.setOpen(false);
-        node.doClose({});
-      },
+      onClose: () => dismissOverlay(node),
       onConfirm: (value: boolean | string) => {
         node.setOpen(false);
         node.doConfirm({ value });
@@ -845,7 +868,7 @@ export const overlays: PackEntry[] = [
     component: R.PopupPanel,
     // `anchor` names the component the popup points at, e.g. the button that opened it.
     published: { open: false, title: undefined, actions: [], anchor: undefined, anchorRect: undefined },
-    events: { onClose: '', onAction: '' },
+    events: { onClose: '', onDismiss: '', onAction: '' },
     host: 'none',
     props: (node): Props => ({
       isOpen: node.open,
@@ -853,10 +876,7 @@ export const overlays: PackEntry[] = [
       anchorEl: node.anchor ? elementOf(sibling(node, node.anchor)) : undefined,
       anchorRect: node.anchorRect,
       actions: withActions(node, node.actions),
-      onClose: () => {
-        node.setOpen(false);
-        node.doClose({});
-      },
+      onClose: () => dismissOverlay(node),
     }),
   }),
 ];
@@ -923,6 +943,7 @@ export const flow: PackEntry[] = [
       showStepNumbers: node.showStepNumbers,
       allowSkip: node.allowSkip,
       completedSteps: node.completedSteps,
+      step: node.step,
       steps: ctx.childNodes.map((step, index) => ({
         label: step.get('label') || step.name || `Step ${index + 1}`,
         title: step.get('title'),
@@ -969,6 +990,7 @@ export const theme: PackEntry[] = [
       storageKey: null,
       syncHtml: undefined,
       fontFamily: 'Prelude',
+      tokens: {},
       /** Read-only: what `theme` resolved to. */
       resolvedTheme: undefined,
     },
@@ -985,6 +1007,7 @@ export const theme: PackEntry[] = [
       storageKey: node.storageKey,
       syncHtml: node.syncHtml,
       fontFamily: node.fontFamily,
+      tokens: node.tokens,
       onThemeChange: (value: string, resolved: string) => {
         node.setTheme(value);
         node.set('resolvedTheme', resolved);

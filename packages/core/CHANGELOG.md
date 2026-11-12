@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.1.1 — 2026-11-12
+
+Part of Duyo 1.1.1, published as the one package `@duyojs/duyo` (see the repository CHANGELOG).
+
+- Added `Component.version`, `onDestroy(fn)`, `insertChild()`, `moveChild()`, `Control.attributes`, `handles`, `cloneDefault`, `skipExisting`/`extendAllowed` on `KindRegistry`, duplicate-core detection, observer-delegate conflict warnings, and `RESERVED_PUBLISHED`.
+
 ## 1.1.0 — 2026-11-01
 
 Part of Duyo 1.1.0, published as the one package `@duyojs/duyo` (see the repository CHANGELOG).

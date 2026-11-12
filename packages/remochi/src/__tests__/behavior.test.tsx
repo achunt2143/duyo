@@ -85,6 +85,22 @@ describe('buttons and toggles', () => {
     expect(root.$.subject!.selected).toBe(1);
     expect(selected.mock.calls[0]![1]).toMatchObject({ index: 1, value: 'list' });
   });
+
+  it('Button forwards opt-in appearance ("drop" vs default "caps")', () => {
+    const { root, container } = mount({
+      kind: 'duyo.FittableRows',
+      components: [
+        { kind: 'remochi.Button', name: 'capsBtn', content: 'Caps' },
+        { kind: 'remochi.Button', name: 'dropBtn', content: 'Drop', appearance: 'drop' },
+      ],
+    });
+    const buttons = container.querySelectorAll('button');
+    expect(buttons[0]!.getAttribute('data-appearance')).toBe('caps');
+    expect(buttons[1]!.getAttribute('data-appearance')).toBe('drop');
+    expect(buttons[1]!.className).toContain('mochi-button--drop');
+    act(() => root.$.capsBtn!.setAppearance('drop'));
+    expect(buttons[0]!.getAttribute('data-appearance')).toBe('drop');
+  });
 });
 
 describe('fields', () => {
@@ -104,6 +120,48 @@ describe('fields', () => {
     expect(committed).toHaveBeenCalledTimes(1);
     act(() => root.$.subject!.setValue('Grace'));
     expect(input.value).toBe('Grace');
+  });
+
+  it('Input: renders directly onto <input> via host: props without an extra wrapper', () => {
+    const keyDown = vi.fn();
+    const { root } = mount(
+      { kind: 'App.Screen' },
+      remochiPack,
+      (registry) =>
+        registry.register({
+          name: 'App.Screen',
+          kind: 'duyo.FittableColumns',
+          components: [{ name: 'subject', kind: 'remochi.Input', placeholder: 'Search', fit: true, attributes: { 'data-role': 'search' }, onkeydown: 'keyDown' }],
+          keyDown,
+        }),
+    );
+    const input = screen.getByPlaceholderText('Search') as HTMLInputElement;
+    expect(input.getAttribute('data-duyo-kind')).toBe('remochi.Input');
+    expect(input.getAttribute('data-role')).toBe('search');
+    expect(input.style.flex).toBe('1 1 0%');
+    fireEvent.keyDown(input, { key: 'Enter' });
+    expect(keyDown).toHaveBeenCalledTimes(1);
+    expect(keyDown.mock.calls[0]![1]).toMatchObject({ key: 'Enter', originator: root.$.subject });
+  });
+
+  it('Input: Enter bubbles onenter without blur firing onenter', () => {
+    const committed = vi.fn();
+    const submitted = vi.fn();
+    const { root } = mount(
+      { kind: 'App.Screen' },
+      remochiPack,
+      withHandlers({ kind: 'remochi.Input', placeholder: 'Password', onchange: 'committed', onenter: 'submitted' }, { committed, submitted }),
+    );
+    const input = screen.getByPlaceholderText('Password') as HTMLInputElement;
+    fireEvent.change(input, { target: { value: 'secret' } });
+    fireEvent.blur(input);
+    expect(committed).toHaveBeenCalledTimes(1);
+    expect(submitted).not.toHaveBeenCalled();
+
+    fireEvent.keyDown(input, { key: 'Enter' });
+    expect(committed).toHaveBeenCalledTimes(2);
+    expect(submitted).toHaveBeenCalledTimes(1);
+    expect(submitted.mock.calls[0]![1]).toMatchObject({ type: 'enter', value: 'secret', originator: root.$.subject });
   });
 
   it('Dropdown: choosing an option writes the value and raises onChange', () => {
@@ -142,6 +200,33 @@ describe('panels', () => {
     expect(root.activeIndex).toBe(2);
     act(() => root.previous());
     expect(root.activeIndex).toBe(1);
+  });
+
+  it('RepanelStack omits showing: false panels and clamps next()/previous() to visible panels', () => {
+    const { root } = mount({
+      kind: 'remochi.RepanelStack',
+      activeIndex: 0,
+      components: [
+        { kind: 'remochi.Repanel', name: 'p0', components: [{ content: 'Panel 0' }] },
+        { kind: 'remochi.Repanel', name: 'p1', showing: false, components: [{ content: 'Hidden Panel' }] },
+        { kind: 'remochi.Repanel', name: 'p2', components: [{ content: 'Panel 2' }] },
+      ],
+    });
+    expect(screen.queryByText('Hidden Panel')).toBeNull();
+    expect(screen.getByText('Panel 2')).toBeTruthy();
+
+    act(() => root.next());
+    expect(root.activeIndex).toBe(1);
+    act(() => root.next());
+    expect(root.activeIndex).toBe(1);
+    act(() => root.previous());
+    expect(root.activeIndex).toBe(0);
+
+    act(() => root.$.p1!.setShowing(true));
+    expect(screen.getByText('Hidden Panel')).toBeTruthy();
+    act(() => root.next());
+    act(() => root.next());
+    expect(root.activeIndex).toBe(2);
   });
 
   it('Collapsable draws its title and reveals Duyo children', () => {
@@ -198,13 +283,64 @@ describe('dialogs', () => {
     fireEvent.click(screen.getByText('Retry'));
     expect(acted.mock.calls[0]![1]).toMatchObject({ action: 'retry', label: 'Retry' });
   });
+
+  it('Dialog and PopupPanel bubble onDismiss without bubbling onClose to root handlers', () => {
+    const dialogClosed = vi.fn();
+    const dismissed = vi.fn();
+    const rootClosed = vi.fn();
+    const { root, runtime } = mount(
+      { kind: 'App.Screen' },
+      remochiPack,
+      (registry) =>
+        registry.register({
+          name: 'App.Screen',
+          kind: 'duyo.Control',
+          handlers: { onDismiss: 'dismissed', onClose: 'rootClosed' },
+          components: [
+            { name: 'dialog', kind: 'remochi.Dialog', open: true, title: 'Confirm', showCloseButton: true, onClose: 'dialogClosed' },
+            { name: 'popup', kind: 'remochi.PopupPanel', title: 'Menu' },
+          ],
+          dialogClosed,
+          dismissed,
+          rootClosed,
+        }),
+    );
+    const unhandledClose = vi.fn();
+    runtime.onUnhandled('onClose', unhandledClose);
+
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(root.$.dialog!.open).toBe(false);
+    expect(dialogClosed).toHaveBeenCalledTimes(1);
+    expect(dismissed).toHaveBeenCalledTimes(1);
+    expect(dismissed.mock.calls[0]![1]).toMatchObject({ originator: root.$.dialog });
+    expect(rootClosed).not.toHaveBeenCalled();
+    expect(unhandledClose).not.toHaveBeenCalled();
+
+    act(() => root.$.popup!.setOpen(true));
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(root.$.popup!.open).toBe(false);
+    expect(dismissed).toHaveBeenCalledTimes(2);
+    expect(dismissed.mock.calls[1]![1]).toMatchObject({ originator: root.$.popup });
+    expect(rootClosed).not.toHaveBeenCalled();
+    expect(unhandledClose).not.toHaveBeenCalled();
+  });
 });
 
 describe('theming and layout', () => {
   it('mounts Remochi ThemeWrapper from the pack, with options', () => {
-    const light = createRemochiPack({ theme: { defaultTheme: 'light' } });
-    mount({ kind: 'remochi.Badge', content: '3' }, light);
+    const light = createRemochiPack({
+      theme: {
+        defaultTheme: 'light',
+        tokens: { '--mochi-accent': '#ff5500' },
+        style: { padding: '6px' },
+      },
+    });
+    const { container } = mount({ kind: 'remochi.Badge', content: '3' }, light);
     expect(document.documentElement.getAttribute('data-mochi-theme')).toBe('light');
+    expect(document.documentElement.style.getPropertyValue('--mochi-accent')).toBe('#ff5500');
+    const wrapper = container.querySelector<HTMLElement>('.mochi-theme-wrapper')!;
+    expect(wrapper.style.getPropertyValue('--mochi-accent')).toBe('#ff5500');
+    expect(wrapper.style.padding).toBe('6px');
   });
 
   it('Remochi kinds take part in Duyo layout like any other kind', () => {
@@ -222,6 +358,11 @@ describe('theming and layout', () => {
   it('keeps unknown values out: variant is validated by Duyo before Remochi sees it', () => {
     const { runtime } = mount({ kind: 'remochi.Button', variant: 'neon' });
     expect(runtime.diagnostics.map((d) => d.code)).toContain('DUYO_PROP_002');
+  });
+
+  it('Header forwards customClasses onto the Remochi header', () => {
+    const { container } = mount({ kind: 'remochi.Header', content: 'Settings', customClasses: 'banner-header' });
+    expect(container.querySelector('.banner-header')?.textContent).toContain('Settings');
   });
 });
 

@@ -1,6 +1,6 @@
 {
   "name": "@duyojs/duyo",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Duyo: an EnyoJS-style framework for React. Kinds, components and events as data, with Remochi and Onyx as first-party packs, and views you can design.",
   "license": "Apache-2.0",
   "author": "achunt2143",
@@ -45,9 +45,9 @@
       "default": "./lib/views/src/vite.js"
     },
     "./remochi": "./lib/remochi/src/index.tsx",
-    "./remochi/css": "./lib/remochi/src/css.ts",
+    "./remochi/css": "./lib/remochi/src/css.css",
     "./onyx": "./lib/onyx/src/index.tsx",
-    "./onyx/css": "./lib/onyx/src/css.ts",
+    "./onyx/css": "./lib/onyx/src/css/index.css",
     "./package.json": "./package.json"
   },
   "files": [
@@ -66,7 +66,7 @@
   "peerDependencies": {
     "react": "^18.0.0 || ^19.0.0",
     "react-dom": "^18.0.0 || ^19.0.0",
-    "remochi": "^0.4.0",
+    "remochi": "^0.5.0",
     "vite": ">=5.0.0"
   },
   "peerDependenciesMeta": {

@@ -1,6 +1,23 @@
 import { KindRegistry } from './registry.js';
 import type { KindDefinition, KindInput } from './types.js';
 
+const CORE_REGISTRY_KEY = Symbol.for('duyo.core.kindRegistryCtor');
+const DUPLICATE_WARNED_KEY = Symbol.for('duyo.core.duplicateWarned');
+
+function warnIfDuplicateCoreLoaded(): void {
+  const global = globalThis as Record<symbol, unknown>;
+  if (global[CORE_REGISTRY_KEY] === undefined) {
+    global[CORE_REGISTRY_KEY] = KindRegistry;
+    return;
+  }
+  if (global[CORE_REGISTRY_KEY] !== KindRegistry && !global[DUPLICATE_WARNED_KEY]) {
+    global[DUPLICATE_WARNED_KEY] = true;
+    console.warn('[duyo] Multiple copies of @duyo/core are loaded; kind registrations may be split across registries.');
+  }
+}
+
+warnIfDuplicateCoreLoaded();
+
 /** Registry used by module-level `kind()` calls. A runtime may bring its own. */
 export const defaultKindRegistry = new KindRegistry();
 

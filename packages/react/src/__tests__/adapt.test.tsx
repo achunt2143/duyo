@@ -223,4 +223,78 @@ describe('adapt: porting a library with no Duyo knowledge', () => {
     expect(acmePack.kinds.map((k) => k.name)).toEqual(['acme.Button', 'acme.Switch', 'acme.Counter', 'acme.Card', 'acme.Tabs']);
     expect(Object.keys(acmePack.bindings)).toHaveLength(5);
   });
+
+  it('forwards allow-listed attributes and composes DOM event handlers in host: props mode', () => {
+    const nativeKeyDown = vi.fn();
+    const duyoKeyDown = vi.fn();
+    const nativeClick = vi.fn();
+    const duyoTap = vi.fn();
+    function PropsTarget(props: Record<string, unknown>) {
+      return <button {...props} />;
+    }
+    const entry = adapt({
+      name: 'acme.PropsBtn',
+      component: PropsTarget,
+      host: 'props',
+      published: { disabled: false },
+      props: (node) => ({
+        children: node.get('content'),
+        onClick: nativeClick,
+        onKeyDown: nativeKeyDown,
+      }),
+    });
+    const registry = new KindRegistry();
+    const pack = createPack('props-pack', [entry]);
+    installPack(registry, basePack);
+    installPack(registry, pack);
+
+    registry.register({
+      name: 'App.Screen',
+      kind: 'duyo.Control',
+      components: [
+        {
+          name: 'btn',
+          kind: 'acme.PropsBtn',
+          content: 'Save',
+          ontap: 'onTap',
+          onkeydown: 'onKey',
+          attributes: {
+            'aria-label': 'Save doc',
+            'data-testid': 'props-btn',
+            tabindex: 0,
+            role: 'menuitem',
+            'data-duyo-id': 'spoofed',
+            onclick: 'bad()',
+          },
+        },
+      ],
+      onTap: duyoTap,
+      onKey: duyoKeyDown,
+    });
+
+    const runtime = createRuntime({ registry });
+    const root = runtime.create({ kind: 'App.Screen' });
+    const { container } = render(<RuntimeView root={root} renderer={createRenderer([basePack, pack])} />);
+    const el = container.querySelector('button')!;
+
+    expect(el.getAttribute('aria-label')).toBe('Save doc');
+    expect(el.getAttribute('data-testid')).toBe('props-btn');
+    expect(el.getAttribute('tabindex')).toBe('0');
+    expect(el.getAttribute('role')).toBe('menuitem');
+    expect(el.getAttribute('data-duyo-id')).toBe(root.$.btn!.id);
+    expect(el.getAttribute('onclick')).toBeNull();
+
+    fireEvent.click(el);
+    expect(nativeClick).toHaveBeenCalledTimes(1);
+    expect(duyoTap).toHaveBeenCalledTimes(1);
+
+    fireEvent.keyDown(el, { key: 'Enter' });
+    expect(nativeKeyDown).toHaveBeenCalledTimes(1);
+    expect(duyoKeyDown).toHaveBeenCalledTimes(1);
+
+    act(() => root.$.btn!.set('disabled', true));
+    fireEvent.click(el);
+    expect(nativeClick).toHaveBeenCalledTimes(2);
+    expect(duyoTap).toHaveBeenCalledTimes(1);
+  });
 });

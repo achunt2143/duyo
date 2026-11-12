@@ -27,7 +27,17 @@ export interface ResolvedKind {
 /** Keys of a kind definition that are not methods or instance properties. */
 const RESERVED = new Set(['name', 'kind', 'published', 'events', 'handlers', 'components', 'statics']);
 const UNSAFE = new Set(['constructor', '__proto__', 'prototype']);
-const DECLARATION_KEYS = ['default', 'allowed', 'required'];
+/** Built-in `Component` members that cannot be declared in `published`. */
+const RESERVED_PUBLISHED = new Set([
+  'constructor', '__proto__', 'prototype',
+  'id', 'kind', 'name', 'owner', 'parent', 'resolved', 'isChrome', 'props', '$', 'runtime',
+  'children', 'destroyed', 'path',
+  'get', 'set', 'create', 'rendered', 'destroy', 'destroyComponents', 'createComponent',
+  'insertChild', 'moveChild', 'onDestroy', 'handles',
+  'bubble', 'bubbleUp', 'getBubbleTarget', 'dispatchBubble', 'dispatchEvent', 'dispatch',
+  'waterfall', 'waterfallDown', 'inherited', 'inspect', 'formatInspect',
+]);
+const DECLARATION_KEYS = ['default', 'allowed', 'extendAllowed', 'required'];
 
 function isDeclaration(value: unknown): value is PublishedDefinition {
   if (value === null || typeof value !== 'object' || Array.isArray(value)) return false;
@@ -54,10 +64,13 @@ export class KindRegistry {
           allowed: [
             'div', 'span', 'section', 'article', 'header', 'footer', 'nav', 'main', 'aside',
             'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'ul', 'ol', 'li', 'label',
+            'a', 'button', 'img', 'figure', 'figcaption', 'time', 'code', 'pre', 'strong', 'em', 'small', 'blockquote', 'hr',
           ],
         },
         /** In a fittable container, takes a share of the remaining space. */
         fit: false,
+        /** Extra DOM attributes forwarded by allow-list (data-*, aria-*, role, id, title, tabIndex, draggable). */
+        attributes: {},
       },
       show() {
         this.set('showing', true);
@@ -97,6 +110,22 @@ export class KindRegistry {
           path: definition.name,
         }),
       );
+    }
+    if (definition.published) {
+      for (const property of Object.keys(definition.published)) {
+        if (RESERVED_PUBLISHED.has(property)) {
+          throw new DuyoError(
+            errorDiagnostic(
+              DiagnosticCodes.KIND_INVALID,
+              `Kind "${definition.name}" cannot publish reserved property "${property}".`,
+              {
+                hint: `"${property}" is a built-in Component member; choose another property name.`,
+                path: definition.name,
+              },
+            ),
+          );
+        }
+      }
     }
     this.#kinds.set(definition.name, definition);
     // A new registration can appear anywhere in an ancestry chain.
@@ -168,8 +197,27 @@ function merge(definition: KindInput, base: ResolvedKind | undefined): ResolvedK
   // without restating the `allowed` set the base declared.
   const declare = (key: string, value: unknown, fullDeclarationAllowed: boolean) => {
     const existing = published.get(key);
-    if (fullDeclarationAllowed && isDeclaration(value)) published.set(key, value);
-    else published.set(key, existing ? { ...existing, default: value } : { default: value });
+    if (fullDeclarationAllowed && isDeclaration(value)) {
+      const next: PublishedDefinition = {};
+      if ('default' in value) next.default = value.default;
+      else if (existing && 'default' in existing) next.default = existing.default;
+
+      if (value.allowed !== undefined || value.extendAllowed !== undefined) {
+        const merged = [...(value.allowed ?? existing?.allowed ?? [])];
+        for (const item of value.extendAllowed ?? []) {
+          if (!merged.includes(item)) merged.push(item);
+        }
+        next.allowed = merged;
+      } else if (existing?.allowed !== undefined) {
+        next.allowed = existing.allowed;
+      }
+
+      if (value.required !== undefined) next.required = value.required;
+      else if (existing?.required !== undefined) next.required = existing.required;
+      published.set(key, next);
+    } else {
+      published.set(key, existing ? { ...existing, default: value } : { default: value });
+    }
   };
 
   for (const [key, value] of Object.entries(definition.published ?? {})) declare(key, value, true);

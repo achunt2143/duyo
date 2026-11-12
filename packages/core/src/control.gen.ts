@@ -14,12 +14,15 @@ export interface ControlMembers {
   style: string;
   getStyle: () => string;
   setStyle: (value: string) => void;
-  tag: "div" | "span" | "section" | "article" | "header" | "footer" | "nav" | "main" | "aside" | "p" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "ul" | "ol" | "li" | "label";
-  getTag: () => ("div" | "span" | "section" | "article" | "header" | "footer" | "nav" | "main" | "aside" | "p" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "ul" | "ol" | "li" | "label");
-  setTag: (value: "div" | "span" | "section" | "article" | "header" | "footer" | "nav" | "main" | "aside" | "p" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "ul" | "ol" | "li" | "label") => void;
+  tag: "div" | "span" | "section" | "article" | "header" | "footer" | "nav" | "main" | "aside" | "p" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "ul" | "ol" | "li" | "label" | "a" | "button" | "img" | "figure" | "figcaption" | "time" | "code" | "pre" | "strong" | "em" | "small" | "blockquote" | "hr";
+  getTag: () => ("div" | "span" | "section" | "article" | "header" | "footer" | "nav" | "main" | "aside" | "p" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "ul" | "ol" | "li" | "label" | "a" | "button" | "img" | "figure" | "figcaption" | "time" | "code" | "pre" | "strong" | "em" | "small" | "blockquote" | "hr");
+  setTag: (value: "div" | "span" | "section" | "article" | "header" | "footer" | "nav" | "main" | "aside" | "p" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "ul" | "ol" | "li" | "label" | "a" | "button" | "img" | "figure" | "figcaption" | "time" | "code" | "pre" | "strong" | "em" | "small" | "blockquote" | "hr") => void;
   fit: boolean;
   getFit: () => boolean;
   setFit: (value: boolean) => void;
+  attributes: Record<string, unknown>;
+  getAttributes: () => Record<string, unknown>;
+  setAttributes: (value: Record<string, unknown>) => void;
   show: (...args: any[]) => any;
   hide: (...args: any[]) => any;
   hasClass: (...args: any[]) => any;

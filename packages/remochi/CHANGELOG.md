@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.1.1 — 2026-11-12
+
+Part of Duyo 1.1.1, published as the one package `@duyojs/duyo` (see the repository CHANGELOG).
+
+- Bumped `remochi` requirement to `^0.5.0`.
+- Added `remochi.Input` `onenter` event + `host: 'props'`, `remochi.Button.appearance`, `remochi.Header.customClasses`, controlled `remochi.Wizard.step`, `remochi.ThemeWrapper.tokens`, `onDismiss` for `Dialog`/`PopupPanel`, omitted hidden `RepanelStack` children, and exported CSS via `src/css.css`.
+
 ## 1.1.0 — 2026-11-01
 
 Part of Duyo 1.1.0, published as the one package `@duyojs/duyo` (see the repository CHANGELOG).

@@ -17,15 +17,47 @@ export interface ActionContext {
 }
 
 /** What a component needs from the runtime that created it. */
+export const CHILDREN_KEY = '#children';
+
+export interface InvalidationDetail {
+  property?: string;
+  children?: boolean;
+  destroyed?: boolean;
+}
+
+const destroyCallbacks = new WeakMap<Component, Set<() => void>>();
+
+function cloneDefault(value: unknown, seen = new WeakMap<object, unknown>()): unknown {
+  if (value === null || typeof value !== 'object') return value;
+  if (seen.has(value)) return seen.get(value);
+  if (Array.isArray(value)) {
+    const copy: unknown[] = [];
+    seen.set(value, copy);
+    for (let i = 0; i < value.length; i++) copy.push(cloneDefault(value[i], seen));
+    return copy;
+  }
+  const proto = Object.getPrototypeOf(value);
+  if (proto === Object.prototype || proto === null) {
+    const copy: Record<string, unknown> = proto === null ? Object.create(null) : {};
+    seen.set(value, copy);
+    for (const [key, entry] of Object.entries(value)) copy[key] = cloneDefault(entry, seen);
+    return copy;
+  }
+  return value;
+}
+
 export interface RuntimeInternals {
   readonly version: number;
   nextId(kind: string): string;
   resolveKind(name: string): ResolvedKind;
   report(diagnostic: Diagnostic): void;
-  invalidate(): void;
+  invalidate(target?: Component, detail?: InvalidationDetail): void;
+  recordRead?(target: Component, key: string): void;
   subscribe(listener: () => void): () => void;
   hasAction(name: string): boolean;
   invokeAction(name: string, context: ActionContext): unknown;
+  hasUnhandled?(nom: string): boolean;
+  dispatchUnhandled?(nom: string, event: ComponentEvent, sender: Component): boolean;
 }
 
 export interface CreateComponentOptions {
@@ -101,10 +133,13 @@ export class Component {
     this.owner = options.owner;
     this.parent = options.parent;
     this.isChrome = options.isChrome === true;
-    this.props = { ...this.resolved.defaults };
+    this.props = cloneDefault(this.resolved.defaults) as Record<string, unknown>;
 
     for (const property of this.resolved.published.keys()) this.#expose(property);
     for (const event of this.resolved.events) this.#installEventHelper(event);
+    for (const handlerName of Object.values(this.resolved.handlers)) {
+      this.#warnIfObserverDelegate('handlers', handlerName, this);
+    }
     this.#applyDefinition(definition);
     this.#installMethods();
 
@@ -123,6 +158,7 @@ export class Component {
 
   /** Components in this one's subtree, in order. */
   get children(): readonly Component[] {
+    this.#runtime.recordRead?.(this, CHILDREN_KEY);
     return [...this.#children];
   }
 
@@ -159,19 +195,43 @@ export class Component {
   /** Called by a renderer once this component has been drawn. */
   rendered(): void {}
 
+  /** Registers a cleanup callback to run when this component is destroyed. Returns a cancel function. */
+  onDestroy(fn: () => void): () => void {
+    this.#assertAlive('onDestroy');
+    let callbacks = destroyCallbacks.get(this);
+    if (!callbacks) {
+      callbacks = new Set();
+      destroyCallbacks.set(this, callbacks);
+    }
+    callbacks.add(fn);
+    return () => {
+      callbacks.delete(fn);
+    };
+  }
+
   /** Destroys owned components, then detaches. Kinds override and call `inherited`. */
   destroy(): this {
     if (this.#destroyed) return this;
+    const callbacks = destroyCallbacks.get(this);
+    destroyCallbacks.delete(this);
     this.destroyComponents();
     this.#destroyed = true;
 
-    if (this.parent) {
-      const siblings = this.parent.#children;
-      const at = siblings.indexOf(this);
-      if (at >= 0) siblings.splice(at, 1);
+    try {
+      if (callbacks) {
+        for (const fn of [...callbacks]) fn();
+      }
+    } finally {
+      const parent = this.parent;
+      if (parent) {
+        const siblings = parent.#children;
+        const at = siblings.indexOf(this);
+        if (at >= 0) siblings.splice(at, 1);
+      }
+      if (this.name !== undefined && this.owner?.$[this.name] === this) delete this.owner.$[this.name];
+      this.#runtime.invalidate(this, { destroyed: true });
+      if (parent) this.#runtime.invalidate(parent, { children: true });
     }
-    if (this.name !== undefined && this.owner?.$[this.name] === this) delete this.owner.$[this.name];
-    this.#runtime.invalidate();
     return this;
   }
 
@@ -182,6 +242,7 @@ export class Component {
   // Properties
 
   get(property: string): unknown {
+    this.#runtime.recordRead?.(this, property);
     return this.props[property];
   }
 
@@ -195,7 +256,7 @@ export class Component {
     this.#expose(property);
     const observer = this[`${property}Changed`];
     if (typeof observer === 'function') observer.call(this, previous, value, property);
-    this.#runtime.invalidate();
+    this.#runtime.invalidate(this, { property });
     return this;
   }
 
@@ -223,7 +284,7 @@ export class Component {
   createComponent(definition: ComponentDefinition, ext: { owner?: Component } = {}): Component {
     this.#assertAlive('createComponent');
     const child = this.#spawn(definition, ext.owner ?? this, false);
-    this.#runtime.invalidate();
+    this.#runtime.invalidate(this, { children: true });
     return child;
   }
 
@@ -231,7 +292,49 @@ export class Component {
     return definitions.map((definition) => this.createComponent(definition, ext));
   }
 
+  /** Creates a child component inserted at `index` (clamped to current children bounds). */
+  insertChild(definition: ComponentDefinition, index: number, ext: { owner?: Component } = {}): Component {
+    this.#assertAlive('insertChild');
+    const child = this.#spawn(definition, ext.owner ?? this, false, index);
+    this.#runtime.invalidate(this, { children: true });
+    return child;
+  }
+
+  /** Moves an existing direct child to `index` (clamped to current children bounds). */
+  moveChild(child: Component, index: number): this {
+    this.#assertAlive('moveChild');
+    const from = this.#children.indexOf(child);
+    if (from < 0) return this;
+    const to = Math.max(0, Math.min(index, this.#children.length - 1));
+    if (from === to) return this;
+    this.#children.splice(from, 1);
+    this.#children.splice(to, 0, child);
+    this.#runtime.invalidate(this, { children: true });
+    return this;
+  }
+
   // Events
+
+  /**
+   * Returns whether this component (or an ancestor along the bubble chain when `bubble`
+   * is not `false`) declares a handler or delegate for `eventName`.
+   */
+  handles(eventName: string, options: { bubble?: boolean } = {}): boolean {
+    if (this.#destroyed) return false;
+    const selfHandles = (component: Component): boolean => {
+      if (component.resolved.handlers[eventName] !== undefined) return true;
+      const delegate = component.#delegates.get(eventName);
+      return delegate !== undefined && delegate !== '';
+    };
+    if (options.bubble === false) return selfHandles(this);
+
+    let current: Component | undefined = this;
+    while (current && !current.#destroyed) {
+      if (selfHandles(current)) return true;
+      current = current.getBubbleTarget();
+    }
+    return this.#runtime.hasUnhandled?.(eventName) ?? false;
+  }
 
   /**
    * Bubbles an event up the parent chain, starting here. `event.originator` is set to
@@ -248,7 +351,8 @@ export class Component {
   /** Like `bubble`, but starts above this component. */
   bubbleUp(nom: string, event: ComponentEvent = {}): boolean {
     const next = this.getBubbleTarget();
-    return next ? next.dispatchBubble(nom, event, this) : false;
+    if (next) return next.dispatchBubble(nom, event, this);
+    return this.#runtime.dispatchUnhandled?.(nom, event, event.originator ?? this) ?? false;
   }
 
   getBubbleTarget(): Component | undefined {
@@ -290,9 +394,14 @@ export class Component {
 
   // Internals
 
-  #spawn(definition: ComponentDefinition, owner: Component, isChrome: boolean): Component {
+  #spawn(definition: ComponentDefinition, owner: Component, isChrome: boolean, atIndex?: number): Component {
     const child = new Component(this.#runtime, definition, { owner, parent: this, isChrome });
-    this.#children.push(child);
+    if (atIndex === undefined) {
+      this.#children.push(child);
+    } else {
+      const clamped = Math.max(0, Math.min(atIndex, this.#children.length));
+      this.#children.splice(clamped, 0, child);
+    }
     return child;
   }
 
@@ -346,6 +455,7 @@ export class Component {
       if (STRUCTURAL.has(property)) continue;
 
       if (!this.resolved.published.has(property) && DELEGATE.test(property) && typeof value === 'string') {
+        this.#warnIfObserverDelegate(property, value, this.owner ?? this);
         this.#delegates.set(property, value);
         continue;
       }
@@ -365,6 +475,22 @@ export class Component {
         );
       }
     }
+  }
+
+  #warnIfObserverDelegate(eventName: string, delegate: string, target: Component): void {
+    if (!delegate.endsWith('Changed') || delegate.length <= 7) return;
+    const property = delegate.slice(0, -7);
+    if (!target.resolved.published.has(property)) return;
+    this.#runtime.report(
+      warningDiagnostic(
+        DiagnosticCodes.EVENT_OBSERVER_CONFLICT,
+        `"${eventName}" on ${this.path} names handler "${delegate}", which matches ${target.kind}'s observer for published property "${property}".`,
+        {
+          hint: `Duyo calls "${delegate}(previous, value)" when "${property}" changes; rename the event handler so the two signatures do not collide.`,
+          path: this.path,
+        },
+      ),
+    );
   }
 
   #checkProperty(property: string, value: unknown): void {
@@ -407,8 +533,7 @@ export class Component {
     if (typeof target[delegate] === 'function') return target.dispatch(delegate, event, this);
 
     if (this.#runtime.hasAction(delegate)) {
-      this.#runtime.invokeAction(delegate, { source: this, owner: target, event });
-      return false;
+      return Boolean(this.#runtime.invokeAction(delegate, { source: this, owner: target, event }));
     }
 
     this.#runtime.report(

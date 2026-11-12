@@ -524,3 +524,171 @@ describe('the classic counter, ported', () => {
     expect(runtime.diagnostics).toEqual([]);
   });
 });
+
+describe('runtime and lifecycle extensions', () => {
+  it('clones object and array defaults per component instance', () => {
+    const { registry, runtime } = setup();
+    registry.register({
+      name: 'App.Bag',
+      kind: 'duyo.Control',
+      published: {
+        tags: ['a'],
+        meta: { nested: { count: 1 } },
+      },
+    });
+    const first = runtime.create({ kind: 'App.Bag' });
+    const second = runtime.create({ kind: 'App.Bag' });
+
+    (first.get('tags') as string[]).push('b');
+    ((first.get('meta') as { nested: { count: number } }).nested).count = 99;
+    (first.get('attributes') as Record<string, unknown>)['data-x'] = '1';
+
+    expect(second.get('tags')).toEqual(['a']);
+    expect((second.get('meta') as { nested: { count: number } }).nested.count).toBe(1);
+    expect(second.get('attributes')).toEqual({});
+    expect(first.get('attributes')).not.toBe(second.get('attributes'));
+  });
+
+  it('runs onDestroy callbacks when destroyed and supports cancelling them', () => {
+    const { runtime } = setup();
+    const calls: string[] = [];
+    const root = runtime.create({
+      kind: 'duyo.Control',
+      components: [{ name: 'child', kind: 'duyo.Control' }],
+    });
+    const child = root.$.child!;
+    child.onDestroy(() => calls.push(`child:${child.destroyed}`));
+    const cancel = child.onDestroy(() => calls.push('cancelled'));
+    cancel();
+    root.onDestroy(() => calls.push(`root:${root.destroyed}`));
+
+    root.destroy();
+    expect(calls).toEqual(['child:true', 'root:true']);
+  });
+
+  it('supports insertChild and moveChild with bounds clamping and updates parent children', () => {
+    const { runtime } = setup();
+    const root = runtime.create({
+      kind: 'duyo.Control',
+      components: [{ name: 'a' }, { name: 'c' }],
+    });
+    const b = root.insertChild({ name: 'b' }, 1, { owner: root });
+    expect(root.children.map((c) => c.name)).toEqual(['a', 'b', 'c']);
+    expect(root.$.b).toBe(b);
+
+    const start = root.insertChild({ name: 'start' }, -10, { owner: root });
+    expect(root.children.map((c) => c.name)).toEqual(['start', 'a', 'b', 'c']);
+    expect(start.parent).toBe(root);
+
+    root.moveChild(b, 0);
+    expect(root.children.map((c) => c.name)).toEqual(['b', 'start', 'a', 'c']);
+
+    const versionBefore = runtime.version;
+    root.moveChild(b, 0);
+    expect(runtime.version).toBe(versionBefore);
+
+    root.moveChild(b, 99);
+    expect(root.children.map((c) => c.name)).toEqual(['start', 'a', 'c', 'b']);
+  });
+
+  it('checks handles() across component delegates, ancestor chain, and runtime onUnhandled', () => {
+    const { registry, runtime } = setup();
+    registry.register({
+      name: 'App.Screen',
+      kind: 'duyo.Control',
+      handlers: { onShortcut: 'onShortcut' },
+      components: [{ name: 'leaf', kind: 'duyo.Control', ontap: 'tapped' }],
+      tapped() {
+        return true;
+      },
+      onShortcut() {
+        return true;
+      },
+    });
+    const screen = runtime.create({ kind: 'App.Screen' });
+    const leaf = screen.$.leaf!;
+
+    expect(leaf.handles('ontap')).toBe(true);
+    expect(leaf.handles('ontap', { bubble: false })).toBe(true);
+    expect(leaf.handles('onShortcut')).toBe(true);
+    expect(leaf.handles('onShortcut', { bubble: false })).toBe(false);
+    expect(leaf.handles('onClose')).toBe(false);
+
+    const off = runtime.onUnhandled('onClose', () => true);
+    expect(leaf.handles('onClose')).toBe(true);
+    expect(leaf.handles('onClose', { bubble: false })).toBe(false);
+    off();
+    expect(leaf.handles('onClose')).toBe(false);
+  });
+
+  it('honors registered action return values and routes unhandled bubbled events to runtime.onUnhandled', () => {
+    const { runtime } = setup();
+    const parentStop = vi.fn();
+    runtime.actions.register('stopAction', () => true);
+    runtime.actions.register('passAction', () => false);
+
+    const root = runtime.create({
+      kind: 'duyo.Control',
+      ontap: 'rootAction',
+      components: [
+        { name: 'stopper', ontap: 'stopAction' },
+        { name: 'passer', ontap: 'passAction' },
+      ],
+    });
+    runtime.actions.register('rootAction', parentStop);
+
+    expect(root.$.stopper!.bubble('ontap')).toBe(true);
+    expect(parentStop).not.toHaveBeenCalled();
+
+    expect(root.$.passer!.bubble('ontap')).toBe(false);
+    expect(parentStop).toHaveBeenCalledTimes(1);
+
+    const unhandledClose = vi.fn((_originator: unknown, _event: unknown) => true);
+    const unhandledAll = vi.fn();
+    const offClose = runtime.onUnhandled('onClose', unhandledClose);
+    runtime.onUnhandled(unhandledAll);
+
+    expect(root.$.passer!.bubble('onClose', { reason: 'esc' })).toBe(true);
+    expect(unhandledClose).toHaveBeenCalledTimes(1);
+    expect(unhandledClose.mock.calls[0]![0]).toBe(root.$.passer);
+    expect(unhandledAll).not.toHaveBeenCalled();
+
+    offClose();
+    expect(root.$.passer!.bubble('onOther', { n: 1 })).toBe(false);
+    expect(unhandledAll).toHaveBeenCalledWith('onOther', root.$.passer, expect.objectContaining({ n: 1 }));
+  });
+
+  it('warns when an on… delegate collides with a <prop>Changed observer on the target', () => {
+    const { registry, runtime } = setup();
+    registry.register({
+      name: 'App.Form',
+      kind: 'duyo.Control',
+      published: { value: '' },
+      components: [{ name: 'input', ontap: 'valueChanged' }],
+      valueChanged() {},
+    });
+    runtime.create({ kind: 'App.Form' });
+    expect(runtime.diagnostics.map((d) => d.code)).toContain(DiagnosticCodes.EVENT_OBSERVER_CONFLICT);
+  });
+
+  it('tracks reads and per-node versions without invalidating untouched nodes', () => {
+    const { runtime } = setup();
+    const root = runtime.create({
+      kind: 'duyo.Control',
+      components: [{ name: 'a', content: 'A' }, { name: 'b', content: 'B' }],
+    });
+    const a = root.$.a!;
+    const b = root.$.b!;
+    const vA = runtime.nodeVersion(a);
+    const vB = runtime.nodeVersion(b);
+
+    const { result, reads } = runtime.trackReads(() => [a.get('content'), root.children.length]);
+    expect(result).toEqual(['A', 2]);
+    expect([...(reads.get(a) ?? [])]).toEqual(['content']);
+    expect([...(reads.get(root) ?? [])]).toEqual(['#children']);
+
+    a.set('content', 'A2');
+    expect(runtime.nodeVersion(a)).toBeGreaterThan(vA);
+    expect(runtime.nodeVersion(b)).toBe(vB);
+  });
+});

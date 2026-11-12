@@ -1,6 +1,6 @@
 /** @jsxRuntime automatic @jsxImportSource react */
 import type { Component, KindDefinition, KindReference } from '@duyo/core';
-import { createElement, type CSSProperties, type ElementType, type MouseEvent, type ReactNode } from 'react';
+import { createElement, type CSSProperties, type ElementType, type ReactNode } from 'react';
 
 import type { BindingProps, KindPack, RendererBinding } from './renderer.js';
 
@@ -90,30 +90,59 @@ export function adapt(options: AdaptOptions): PackEntry {
     const key = options.key?.(node);
     // An empty array would defeat a library's own default children.
     const defaults = { children: childNodes.length > 0 ? children : undefined };
+    const disabled = node.get('disabled') === true;
     // A disabled control does not tap.
-    const tap = node.get('disabled') === true ? undefined : hostProps.onClick;
+    const tap = disabled ? undefined : hostProps.onClick;
 
     if (host === 'props') {
+      const {
+        className: hostClassName,
+        style: hostCss,
+        'data-duyo-kind': duyoKind,
+        'data-duyo-id': duyoId,
+        onClick: _hostClick,
+        onDoubleClick: hostDblClick,
+        ...hostRest
+      } = hostProps;
+      const hostBase: Record<string, unknown> = {
+        ...hostRest,
+        ...(tap ? { onClick: tap } : {}),
+        ...(disabled ? {} : hostDblClick ? { onDoubleClick: hostDblClick } : {}),
+      };
       const style = mapped['style'] as CSSProperties | undefined;
-      const own = mapped['onClick'] as ((event: MouseEvent<HTMLElement>) => void) | undefined;
+      const composedEvents: Record<string, unknown> = {};
+      for (const [propKey, hostFn] of Object.entries(hostBase)) {
+        if (!propKey.startsWith('on') || typeof hostFn !== 'function') continue;
+        const ownFn = mapped[propKey];
+        if (typeof ownFn === 'function') {
+          composedEvents[propKey] = (event: unknown) => {
+            (ownFn as (ev: unknown) => void)(event);
+            (hostFn as (ev: unknown) => void)(event);
+          };
+        }
+      }
       return createElement(Library, {
         key,
+        ...hostBase,
         ...defaults,
         ...mapped,
-        className: joinClasses(mapped['className'], hostProps.className),
-        style: { ...hostProps.style, ...style },
-        // `ontap` too, for components that forward onClick to their root.
-        onClick: own && tap ? (event: MouseEvent<HTMLElement>) => { own(event); tap(event); } : (own ?? tap),
-        'data-duyo-kind': hostProps['data-duyo-kind'],
-        'data-duyo-id': hostProps['data-duyo-id'],
+        ...composedEvents,
+        className: joinClasses(mapped['className'], hostClassName),
+        style: { ...hostCss, ...style },
+        'data-duyo-kind': duyoKind,
+        'data-duyo-id': duyoId,
       });
     }
 
     const inner = createElement(Library, { key, ...defaults, ...mapped });
     if (host === 'none') return inner;
 
-    const { onClick: _onClick, ...rest } = hostProps;
-    const wrapperProps = { ...rest, onClick: tap };
+    const { onClick: _onClick, onDoubleClick: _onDoubleClick, ...rest } = hostProps;
+    const wrapperProps = {
+      ...rest,
+      onClick: tap,
+      ...(disabled ? {} : _onDoubleClick ? { onDoubleClick: _onDoubleClick } : {}),
+    };
     return createElement('div', { ...wrapperProps, style: { ...hostStyle, ...hostProps.style } }, inner);
   }
   Adapted.displayName = `Adapted(${name})`;

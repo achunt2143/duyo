@@ -48,7 +48,7 @@ try {
   const example = readmeExample(readFileSync(join(root, 'README.md'), 'utf8'));
   write(join(app, 'package.json'), JSON.stringify({
     name: 'duyo-smoke', private: true, type: 'module',
-    dependencies: { [PKG]: `file:${tarball.replace(/\\/g, '/')}`, react: '^18.3.1', 'react-dom': '^18.3.1', remochi: '^0.4.0' },
+    dependencies: { [PKG]: `file:${tarball.replace(/\\/g, '/')}`, react: '^18.3.1', 'react-dom': '^18.3.1', remochi: '^0.5.0' },
     devDependencies: { '@types/react': '^18.3.0', '@types/react-dom': '^18.3.0', typescript: '^5.6.0', vite: '^6.0.0' },
   }, null, 2));
   write(join(app, 'index.html'), '<!doctype html><html><head><meta charset="utf-8"><title>smoke</title><style>html,body,#root{height:100%;margin:0}</style></head><body><div id="root"></div><script type="module" src="/src/main.tsx"></script></body></html>\n');

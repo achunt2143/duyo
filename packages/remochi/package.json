@@ -1,6 +1,6 @@
 {
   "name": "@duyo/remochi",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "private": true,
   "description": "Duyo kind pack for Remochi: its controls, panels and popups as Duyo kinds.",
   "license": "Apache-2.0",
@@ -24,7 +24,7 @@
   "type": "module",
   "exports": {
     ".": "./src/index.tsx",
-    "./css": "./src/css.ts"
+    "./css": "./src/css.css"
   },
   "files": [
     "src/",
@@ -42,10 +42,10 @@
   "peerDependencies": {
     "react": "^18.0.0 || ^19.0.0",
     "react-dom": "^18.0.0 || ^19.0.0",
-    "remochi": "^0.4.0"
+    "remochi": "^0.5.0"
   },
   "devDependencies": {
-    "remochi": "0.4.0",
+    "remochi": "0.5.0",
     "@duyo/views": "^1.0.0"
   },
   "engines": {
