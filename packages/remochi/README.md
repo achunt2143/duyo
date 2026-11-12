@@ -9,7 +9,7 @@ framework only through public exports, and is optional: nothing in `@duyojs/duyo
 `@duyojs/duyo/layout` or `@duyojs/duyo/react` knows it exists. See [docs/writing-a-pack.md](../../docs/writing-a-pack.md)
 to build one for another library.
 
-Requires `remochi` ^0.4.0, a peer dependency, so your app chooses the version:
+Requires `remochi` ^0.5.0, a peer dependency, so your app chooses the version:
 
 ```bash
 npm install @duyojs/duyo remochi
@@ -66,15 +66,22 @@ looks exactly like the plain component.
 ## How Remochi maps to Duyo
 
 **Events.** A control with a value raises `onChange` with `{ value }` (`doChange()`); text
-fields raise `oninput` / `onchange` (and `onfocus`); everything raises `ontap`. Other events
+fields raise `oninput` / `onchange` (and `onfocus`); `remochi.Input` also raises `onenter`
+on Enter (`doEnter()`) while `blur` continues to raise only `onchange`; everything raises `ontap`.
+On `Dialog` and `PopupPanel`, `onClose` stays local (`false` / dismiss updates `open` without
+bubbling as `onClose` on backdrop/Escape dismissal) and backdrop/Escape dismissals raise `onDismiss`. Other events
 keep Remochi's name: `onToggle`, `onOpenChange`, `onSelect`, `onRowTap`, `onIconTap`,
-`onActiveIndexChange`, `onRevealChange`, `onStepChange`, `onComplete`, `onThemeChange`,
-`onPlay` / `onPause` / `onEnded` / `onTimeUpdate`, `onConfirm` / `onCancel` / `onClose` /
-`onAction` / `onPromptChange`.
+`onActiveIndexChange`, `onRevealChange`, `onStepChange`, `onCompletedStepsChange`, `onComplete`,
+`onThemeChange`, `onPlay` / `onPause` / `onEnded` / `onTimeUpdate`, `onConfirm` / `onCancel` /
+`onClose` / `onDismiss` / `onAction` / `onPromptChange`.
 
 **State lives on the component.** Every controllable value is a published property the
 control writes back to: `value`, `checked`, `selected`, `expanded`, `open`, `activeIndex`,
-`currentPage`, `theme`. Set it from code and the control follows.
+`step`, `currentPage`, `theme`. Set it from code and the control follows.
+
+Additional Remochi customization props exposed on kinds: `Button.appearance` (`'caps' | 'drop'`),
+`Header.customClasses`, `Wizard.step`, and `ThemeWrapper.tokens` (`Record<string, string | number>`
+for `--mochi-*` custom property overrides).
 
 **Renamed so they cannot collide with Duyo:**
 
@@ -108,13 +115,11 @@ are re-exported for hand-written bindings.
 
 ## Remochi notes
 
-Found by building and testing the pack. All still apply to remochi 0.4.0; the pack works
+Found by building and testing the pack. Checked against remochi 0.5.0; the pack works
 around the ones that affect it.
 
-- **`remochi.d.ts` trails the source.** It is missing `Collapsable.isOpen`, `Badge.count`
-  and `Badge.variant`, `Table.rows` and `Table.onRowClick`, `PopupPanel.anchorEl` and
-  `Dropdown.maxHeight`, and still declares `Dropdown.searchable`, which the source no longer
-  implements.
+- **`remochi.d.ts` note:** `remochi.d.ts` still declares `Dropdown.searchable`, which the source no
+  longer implements.
 - **`Wizard` throws with no steps.** It defaults `steps = []` but reads `steps[0].title`.
   The pack draws nothing until a `remochi.WizardStep` exists.
 - **`DateInput` reads `value` once.** The pack remounts it when the value changes.

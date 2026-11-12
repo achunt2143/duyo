@@ -14,8 +14,8 @@ export { useTheme, DARK_THEME_COLORS, LIGHT_THEME_COLORS } from 'remochi';
 export interface RemochiPackOptions {
   /**
    * Remochi `ThemeWrapper` props for the root of every Duyo tree: `theme`, `defaultTheme`,
-   * `syncHtml`, `fontFamily`, `storageKey`, `onThemeChange`. Pass `false` to leave theming
-   * to a `remochi.ThemeWrapper` component of your own.
+   * `syncHtml`, `fontFamily`, `storageKey`, `tokens`, `style`, `onThemeChange`. Pass `false`
+   * to leave theming to a `remochi.ThemeWrapper` component of your own.
    */
   theme?: Omit<ThemeWrapperProps, 'children'> | false;
 }

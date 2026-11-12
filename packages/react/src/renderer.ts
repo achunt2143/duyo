@@ -1,4 +1,4 @@
-import type { Component, ComponentEvent, KindDefinition, KindRegistry } from '@duyo/core';
+import type { Component, ComponentEvent, KindDefinition, KindRegistry, Runtime } from '@duyo/core';
 import type { ResolvedLayout } from '@duyo/layout';
 import type { ComponentType, CSSProperties, HTMLAttributes, ReactNode } from 'react';
 
@@ -12,6 +12,18 @@ export type HostProps = HTMLAttributes<HTMLElement> & {
   'data-duyo-kind': string;
   'data-duyo-id': string;
 };
+
+export interface WrapperProps {
+  children: ReactNode;
+  runtime: Runtime;
+  root: Component;
+}
+
+export interface InstallPackOptions {
+  allowReplace?: boolean;
+  /** Skip kinds that are already registered in `registry` instead of throwing. */
+  skipExisting?: boolean;
+}
 
 export interface BindingProps {
   node: Component;
@@ -49,16 +61,19 @@ export interface KindPack {
   /** Keyed by kind name. A node uses its nearest ancestor kind that has a binding. */
   bindings: Readonly<Record<string, RendererBinding>>;
   /** For things like theme providers. */
-  wrapper?: ComponentType<{ children: ReactNode }>;
+  wrapper?: ComponentType<WrapperProps>;
 }
 
-/** Registers a pack's kinds. Throws on a name clash unless `allowReplace` is set. */
+/** Registers a pack's kinds. Throws on a name clash unless `allowReplace` or `skipExisting` is set. */
 export function installPack(
   registry: KindRegistry,
   pack: KindPack,
-  options: { allowReplace?: boolean } = {},
+  options: InstallPackOptions = {},
 ): void {
-  for (const kind of pack.kinds) registry.register(kind, options);
+  for (const kind of pack.kinds) {
+    if (options.skipExisting && registry.has(kind.name)) continue;
+    registry.register(kind, options);
+  }
 }
 
 export class Renderer {

@@ -130,6 +130,35 @@ describe('KindRegistry', () => {
   it('rejects a kind with no name', () => {
     expect(codeOf(() => new KindRegistry().register({ name: '' }))).toBe(DiagnosticCodes.KIND_INVALID);
   });
+
+  it('rejects reserved Component member names declared under published', () => {
+    for (const reserved of ['name', 'children', 'id', 'path', 'runtime', 'destroyed', 'handles', 'onDestroy']) {
+      expect(codeOf(() => new KindRegistry().register({ name: `Bad.${reserved}`, published: { [reserved]: '' } }))).toBe(
+        DiagnosticCodes.KIND_INVALID,
+      );
+    }
+  });
+
+  it('extends an inherited allowed list via extendAllowed without restating base values', () => {
+    const registry = new KindRegistry()
+      .register({
+        name: 'Base.Item',
+        published: {
+          mode: { default: 'read', allowed: ['read', 'write'] },
+        },
+      })
+      .register({
+        name: 'Sub.Item',
+        kind: 'Base.Item',
+        published: {
+          mode: { extendAllowed: ['admin', 'write'] },
+        },
+      });
+    expect(registry.resolve('Sub.Item').published.get('mode')).toEqual({
+      default: 'read',
+      allowed: ['read', 'write', 'admin'],
+    });
+  });
 });
 
 describe('didYouMean', () => {

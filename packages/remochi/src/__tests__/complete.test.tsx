@@ -208,19 +208,47 @@ describe('wizard', () => {
     });
     expect(screen.getByText('Arrived later')).toBeTruthy();
   });
+
+  it('keeps step controlled so initial step and setStep() jump/reset work', () => {
+    const { root } = screenWith(
+      [{ ...steps()[0], step: 1 }],
+      { stepped: vi.fn(), done: vi.fn(), checkAccount: () => false },
+    );
+    expect(screen.getByText('Done screen')).toBeTruthy();
+    act(() => root.$.setup!.setStep(0));
+    expect(screen.getByText('Account form')).toBeTruthy();
+    expect(root.$.setup!.step).toBe(0);
+  });
 });
 
 describe('theme', () => {
-  it('remochi.ThemeWrapper is controllable from Duyo: toggleTheme() and resolvedTheme', () => {
+  it('remochi.ThemeWrapper is controllable from Duyo: toggleTheme(), resolvedTheme, tokens, and style', () => {
     const changed = vi.fn();
-    const { root } = screenWith(
-      [{ kind: 'remochi.ThemeWrapper', name: 'theme', theme: 'dark', syncHtml: true, onThemeChange: 'changed', components: [{ kind: 'remochi.Toggle' }] }],
+    const { root, container } = screenWith(
+      [{
+        kind: 'remochi.ThemeWrapper',
+        name: 'theme',
+        theme: 'dark',
+        syncHtml: true,
+        tokens: { '--mochi-accent': '#12ab34' },
+        style: '--mochi-corner: 4px',
+        onThemeChange: 'changed',
+        components: [{ kind: 'remochi.Toggle' }],
+      }],
       { changed },
       createRemochiPack({ theme: false }),
     );
     const theme = root.$.theme!;
+    const wrapper = container.querySelector<HTMLElement>('.mochi-theme-wrapper')!;
     expect(theme.resolvedTheme).toBe('dark');
     expect(document.documentElement.getAttribute('data-mochi-theme')).toBe('dark');
+    expect(document.documentElement.style.getPropertyValue('--mochi-accent')).toBe('#12ab34');
+    expect(wrapper.style.getPropertyValue('--mochi-corner')).toBe('4px');
+
+    act(() => theme.setTokens({ '--mochi-accent': '#654321' }));
+    expect(document.documentElement.style.getPropertyValue('--mochi-accent')).toBe('#654321');
+    expect(wrapper.style.getPropertyValue('--mochi-accent')).toBe('#654321');
+
     act(() => theme.toggleTheme());
     expect(theme.theme).toBe('light');
     expect(theme.resolvedTheme).toBe('light');

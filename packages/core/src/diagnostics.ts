@@ -22,6 +22,7 @@ export const DiagnosticCodes = Object.freeze({
   COMPONENT_DUPLICATE_NAME: 'DUYO_COMPONENT_001',
   COMPONENT_DESTROYED: 'DUYO_COMPONENT_002',
   EVENT_HANDLER_UNKNOWN: 'DUYO_EVENT_001',
+  EVENT_OBSERVER_CONFLICT: 'DUYO_EVENT_002',
 } as const);
 
 /** Thrown for failures the runtime cannot continue past. Everything else is reported. */

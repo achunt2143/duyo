@@ -20,10 +20,10 @@ is the copy vendored in `packages/runtime/framework/src` (Enyo 2.7), mainly
 | `this.bubble(name, event, sender)` | same | `event.originator` is the first bubbler; sender follows the chain. A truthy return stops. |
 | `bubbleUp`, `dispatch`, `waterfall`, `waterfallDown` | same | |
 | `owner`, `parent`, `this.$`, `isChrome` | same | Components a kind declares are owned by that kind instance, at any depth. |
-| `create()` → `initComponents()` | same | A kind's `create` sees `this.$` only after `this.inherited(arguments)`. |
-| `destroy()` → `destroyComponents()` | same | Idempotent. |
-| `this.inherited(arguments)` | same | Spread arguments also work. |
-| `createComponent(s)`, `rendered()` | same | A renderer calls `rendered()` once drawn, children first. |
+| `create()` → `initComponents()` | same | A kind's `create` sees `this.$` only after `this.inherited(arguments)` (or `this.inherited(...args)`). |
+| `destroy()` → `destroyComponents()`, `onDestroy(fn)` | same + `onDestroy` | Idempotent. `onDestroy(fn)` registers cleanup callbacks that run on teardown. |
+| `this.inherited(arguments)` | same | Rest-spread (`this.inherited(...args)`) also works — preferred when ESLint `prefer-rest-params` is enabled. |
+| `createComponent(s)`, `insertChild()`, `moveChild()`, `rendered()` | same | A renderer calls `rendered()` once drawn, children first. In React `StrictMode`, `rendered()` runs twice in development; attach listeners or timers in `create()` with `this.onDestroy(cleanup)`. |
 | `content`, `classes`, `style`, `tag`, `showing`, `fit` | same | `show()`, `hide()`, `addClass()`, `removeClass()`, `hasClass()`, `addRemoveClass()`. |
 | `FittableRows`, `FittableColumns`, `fit`, `noStretch` | `duyo.FittableRows`, `duyo.FittableColumns` | |
 | `renderInto(node)` | `renderInto(root, renderer, element)` in `@duyojs/duyo/react` | |

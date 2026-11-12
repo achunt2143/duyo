@@ -1,6 +1,6 @@
 {
   "name": "duyo-designer",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "private": true,
   "description": "A visual designer for Duyo views: edits .view.json files with a live preview, as Ares did for Enyo.",
   "license": "Apache-2.0",
@@ -37,7 +37,7 @@
     "fflate": "^0.8.3",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "remochi": "^0.4.0"
+    "remochi": "^0.5.0"
   },
   "devDependencies": {
     "vite": "^6.0.0"

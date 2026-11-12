@@ -2,6 +2,32 @@
 
 All notable changes to Duyo. Versions follow [Semantic Versioning](https://semver.org/).
 
+## 1.1.1 — 2026-11-12
+
+### Core (`@duyo/core`)
+
+- **Granular reactivity and render stability:** Added `Component.version`, `Runtime.nodeVersion()`, `Runtime.propVersion()`, and read-tracking hooks so React re-renders only affected subtrees.
+- **Lifecycle and tree manipulation:** Added `onDestroy(fn)` cleanup registration, `insertChild(definition, index, ext)` and `moveChild(child, index)` on `Component`, and `skipExisting` / `extendAllowed` options on `KindRegistry`.
+- **Safe defaults and diagnostics:** Deep-cloned mutable published defaults when creating components (`cloneDefault`), added `warnIfDuplicateCoreLoaded()` when multiple copies of `@duyo/core` are loaded, warned on observer-delegate name collisions (`*Changed`), added `RESERVED_PUBLISHED`, and added `Control.attributes` (`Record<string, unknown>`) + top-level `handles` wiring.
+
+### React host (`@duyo/react`)
+
+- **`NodeView` memoization and stable host props:** Wrapped `NodeView` in `React.memo`, stabilized host props, and added `RuntimeView.wrapper` and `pack.wrapper` (`{ children, runtime, root }`).
+- **Attributes, DOM events, and `adapt()` `host: 'props'`:** Propagated `Control.attributes`, forwarded extended DOM events (`domEventHandlersFor`, `onkeydown`, `onmousedown`, etc. with native bubbling dedup), and merged host classes, `data-duyo-*`, `style`, and overlapping `on*` handlers cleanly when `host: 'props'`.
+
+### Views (`@duyo/views`)
+
+- **`handlersOf()` and runtime alignment:** Recursively extracted delegate names from nested `components` specs so `duyo-views` sees nested handlers.
+
+### Remochi & Onyx packs (`@duyo/remochi`, `@duyo/onyx`)
+
+- **Remochi 0.5.0 alignment (`remochi: ^0.5.0`):** Added `remochi.Input` (`onenter` event, `host: 'props'`), `remochi.Button.appearance`, `remochi.Header.customClasses`, controlled `remochi.Wizard.step`, `remochi.ThemeWrapper.tokens`, `onDismiss` vs local `onClose` on `Dialog`/`PopupPanel`, omitted hidden panels from `RepanelStack`, and updated CSS subpath exports (`./src/css.css` for Remochi, `./src/css/index.css` for Onyx).
+
+### Documentation & TypeScript
+
+- Documented React `StrictMode` double `rendered()` behavior (`create()` + `this.onDestroy()`), `this.inherited(...args)` for ESLint `prefer-rest-params`, `"resolveJsonModule": true` for `.view.json` imports, and updated `@duyo/remochi` docs for `remochi@^0.5.0`.
+- Added `@types/node` to root `devDependencies` so `npm run typecheck` passes across all workspaces.
+
 ## 1.1.0 — 2026-11-01
 
 ### One package: `@duyojs/duyo`

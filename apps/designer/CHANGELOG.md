@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.1.1 — 2026-11-12
+
+- Updated for Duyo 1.1.1 and `remochi@^0.5.0`.
+
 ## 1.1.0 — 2026-11-01
 
 - Onyx, the second first-party theme: its kinds are in the palette and the inspector.

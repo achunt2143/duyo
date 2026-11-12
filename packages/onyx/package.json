@@ -1,6 +1,6 @@
 {
   "name": "@duyo/onyx",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "private": true,
   "description": "Duyo kind pack for Onyx, the Enyo 2 theme: its buttons, toolbars, inputs, pickers, menus and popups as Duyo kinds.",
   "license": "Apache-2.0",
@@ -24,7 +24,7 @@
   "type": "module",
   "exports": {
     ".": "./src/index.tsx",
-    "./css": "./src/css.ts"
+    "./css": "./src/css/index.css"
   },
   "files": [
     "src/",

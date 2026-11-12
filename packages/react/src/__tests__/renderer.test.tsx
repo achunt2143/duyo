@@ -8,12 +8,15 @@ import {
   RenderCodes,
   RuntimeView,
   basePack,
+  claimDomEvent,
   createRenderer,
   installPack,
+  isDomEventClaimed,
   parseStyle,
   renderInto,
   type BindingProps,
   type KindPack,
+  type WrapperProps,
 } from '../index.js';
 
 afterEach(cleanup);
@@ -418,5 +421,216 @@ describe('README example', () => {
     expect(changes).toHaveLength(2);
     expect(changes[1]).toMatchObject({ value: 4 });
     expect(runtime.diagnostics).toEqual([]);
+  });
+});
+
+describe('host attributes, DOM events, wrappers, and per-node updates', () => {
+  it('forwards allow-listed attributes and strips unsafe or internal ones', () => {
+    const registry = new KindRegistry();
+    installPack(registry, basePack);
+    const runtime = createRuntime({ registry });
+    const root = runtime.create({
+      kind: 'duyo.Control',
+      tag: 'a',
+      content: 'Link',
+      attributes: {
+        'aria-label': 'Home',
+        'data-track': 'hero',
+        'data-duyo-kind': 'evil.Fake',
+        'data-duyo-id': 'evil#1',
+        role: 'link',
+        id: 'home-link',
+        title: 'Go home',
+        tabindex: 0,
+        draggable: false,
+        href: 'javascript:alert(1)',
+        onclick: 'evil()',
+        nested: { nope: true },
+      },
+    });
+
+    const { container } = render(<RuntimeView root={root} renderer={createRenderer([basePack])} />);
+    const el = container.querySelector('a')!;
+    expect(el.getAttribute('aria-label')).toBe('Home');
+    expect(el.getAttribute('data-track')).toBe('hero');
+    expect(el.getAttribute('data-duyo-kind')).toBe('duyo.Control');
+    expect(el.getAttribute('data-duyo-id')).toBe(root.id);
+    expect(el.getAttribute('role')).toBe('link');
+    expect(el.getAttribute('id')).toBe('home-link');
+    expect(el.getAttribute('title')).toBe('Go home');
+    expect(el.getAttribute('tabindex')).toBe('0');
+    expect(el.getAttribute('draggable')).toBe('false');
+    expect(el.getAttribute('href')).toBeNull();
+    expect(el.getAttribute('onclick')).toBeNull();
+  });
+
+  it('gates DOM listeners via handles(), forwards onmousedown/onkeydown/pointerenter, and deduplicates bubbling', () => {
+    const registry = new KindRegistry();
+    installPack(registry, basePack);
+    const onKey = vi.fn();
+    const onMouseDown = vi.fn();
+    const parentHover = vi.fn();
+    const childHover = vi.fn();
+    const parentWheel = vi.fn();
+
+    registry.register({
+      name: 'App.Screen',
+      kind: 'duyo.Control',
+      handlers: {
+        onkeydown: 'onKey',
+        onmousedown: 'onMouseDown',
+        onwheel: 'parentWheel',
+      },
+      components: [
+        {
+          name: 'outer',
+          kind: 'duyo.Control',
+          onpointerenter: 'parentHover',
+          components: [{ name: 'inner', kind: 'duyo.Control', content: 'Inner', onpointerenter: 'childHover' }],
+        },
+      ],
+      onKey,
+      onMouseDown,
+      parentHover,
+      childHover,
+      parentWheel,
+    });
+
+    const runtime = createRuntime({ registry });
+    const root = runtime.create({ kind: 'App.Screen' });
+    expect(root.$.inner!.handles('onkeyup')).toBe(false);
+    const { container } = render(<RuntimeView root={root} renderer={createRenderer([basePack])} />);
+    const inner = container.querySelector(`[data-duyo-id="${root.$.inner!.id}"]`)!;
+
+    fireEvent.keyDown(inner, { key: 'Escape' });
+    expect(onKey).toHaveBeenCalledTimes(1);
+    expect(onKey.mock.calls[0]![1]).toMatchObject({ type: 'keydown', key: 'Escape', originator: root.$.inner });
+
+    fireEvent.mouseDown(inner, { button: 2, clientX: 42 });
+    expect(onMouseDown).toHaveBeenCalledTimes(1);
+    expect(onMouseDown.mock.calls[0]![1]).toMatchObject({ type: 'mousedown', button: 2, clientX: 42 });
+
+    fireEvent.wheel(inner, { deltaY: 120 });
+    expect(parentWheel).toHaveBeenCalledTimes(1);
+
+    fireEvent.pointerEnter(inner);
+    expect(childHover).toHaveBeenCalledTimes(1);
+    expect(childHover.mock.calls[0]![1]).toMatchObject({ type: 'pointerenter', originator: root.$.inner });
+    // React triggers onPointerEnter on outer for outer itself, never via Duyo bubbling inner's event.
+    expect(parentHover).toHaveBeenCalledTimes(1);
+    expect(parentHover.mock.calls[0]![1]).toMatchObject({ type: 'pointerenter', originator: root.$.outer });
+
+    const syntheticNative = new Event('click');
+    expect(claimDomEvent('custom.ev', syntheticNative)).toBe(true);
+    expect(isDomEventClaimed('custom.ev', syntheticNative)).toBe(true);
+    expect(claimDomEvent('custom.ev', syntheticNative)).toBe(false);
+  });
+
+  it('passes { runtime, root } to pack and RuntimeView wrappers and supports skipExisting', () => {
+    const seen: Array<{ who: string; runtimeMatch: boolean; rootId: string }> = [];
+    const registry = new KindRegistry();
+    const duplicatePack: KindPack = {
+      name: 'dup',
+      kinds: [{ name: 'duyo.Control' }, { name: 'Custom.Box', kind: 'duyo.Control' }],
+      bindings: {},
+    };
+    installPack(registry, basePack);
+    expect(() => installPack(registry, duplicatePack, { skipExisting: true })).not.toThrow();
+    expect(registry.has('Custom.Box')).toBe(true);
+
+    function PackWrapper({ children, runtime, root }: WrapperProps): ReactNode {
+      seen.push({ who: 'pack', runtimeMatch: runtime === root.runtime, rootId: root.id });
+      return <div data-pack-wrapper="true">{children}</div>;
+    }
+    function AppWrapper({ children, runtime, root }: WrapperProps): ReactNode {
+      seen.push({ who: 'app', runtimeMatch: runtime === root.runtime, rootId: root.id });
+      return <div data-app-wrapper="true">{children}</div>;
+    }
+
+    const wrappedPack: KindPack = { ...basePack, wrapper: PackWrapper };
+    const runtime = createRuntime({ registry });
+    const root = runtime.create({ kind: 'duyo.Control', content: 'Hi' });
+    const { container } = render(<RuntimeView root={root} renderer={createRenderer([wrappedPack])} wrapper={AppWrapper} />);
+
+    expect(container.querySelector('[data-pack-wrapper] [data-app-wrapper]')).toBeTruthy();
+    expect(seen).toEqual([
+      { who: 'pack', runtimeMatch: true, rootId: root.id },
+      { who: 'app', runtimeMatch: true, rootId: root.id },
+    ]);
+  });
+
+  it('re-renders only the mutated node and its read dependents without re-rendering untouched branches', () => {
+    const counts = new Map<string, number>();
+    const bump = (key: string) => counts.set(key, (counts.get(key) ?? 0) + 1);
+
+    const CustomControl = ({ node, hostProps, children }: BindingProps): ReactNode => {
+      bump(node.name ?? node.id);
+      return <div {...hostProps}>{node.get('content') as ReactNode}{children}</div>;
+    };
+
+    const PeerReader = ({ node, hostProps }: BindingProps): ReactNode => {
+      bump(node.name ?? node.id);
+      const target = node.owner?.$['a'];
+      const peerText = target ? String(target.get('content') ?? '') : '';
+      return <div {...hostProps}>peer:{peerText}</div>;
+    };
+
+    const countingPack: KindPack = {
+      name: 'count',
+      kinds: [
+        { name: 'Count.Box', kind: 'duyo.Control' },
+        { name: 'Count.PeerReader', kind: 'duyo.Control' },
+      ],
+      bindings: {
+        'Count.Box': { component: CustomControl },
+        'Count.PeerReader': { component: PeerReader },
+      },
+    };
+
+    const registry = new KindRegistry();
+    installPack(registry, basePack);
+    installPack(registry, countingPack);
+    const runtime = createRuntime({ registry });
+
+    const root = runtime.create({
+      kind: 'duyo.FittableRows',
+      components: [
+        { name: 'a', kind: 'Count.Box', content: 'A0' },
+        {
+          name: 'b',
+          kind: 'Count.Box',
+          content: 'B0',
+          components: [{ name: 'bChild', kind: 'Count.Box', content: 'BC0' }],
+        },
+        { name: 'reader', kind: 'Count.PeerReader' },
+      ],
+    });
+
+    const { container } = render(<RuntimeView root={root} renderer={createRenderer([basePack, countingPack])} />);
+    expect(counts.get('a')).toBe(1);
+    expect(counts.get('b')).toBe(1);
+    expect(counts.get('bChild')).toBe(1);
+    expect(counts.get('reader')).toBe(1);
+
+    // Mutating `bChild` re-renders ONLY `bChild`, leaving `a`, `b`, and `reader` untouched.
+    act(() => root.$.bChild!.setContent('BC1'));
+    expect(counts.get('bChild')).toBe(2);
+    expect(counts.get('b')).toBe(1);
+    expect(counts.get('a')).toBe(1);
+    expect(counts.get('reader')).toBe(1);
+
+    // Mutating `a` re-renders `a` and `reader` (which read a.content), leaving `b` and `bChild` untouched.
+    act(() => root.$.a!.setContent('A1'));
+    expect(counts.get('a')).toBe(2);
+    expect(counts.get('reader')).toBe(2);
+    expect(counts.get('b')).toBe(1);
+    expect(counts.get('bChild')).toBe(2);
+    expect(container.textContent).toContain('peer:A1');
+
+    // Changing `b`'s `fit` re-renders layout parent & `b`, while `a` (unchanged childStyle) still skips.
+    act(() => root.$.b!.setFit(true));
+    expect(counts.get('b')).toBe(2);
+    expect(counts.get('a')).toBe(2);
+    expect(counts.get('bChild')).toBe(2);
   });
 });

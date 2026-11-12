@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.1.1 — 2026-11-12
+
+Part of Duyo 1.1.1, published as the one package `@duyojs/duyo` (see the repository CHANGELOG).
+
+- Exported `./css` directly from `src/css/index.css` and aligned overlay dismissal handling.
+
 ## 1.1.0 — 2026-11-01
 
 First version of `@duyo/onyx`, a port of the Onyx theme (enyojs/onyx 2.7.0) to a Duyo pack.

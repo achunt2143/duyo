@@ -71,9 +71,23 @@ export function componentsOf(spec) {
  */
 export function handlersOf(spec) {
   const names = new Set();
+  /** @param {unknown} value */
+  const collectNested = (value) => {
+    if (Array.isArray(value)) {
+      for (const item of value) collectNested(item);
+      return;
+    }
+    if (!isObject(value)) return;
+    for (const [key, item] of Object.entries(value)) {
+      if (DELEGATE.test(key) && typeof item === 'string' && METHOD.test(item)) names.add(item);
+      else if (item !== null && typeof item === 'object') collectNested(item);
+    }
+  };
   for (const { component } of componentsOf(spec)) {
     for (const [key, value] of Object.entries(component)) {
+      if (key === 'components') continue;
       if (DELEGATE.test(key) && typeof value === 'string' && METHOD.test(value)) names.add(value);
+      else if (value !== null && typeof value === 'object') collectNested(value);
     }
   }
   const handlers = spec['handlers'];

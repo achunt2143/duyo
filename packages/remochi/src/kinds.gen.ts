@@ -25,6 +25,9 @@ export interface Remochi_Button extends ControlMembers {
   htmlType: "button" | "submit" | "reset";
   getHtmlType: () => ("button" | "submit" | "reset");
   setHtmlType: (value: "button" | "submit" | "reset") => void;
+  appearance: "caps" | "drop";
+  getAppearance: () => ("caps" | "drop");
+  setAppearance: (value: "caps" | "drop") => void;
   disabled: boolean;
   getDisabled: () => boolean;
   setDisabled: (value: boolean) => void;
@@ -135,6 +138,7 @@ export interface Remochi_Dialog extends ControlMembers {
   getPromptValue: () => string;
   setPromptValue: (value: string) => void;
   doClose: (event?: ComponentEvent) => boolean;
+  doDismiss: (event?: ComponentEvent) => boolean;
   doConfirm: (event?: ComponentEvent) => boolean;
   doCancel: (event?: ComponentEvent) => boolean;
   doAction: (event?: ComponentEvent) => boolean;
@@ -207,6 +211,9 @@ export interface Remochi_GridListImageItem extends ControlMembers {
 
 /** remochi.Header */
 export interface Remochi_Header extends ControlMembers {
+  customClasses: string;
+  getCustomClasses: () => string;
+  setCustomClasses: (value: string) => void;
 }
 
 /** remochi.Input */
@@ -232,6 +239,7 @@ export interface Remochi_Input extends ControlMembers {
   width: string;
   getWidth: () => string;
   setWidth: (value: string) => void;
+  doEnter: (event?: ComponentEvent) => boolean;
 }
 
 /** remochi.Item */
@@ -364,6 +372,7 @@ export interface Remochi_PopupPanel extends ControlMembers {
   getAnchorRect: () => unknown;
   setAnchorRect: (value: unknown) => void;
   doClose: (event?: ComponentEvent) => boolean;
+  doDismiss: (event?: ComponentEvent) => boolean;
   doAction: (event?: ComponentEvent) => boolean;
 }
 
@@ -665,6 +674,9 @@ export interface Remochi_ThemeWrapper extends ControlMembers {
   fontFamily: string;
   getFontFamily: () => string;
   setFontFamily: (value: string) => void;
+  tokens: Record<string, unknown>;
+  getTokens: () => Record<string, unknown>;
+  setTokens: (value: Record<string, unknown>) => void;
   resolvedTheme: unknown;
   getResolvedTheme: () => unknown;
   setResolvedTheme: (value: unknown) => void;

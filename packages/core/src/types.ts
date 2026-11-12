@@ -4,6 +4,8 @@ export interface PublishedDefinition {
   default?: unknown;
   /** Closed set of legal values. Violations are reported, not thrown. */
   allowed?: readonly unknown[];
+  /** Appends values to the base kind's `allowed` list without restating it. */
+  extendAllowed?: readonly unknown[];
   required?: boolean;
 }
 

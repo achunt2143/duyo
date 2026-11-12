@@ -48,6 +48,20 @@ describe('reading a spec', () => {
   it('finds the handlers the code-behind must implement, leaving actions to the runtime', () => {
     expect(handlersOf(settings)).toEqual(['appendLog', 'save', 'wifiChanged']);
   });
+
+  it('discovers nested delegates inside property objects and arrays such as itemProps', () => {
+    const nested = {
+      name: 'App.List',
+      components: [
+        {
+          kind: 'custom.List',
+          itemProps: { ontap: 'openRow', menu: { onAction: 'rowAction' } },
+          actions: [{ ontap: 'toolbarTap' }, { ontap: 'external.act' }],
+        },
+      ],
+    };
+    expect(handlersOf(nested)).toEqual(['openRow', 'rowAction', 'toolbarTap']);
+  });
 });
 
 describe('validateSpec', () => {

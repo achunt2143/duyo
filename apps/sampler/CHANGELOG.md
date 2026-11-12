@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.1.1 — 2026-11-12
+
+- Updated for Duyo 1.1.1 (`remochi.Input` `onenter` and regenerated view/kind types).
+
 ## 1.1.0 — 2026-11-01
 
 Two Onyx sections, "Onyx controls" and "Onyx menus and pickers", covering the `onyx.*` kinds, including the webOS sliding panes, dividers, swipeable rows and dialogs.
