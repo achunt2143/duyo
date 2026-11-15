@@ -17,13 +17,16 @@ describe('mochi kind types', () => {
       const toggle = {} as Instance<'remochi.Toggle'>;
       const value: boolean = toggle.value;
       const variant: 'normal' | 'warning' | 'affirmative' | 'blue' | 'dropdown' = ({} as Instance<'remochi.Button'>).variant;
+      const tone: 'normal' | 'warning' | 'error' = ({} as Instance<'remochi.Dialog'>).tone;
       // @ts-expect-error a toggle's value is a boolean
       toggle.setValue('yes');
       // @ts-expect-error a button's variant is a closed set
       ({} as Instance<'remochi.Button'>).setVariant('purple');
+      // @ts-expect-error a dialog's tone is a closed set
+      ({} as Instance<'remochi.Dialog'>).setTone('urgent');
       // Inherited from duyo.Control
       toggle.setContent('Wi-Fi');
-      return [value, variant];
+      return [value, variant, tone];
     };
     expect(typed).toBeTypeOf('function');
   });

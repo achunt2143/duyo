@@ -229,6 +229,26 @@ describe('panels', () => {
     expect(root.activeIndex).toBe(2);
   });
 
+  it('Repanel and RepanelStack wrap panel children inside .mochi-panel-body', () => {
+    const { container } = mount({
+      kind: 'duyo.FittableRows',
+      components: [
+        { kind: 'remochi.Repanel', name: 'solo', components: [{ content: 'Solo body' }] },
+        {
+          kind: 'remochi.RepanelStack',
+          activeIndex: 0,
+          components: [{ kind: 'remochi.Repanel', name: 'stacked', classes: 'custom-panel', components: [{ content: 'Stacked body' }] }],
+        },
+      ],
+    });
+    const soloPanel = container.querySelector('[data-duyo-kind="remochi.Repanel"] .mochi-panel')!;
+    expect(soloPanel.querySelector(':scope > .mochi-panel-body')?.textContent).toContain('Solo body');
+
+    const stackedPanel = container.querySelector('.custom-panel.mochi-panel')!;
+    expect(stackedPanel.getAttribute('data-duyo-id')).toBeTruthy();
+    expect(stackedPanel.querySelector(':scope > .mochi-panel-body')?.textContent).toContain('Stacked body');
+  });
+
   it('Collapsable draws its title and reveals Duyo children', () => {
     const toggled = vi.fn();
     const { root } = mount(
@@ -323,6 +343,29 @@ describe('dialogs', () => {
     expect(dismissed.mock.calls[1]![1]).toMatchObject({ originator: root.$.popup });
     expect(rootClosed).not.toHaveBeenCalled();
     expect(unhandledClose).not.toHaveBeenCalled();
+  });
+
+  it('Dialog forwards tone ("normal", "warning", "error") and rejects unknown tones', () => {
+    const { root } = mount(
+      { kind: 'App.Screen' },
+      remochiPack,
+      withHandlers({ kind: 'remochi.Dialog', open: true, title: 'Alert', tone: 'warning' }, {}),
+    );
+    const dialog = screen.getByRole('dialog');
+    expect(dialog.getAttribute('data-tone')).toBe('warning');
+    expect(dialog.className).toContain('mochi-dialog--warning');
+
+    act(() => root.$.subject!.setTone('error'));
+    expect(dialog.getAttribute('data-tone')).toBe('error');
+    expect(dialog.className).toContain('mochi-dialog--error');
+
+    act(() => root.$.subject!.setTone('normal'));
+    expect(dialog.getAttribute('data-tone')).toBe('normal');
+    expect(dialog.className).not.toContain('mochi-dialog--error');
+    expect(dialog.className).not.toContain('mochi-dialog--warning');
+
+    const invalid = mount({ kind: 'remochi.Dialog', tone: 'urgent' });
+    expect(invalid.runtime.diagnostics.map((d) => d.code)).toContain('DUYO_PROP_002');
   });
 });
 

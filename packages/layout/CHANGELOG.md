@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.1.3 — 2026-11-15
+
+- Version bump for Duyo `1.1.3` (`remochi@^0.5.1`).
+
 ## 1.1.2 — 2026-11-12
 
 - Version bump for clean `@duyojs/duyo` `1.1.2` workspace release.

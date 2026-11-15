@@ -9,7 +9,7 @@ framework only through public exports, and is optional: nothing in `@duyojs/duyo
 `@duyojs/duyo/layout` or `@duyojs/duyo/react` knows it exists. See [docs/writing-a-pack.md](../../docs/writing-a-pack.md)
 to build one for another library.
 
-Requires `remochi` ^0.5.0, a peer dependency, so your app chooses the version:
+Requires `remochi` ^0.5.1, a peer dependency, so your app chooses the version:
 
 ```bash
 npm install @duyojs/duyo remochi
@@ -80,8 +80,8 @@ control writes back to: `value`, `checked`, `selected`, `expanded`, `open`, `act
 `step`, `currentPage`, `theme`. Set it from code and the control follows.
 
 Additional Remochi customization props exposed on kinds: `Button.appearance` (`'caps' | 'drop'`),
-`Header.customClasses`, `Wizard.step`, and `ThemeWrapper.tokens` (`Record<string, string | number>`
-for `--mochi-*` custom property overrides).
+`Header.customClasses`, `Wizard.step`, `Dialog.tone` (`'normal' | 'warning' | 'error'`), and
+`ThemeWrapper.tokens` (`Record<string, string | number>` for `--mochi-*` custom property overrides).
 
 **Renamed so they cannot collide with Duyo:**
 
@@ -115,7 +115,7 @@ are re-exported for hand-written bindings.
 
 ## Remochi notes
 
-Found by building and testing the pack. Checked against remochi 0.5.0; the pack works
+Found by building and testing the pack. Checked against remochi 0.5.1; the pack works
 around the ones that affect it.
 
 - **`remochi.d.ts` note:** `remochi.d.ts` still declares `Dropdown.searchable`, which the source no

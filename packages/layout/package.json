@@ -1,6 +1,6 @@
 {
   "name": "@duyo/layout",
-  "version": "1.1.2",
+  "version": "1.1.3",
   "private": true,
   "description": "Duyo layout: the Fittable rows/columns contract as a pure resolver plus kind definitions.",
   "license": "Apache-2.0",

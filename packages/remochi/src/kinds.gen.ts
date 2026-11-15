@@ -131,6 +131,9 @@ export interface Remochi_Dialog extends ControlMembers {
   size: "small" | "medium" | "large";
   getSize: () => ("small" | "medium" | "large");
   setSize: (value: "small" | "medium" | "large") => void;
+  tone: "normal" | "warning" | "error";
+  getTone: () => ("normal" | "warning" | "error");
+  setTone: (value: "normal" | "warning" | "error") => void;
   actions: unknown;
   getActions: () => unknown;
   setActions: (value: unknown) => void;

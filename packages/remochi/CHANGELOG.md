@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.1.3 — 2026-11-15
+
+Part of Duyo 1.1.3, published as `@duyojs/duyo` (`@duyojs/duyo/remochi`; see the repository CHANGELOG).
+
+- Bumped `remochi` requirement to `^0.5.1`.
+- Exposed `remochi.Dialog.tone` (`'normal' | 'warning' | 'error'`), regenerated `kinds.gen.ts`, and verified `Repanel` `.mochi-panel-body` / header / overlay compatibility against `remochi@0.5.1`.
+
 ## 1.1.2 — 2026-11-12
 
 - Version bump for clean `@duyojs/duyo` `1.1.2` workspace release.

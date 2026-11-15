@@ -830,6 +830,7 @@ export const overlays: PackEntry[] = [
       confirmType: { default: 'affirmative', allowed: [...VARIANTS, 'dropdown'] },
       showCloseButton: false,
       size: { default: 'medium', allowed: ['small', 'medium', 'large'] },
+      tone: { default: 'normal', allowed: ['normal', 'warning', 'error'] },
       actions: undefined,
       promptValue: '',
     },
@@ -844,6 +845,7 @@ export const overlays: PackEntry[] = [
       confirmType: node.confirmType,
       showCloseButton: node.showCloseButton,
       size: node.size,
+      tone: node.tone,
       actions: node.actions ? withActions(node, node.actions) : undefined,
       promptValue: node.promptValue,
       // Any way out of a dialog closes it; a handler can open it again.

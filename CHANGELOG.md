@@ -2,6 +2,12 @@
 
 All notable changes to Duyo. Versions follow [Semantic Versioning](https://semver.org/).
 
+## 1.1.3 — 2026-11-15
+
+### Remochi pack (`@duyo/remochi`, `@duyojs/duyo/remochi`)
+
+- **Remochi 0.5.1 alignment (`remochi: ^0.5.1`):** Exposed `remochi.Dialog.tone` (`'normal' | 'warning' | 'error'`), updated `remochi` peer/dev requirements on `@duyojs/duyo` (`@duyojs/duyo/remochi`) and `@duyo/remochi` to `^0.5.1`, regenerated `kinds.gen.ts`, and verified `Header`, `Subheader`, `Repanel` (`.mochi-panel-body`), `FloatingPanel`, `RepanelStack`, and `PopupPanel` compatibility against `remochi@0.5.1`.
+
 ## 1.1.2 — 2026-11-12
 
 - Republish `@duyojs/duyo` cleanly from the `packages/duyo` workspace (`npm publish -w @duyojs/duyo`) with assembled `lib/` entry points and `duyo-views` binary (`1.1.1` was accidentally published from the monorepo root without `-w`).
