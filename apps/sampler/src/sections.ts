@@ -24,7 +24,7 @@ export const SECTIONS: SectionInfo[] = [
   { key: 'display', title: 'Display', subtitle: 'ProgressBar, Spinner, Badge, Header, Subheader, Divider, NubbinDivider', kind: 'Sampler.Display' },
   { key: 'lists', title: 'Lists and data', subtitle: 'List, Item, ListItem, GridList, Table, Pagination', kind: 'Sampler.Lists' },
   { key: 'panels', title: 'Panels', subtitle: 'RepanelStack, Repanel, FloatingPanel (and fullBleed), Collapsable', kind: 'Sampler.Panels' },
-  { key: 'peeks', title: 'Type and peeks', subtitle: 'Label, Header size, RepanelStack controls, keepPast and upcoming, Repanel hint', kind: 'Sampler.Peeks' },
+  { key: 'peeks', title: 'Type and peeks', subtitle: 'Label, Header size, RepanelStack keepPast and upcoming, Repanel hint and doors', kind: 'Sampler.Peeks' },
   { key: 'overlays', title: 'Menus and overlays', subtitle: 'SlidingMenu, Dialog, PopupPanel', kind: 'Sampler.Overlays' },
   { key: 'flow', title: 'Media and flow', subtitle: 'Video, Wizard', kind: 'Sampler.Flow' },
   { key: 'onyx', title: 'Onyx controls', subtitle: 'Button, RadioGroup, Checkbox, ToggleButton, Input, Slider, ProgressBar, Toolbar...', kind: 'Sampler.OnyxControls' },
@@ -328,16 +328,8 @@ kind({
     caption('Header, size "header" and "display" (display: at most once per screen)'),
     { kind: 'remochi.Header', content: 'A Header' },
     { kind: 'remochi.Header', content: 'Display', size: 'display' },
-    caption('RepanelStack: controls, keepPast and an upcoming peek'),
+    caption('RepanelStack: keepPast and an upcoming peek (a peek or sliver is a door: it shows only its Header)'),
     row([
-      { kind: 'remochi.Label', content: 'Controls' },
-      {
-        kind: 'remochi.ViewSelectButton',
-        name: 'controlsSelect',
-        items: ['auto', 'always', 'never'].map((value) => ({ content: value, value })),
-        selected: 1,
-        onSelect: 'controlsChosen',
-      },
       { kind: 'remochi.Toggle', name: 'keepPast', value: true, onChange: 'keepPastChanged' },
       text('keepPast'),
       { kind: 'remochi.Button', content: 'Start over', ontap: 'startOver' },
@@ -346,26 +338,20 @@ kind({
       kind: 'remochi.RepanelStack',
       name: 'stack',
       activeIndex: 1,
-      controls: 'always',
       upcoming: 'messages',
       style: 'height: 360px;',
       onActiveIndexChange: 'stackMoved',
-      onControlsAction: 'controlUsed',
       onUpcomingOpen: 'peekOpened',
       components: [
-        { kind: 'remochi.Repanel', name: 'accounts', components: [{ kind: 'remochi.Header', content: 'Accounts' }, panelText('Tap the sliver on the right, drag it left, or use the controls.')] },
-        { kind: 'remochi.Repanel', name: 'folders', components: [{ kind: 'remochi.Header', content: 'Folders' }, panelText('The next panel waits at the right edge with its hint.')] },
+        { kind: 'remochi.Repanel', name: 'accounts', components: [{ kind: 'remochi.Header', content: 'Accounts' }, panelText('Accounts holds the sign-ins for every mailbox. Tap the sliver on the right or drag the grabber to move between panels. Collapsed to the left, this panel shows only the start of its Header, beside the front panel.')] },
+        { kind: 'remochi.Repanel', name: 'folders', components: [{ kind: 'remochi.Header', content: 'Folders' }, panelText('Folders lists the folders in the selected account. The next panel waits at the right edge as a door: its Header and a short hint, and no body until you open it.')] },
         // Held out of the stack by `upcoming` until it is opened; `hint` is the clue on its peek.
-        { kind: 'remochi.Repanel', name: 'messages', showing: false, hint: '12 new', components: [{ kind: 'remochi.Header', content: 'Messages' }, panelText('Opening a peek names the next one: this one is followed by a sequence panel.')] },
+        { kind: 'remochi.Repanel', name: 'messages', showing: false, hint: '12 new', components: [{ kind: 'remochi.Header', content: 'Messages' }, panelText('Messages lists what is in the folder. Its body only appears now that the peek is open, and opening a peek names the next one: this one is followed by a sequence panel.')] },
         // `sequence` shows the index as numerals above the label on its peek.
         { kind: 'remochi.Repanel', name: 'message', showing: false, sequence: { index: 4, label: 'Message' }, components: [{ kind: 'remochi.Header', content: 'Message' }, panelText('The last panel: nothing is upcoming now.')] },
       ],
     },
   ],
-  controlsChosen(_sender: Component, event: ComponentEvent) {
-    this.$.stack!.setControls(event['value']);
-    this.log(`set from code: stack.controls = ${event['value']}`);
-  },
   keepPastChanged(_sender: Component, event: ComponentEvent) {
     this.$.stack!.setKeepPast(event['value']);
     this.log(`set from code: stack.keepPast = ${value(event)}`);
@@ -379,9 +365,6 @@ kind({
   },
   stackMoved(_sender: Component, event: ComponentEvent) {
     this.log(`onActiveIndexChange: ${event['index']} (${event['reason']})`);
-  },
-  controlUsed(_sender: Component, event: ComponentEvent) {
-    this.log(`onControlsAction: ${event['action']}`);
   },
   // Remochi has added the opened panel; name the one that follows it, if any.
   peekOpened(_sender: Component, event: ComponentEvent) {

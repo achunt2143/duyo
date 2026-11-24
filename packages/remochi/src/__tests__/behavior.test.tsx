@@ -262,22 +262,9 @@ describe('panels', () => {
     expect(stackedPanel.querySelector(':scope > .mochi-panel-body')?.textContent).toContain('Stacked body');
   });
 
-  it('RepanelStack forwards keepPast and controls, and raises onControlsAction', () => {
-    const controlled = vi.fn();
-    const { root, container } = mount(
-      { kind: 'App.Screen' },
-      remochiPack,
-      withHandlers(
-        { kind: 'remochi.RepanelStack', activeIndex: 1, controls: 'always', keepPast: false, onControlsAction: 'controlled', components: panels(3) },
-        { controlled },
-      ),
-    );
+  it('RepanelStack forwards keepPast', () => {
+    const { container } = mount({ kind: 'remochi.RepanelStack', activeIndex: 1, keepPast: false, components: panels(3) });
     expect(container.querySelector('[data-keep-past="true"]')).toBeNull();
-    const forward = screen.getByRole('button', { name: /forward|next/i });
-    fireEvent.click(forward);
-    expect(controlled.mock.calls[0]![1]).toMatchObject({ action: 'forward' });
-    expect(root.$.subject!.controls).toBe('always');
-    expect(mount({ kind: 'remochi.RepanelStack', controls: 'sometimes' }).runtime.diagnostics.map((d) => d.code)).toContain('DUYO_PROP_002');
   });
 
   it('RepanelStack: upcoming names a child panel that waits as a peek until it is opened', () => {
@@ -329,6 +316,31 @@ describe('panels', () => {
     // With no peekLabel the peek is named after the panel's Header.
     expect(screen.getByRole('button', { name: 'Open Messages' })).toBeTruthy();
     expect(document.body.textContent).toContain('02');
+  });
+
+  it('the first Header reaches Remochi as a direct child, so a door shows it and no body', () => {
+    const { container } = mount({
+      kind: 'remochi.RepanelStack',
+      activeIndex: 0,
+      upcoming: 'p1',
+      components: [
+        { kind: 'remochi.Repanel', name: 'p0', components: [{ content: 'Panel 0' }] },
+        {
+          kind: 'remochi.Repanel',
+          name: 'p1',
+          hint: 'Next',
+          components: [{ kind: 'remochi.Header', name: 'title', content: 'Messages' }, { content: 'Body text' }],
+        },
+      ],
+    });
+    const peek = screen.getByRole('button', { name: 'Open Messages, Next' });
+    const door = container.querySelector('.mochi-panel--door')!;
+    expect(door.querySelector('.mochi-header')?.textContent).toBe('Messages');
+    expect(door.textContent).not.toContain('Body text');
+    expect(container.textContent).not.toContain('Body text');
+    fireEvent.click(peek);
+    expect(screen.getByText('Body text')).toBeTruthy();
+    expect(screen.getByText('Messages')).toBeTruthy();
   });
 
   it('Collapsable draws its title and reveals Duyo children', () => {

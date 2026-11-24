@@ -85,9 +85,10 @@ Additional Remochi customization props exposed on kinds: `Button.appearance` (`'
 (`Record<string, string | number>` for `--mochi-*` custom property overrides). `ThemeWrapper` also
 takes `motion` (`'system' | 'full' | 'reduced' | 'off'`), `contrast` (`'system' | 'standard' | 'more'`),
 `transparency` (`'system' | 'standard' | 'reduced'`) and `ground` (`'plain' | 'vignette'`).
-`RepanelStack` takes `keepPast`, `controls` (`'auto' | 'always' | 'never'`) and `upcoming`, and
-raises `onControlsAction` (`{ action: 'back' | 'forward' }`) and `onUpcomingOpen`; `Repanel` takes
-`hint`, `sequence` (`{ index, label? }`) and `peekLabel`. `ViewSelectButton`'s `onSelect` event also
+`RepanelStack` takes `keepPast` and `upcoming`, and raises `onUpcomingOpen`; `Repanel` takes
+`hint`, `sequence` (`{ index, label? }`) and `peekLabel`. A panel that is the right peek or the left
+sliver is a door: it shows only its `Header` (and, on the right, the hint), so give a panel a
+`remochi.Header` to label it. `ViewSelectButton`'s `onSelect` event also
 carries `direction` (`'forward' | 'back' | null`), `from` and `to`.
 
 **Renamed so they cannot collide with Duyo:**

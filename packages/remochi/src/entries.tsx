@@ -41,9 +41,28 @@ const repanelElement = (panel: Component, ctx: AdaptContext) => (
     {...repanelProps(panel)}
     className={String(panel.get('classes') ?? '') || undefined}
   >
-    {ctx.renderChildren(panel)}
+    {panelChildren(panel, ctx)}
   </R.Repanel>
 );
+
+/** The `Header` props a `remochi.Header` node maps to. */
+const headerProps = (node: Component): Props => ({
+  content: node.content,
+  size: node.size,
+  customClasses: node.customClasses || undefined,
+});
+
+/**
+ * A panel's children, with its first `Header` as a direct `R.Header` element. While a
+ * panel is a door (the right peek or the left sliver) Remochi renders only a direct
+ * `Header` child, and it cannot recognise one inside Duyo's per-component wrapper.
+ */
+const panelChildren = (panel: Component, ctx: AdaptContext) => {
+  const first = panel.children.find((child) => child.kind === 'remochi.Header');
+  return panel.children.map((child) =>
+    child === first ? <R.Header key={child.id} data-duyo-id={child.id} {...headerProps(child)} /> : ctx.renderNode(child),
+  );
+};
 
 /** The stack's `upcoming` element, or null when no panel is named. */
 const upcomingElement = (stack: Component, ctx: AdaptContext) => {
@@ -467,11 +486,7 @@ export const display: PackEntry[] = [
     name: 'remochi.Header',
     component: R.Header,
     published: { size: { default: 'header', allowed: ['header', 'display'] }, customClasses: '' },
-    props: (node): Props => ({
-      content: node.content,
-      size: node.size,
-      customClasses: node.customClasses || undefined,
-    }),
+    props: (node): Props => headerProps(node),
   }),
 
   adapt({
@@ -695,11 +710,10 @@ export const panels: PackEntry[] = [
       narrowFitWidth: 768,
       narrowBehavior: { default: 'single', allowed: ['single', 'stack', 'overlay'] },
       keepPast: true,
-      controls: { default: 'auto', allowed: ['auto', 'always', 'never'] },
       // The name of a child `Repanel` that waits as a peek at the right edge; opening it adds it to the stack.
       upcoming: '',
     },
-    events: { onActiveIndexChange: '', onRevealChange: '', onControlsAction: '', onUpcomingOpen: '' },
+    events: { onActiveIndexChange: '', onRevealChange: '', onUpcomingOpen: '' },
     hostStyle: { height: '100%' },
     members: {
       /** Moves the front panel forward one, as Enyo's Panels `next()`. */
@@ -728,8 +742,6 @@ export const panels: PackEntry[] = [
       narrowFitWidth: node.narrowFitWidth,
       narrowBehavior: node.narrowBehavior,
       keepPast: node.keepPast,
-      controls: node.controls,
-      onControlsAction: (action: string) => node.doControlsAction({ action }),
       // Remochi takes the peek as one keyed `Repanel` element, so it is built from the named child.
       upcoming: upcomingElement(node, ctx),
       onUpcomingOpen: ({ upcoming: _element, ...detail }: { upcoming: unknown }) => {

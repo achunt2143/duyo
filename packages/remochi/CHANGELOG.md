@@ -5,7 +5,7 @@
 Part of Duyo 1.2.0, published as `@duyojs/duyo` (`@duyojs/duyo/remochi`; see the repository CHANGELOG).
 
 - Bumped `remochi` requirement to `^0.6.0`.
-- New kind `remochi.Label`; new properties `Header.size`, `FloatingPanel.fullBleed`, `ThemeWrapper.motion` / `contrast` / `transparency` / `ground`, `RepanelStack.keepPast` / `controls` / `upcoming` and events `onControlsAction` / `onUpcomingOpen`, `Repanel.hint` / `sequence` / `peekLabel`; `ViewSelectButton`'s `onSelect` event carries `direction`, `from` and `to`. `RepanelStack.upcoming` names a child `Repanel` to wait as a peek.
+- New kind `remochi.Label`; new properties `Header.size`, `FloatingPanel.fullBleed`, `ThemeWrapper.motion` / `contrast` / `transparency` / `ground`, `RepanelStack.keepPast` / `upcoming` and event `onUpcomingOpen`, `Repanel.hint` / `sequence` / `peekLabel`; `ViewSelectButton`'s `onSelect` event carries `direction`, `from` and `to`. `RepanelStack.upcoming` names a child `Repanel` to wait as a peek. A peek or left sliver is a door and shows only the panel's first `Header` (passed to Remochi as a direct child). `NubbinDivider.nubbinOffset` is honoured.
 - Re-exported `useWidthClass`, `SCREEN_NARROW`, `SCREEN_WIDE` and `waterdropRadius`; regenerated `kinds.gen.ts`.
 
 ## 1.1.3 — 2026-11-15

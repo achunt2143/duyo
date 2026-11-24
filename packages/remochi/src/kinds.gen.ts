@@ -488,15 +488,11 @@ export interface Remochi_RepanelStack extends ControlMembers {
   keepPast: boolean;
   getKeepPast: () => boolean;
   setKeepPast: (value: boolean) => void;
-  controls: "auto" | "always" | "never";
-  getControls: () => ("auto" | "always" | "never");
-  setControls: (value: "auto" | "always" | "never") => void;
   upcoming: string;
   getUpcoming: () => string;
   setUpcoming: (value: string) => void;
   doActiveIndexChange: (event?: ComponentEvent) => boolean;
   doRevealChange: (event?: ComponentEvent) => boolean;
-  doControlsAction: (event?: ComponentEvent) => boolean;
   doUpcomingOpen: (event?: ComponentEvent) => boolean;
   next: (...args: any[]) => any;
   previous: (...args: any[]) => any;

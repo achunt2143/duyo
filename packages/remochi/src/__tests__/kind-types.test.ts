@@ -19,7 +19,7 @@ describe('mochi kind types', () => {
       const variant: 'normal' | 'warning' | 'affirmative' | 'blue' | 'dropdown' = ({} as Instance<'remochi.Button'>).variant;
       const tone: 'normal' | 'warning' | 'error' = ({} as Instance<'remochi.Dialog'>).tone;
       const size: 'header' | 'display' = ({} as Instance<'remochi.Header'>).size;
-      const controls: 'auto' | 'always' | 'never' = ({} as Instance<'remochi.RepanelStack'>).controls;
+      const keepPast: boolean = ({} as Instance<'remochi.RepanelStack'>).keepPast;
       const ground: 'plain' | 'vignette' = ({} as Instance<'remochi.ThemeWrapper'>).ground;
       // @ts-expect-error a toggle's value is a boolean
       toggle.setValue('yes');
@@ -34,7 +34,7 @@ describe('mochi kind types', () => {
       ({} as Instance<'remochi.Label'>).setContent('Section');
       // Inherited from duyo.Control
       toggle.setContent('Wi-Fi');
-      return [value, variant, tone, size, controls, ground];
+      return [value, variant, tone, size, keepPast, ground];
     };
     expect(typed).toBeTypeOf('function');
   });
