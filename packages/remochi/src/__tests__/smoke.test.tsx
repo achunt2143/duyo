@@ -14,6 +14,7 @@ const NOT_KINDS = new Set([
   'MochiSlidingMenu', 'MochiSlidingMenuContentShifter', 'MochiSlidingMenuItem', 'MochiSlidingMenuItemGroup',
   'MochiStackedPanels', 'StackedMochiPanels', // RepanelStack
   'MochiFloatingPanel', // FloatingPanel
+  'SCREEN_NARROW', 'SCREEN_WIDE', 'useWidthClass', 'waterdropRadius',
   'useTheme', 'ThemeContext', 'DARK_THEME_COLORS', 'LIGHT_THEME_COLORS',
 ]);
 

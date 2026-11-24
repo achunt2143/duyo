@@ -23,7 +23,8 @@ export const SECTIONS: SectionInfo[] = [
   { key: 'fields', title: 'Fields', subtitle: 'Input, TextArea, RichText, Dropdown, NumberInput, Slider, DateInput', kind: 'Sampler.Fields' },
   { key: 'display', title: 'Display', subtitle: 'ProgressBar, Spinner, Badge, Header, Subheader, Divider, NubbinDivider', kind: 'Sampler.Display' },
   { key: 'lists', title: 'Lists and data', subtitle: 'List, Item, ListItem, GridList, Table, Pagination', kind: 'Sampler.Lists' },
-  { key: 'panels', title: 'Panels', subtitle: 'RepanelStack, Repanel, FloatingPanel, Collapsable', kind: 'Sampler.Panels' },
+  { key: 'panels', title: 'Panels', subtitle: 'RepanelStack, Repanel, FloatingPanel (and fullBleed), Collapsable', kind: 'Sampler.Panels' },
+  { key: 'peeks', title: 'Type and peeks', subtitle: 'Label, Header size, RepanelStack controls, keepPast and upcoming, Repanel hint', kind: 'Sampler.Peeks' },
   { key: 'overlays', title: 'Menus and overlays', subtitle: 'SlidingMenu, Dialog, PopupPanel', kind: 'Sampler.Overlays' },
   { key: 'flow', title: 'Media and flow', subtitle: 'Video, Wizard', kind: 'Sampler.Flow' },
   { key: 'onyx', title: 'Onyx controls', subtitle: 'Button, RadioGroup, Checkbox, ToggleButton, Input, Slider, ProgressBar, Toolbar...', kind: 'Sampler.OnyxControls' },
@@ -41,6 +42,9 @@ const row = (components: ComponentDefinition[]): ComponentDefinition => ({ kind:
 
 /** A small text label. */
 const text = (content: string, name?: string) => ({ tag: 'span', content, ...(name ? { name } : {}) });
+
+/** Body text for a panel in a stack. */
+const panelText = (content: string): ComponentDefinition => ({ kind: 'duyo.Control', style: 'padding: 12px;', content });
 
 /** A coloured square as an image, so the sampler needs no assets. */
 const swatch = (colour: string, label: string) =>
@@ -251,13 +255,21 @@ kind({
         ],
       })),
     },
-    caption('FloatingPanel'),
-    {
-      kind: 'remochi.FloatingPanel',
-      look: 'shadow',
-      style: 'max-width: 360px;',
-      components: [{ style: 'padding: 16px;', content: 'A floating panel with the shadow look.' }],
-    },
+    caption('FloatingPanel: the waterdrop, and fullBleed'),
+    row([
+      {
+        kind: 'remochi.FloatingPanel',
+        look: 'shadow',
+        style: 'width: 280px;',
+        components: [{ style: 'padding: 16px;', content: 'A floating panel with the shadow look and the waterdrop corner.' }],
+      },
+      {
+        kind: 'remochi.FloatingPanel',
+        fullBleed: true,
+        style: 'width: 280px;',
+        components: [{ style: 'padding: 16px;', content: 'fullBleed: square, with no edge and no shadow.' }],
+      },
+    ]),
     caption('Collapsable'),
     row([{ kind: 'remochi.Button', content: 'Open and close from code', ontap: 'toggleDetails' }]),
     {
@@ -302,6 +314,79 @@ kind({
   },
   headerTapped() {
     this.log('ontap: CollapsableHeader');
+  },
+});
+
+// ---------------------------------------------------------------------------
+
+kind({
+  name: 'Sampler.Peeks',
+  kind: 'Sampler.Section',
+  components: [
+    caption('Label'),
+    { kind: 'remochi.Label', content: 'Section label' },
+    caption('Header, size "header" and "display" (display: at most once per screen)'),
+    { kind: 'remochi.Header', content: 'A Header' },
+    { kind: 'remochi.Header', content: 'Display', size: 'display' },
+    caption('RepanelStack: controls, keepPast and an upcoming peek'),
+    row([
+      { kind: 'remochi.Label', content: 'Controls' },
+      {
+        kind: 'remochi.ViewSelectButton',
+        name: 'controlsSelect',
+        items: ['auto', 'always', 'never'].map((value) => ({ content: value, value })),
+        selected: 1,
+        onSelect: 'controlsChosen',
+      },
+      { kind: 'remochi.Toggle', name: 'keepPast', value: true, onChange: 'keepPastChanged' },
+      text('keepPast'),
+      { kind: 'remochi.Button', content: 'Start over', ontap: 'startOver' },
+    ]),
+    {
+      kind: 'remochi.RepanelStack',
+      name: 'stack',
+      activeIndex: 1,
+      controls: 'always',
+      upcoming: 'messages',
+      style: 'height: 360px;',
+      onActiveIndexChange: 'stackMoved',
+      onControlsAction: 'controlUsed',
+      onUpcomingOpen: 'peekOpened',
+      components: [
+        { kind: 'remochi.Repanel', name: 'accounts', components: [{ kind: 'remochi.Header', content: 'Accounts' }, panelText('Tap the sliver on the right, drag it left, or use the controls.')] },
+        { kind: 'remochi.Repanel', name: 'folders', components: [{ kind: 'remochi.Header', content: 'Folders' }, panelText('The next panel waits at the right edge with its hint.')] },
+        // Held out of the stack by `upcoming` until it is opened; `hint` is the clue on its peek.
+        { kind: 'remochi.Repanel', name: 'messages', showing: false, hint: '12 new', components: [{ kind: 'remochi.Header', content: 'Messages' }, panelText('Opening a peek names the next one: this one is followed by a sequence panel.')] },
+        // `sequence` shows the index as numerals above the label on its peek.
+        { kind: 'remochi.Repanel', name: 'message', showing: false, sequence: { index: 4, label: 'Message' }, components: [{ kind: 'remochi.Header', content: 'Message' }, panelText('The last panel: nothing is upcoming now.')] },
+      ],
+    },
+  ],
+  controlsChosen(_sender: Component, event: ComponentEvent) {
+    this.$.stack!.setControls(event['value']);
+    this.log(`set from code: stack.controls = ${event['value']}`);
+  },
+  keepPastChanged(_sender: Component, event: ComponentEvent) {
+    this.$.stack!.setKeepPast(event['value']);
+    this.log(`set from code: stack.keepPast = ${value(event)}`);
+  },
+  startOver() {
+    this.$.messages!.setShowing(false);
+    this.$.message!.setShowing(false);
+    this.$.stack!.setUpcoming('messages');
+    this.$.stack!.setActiveIndex(1);
+    this.log('set from code: stack.upcoming = messages');
+  },
+  stackMoved(_sender: Component, event: ComponentEvent) {
+    this.log(`onActiveIndexChange: ${event['index']} (${event['reason']})`);
+  },
+  controlUsed(_sender: Component, event: ComponentEvent) {
+    this.log(`onControlsAction: ${event['action']}`);
+  },
+  // Remochi has added the opened panel; name the one that follows it, if any.
+  peekOpened(_sender: Component, event: ComponentEvent) {
+    this.log(`onUpcomingOpen: ${event['upcoming']} (${event['reason']})`);
+    this.$.stack!.setUpcoming(event['upcoming'] === 'messages' ? 'message' : '');
   },
 });
 

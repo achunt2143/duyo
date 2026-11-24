@@ -14,7 +14,7 @@ export default view(spec, {
   },
 
   viewSelected(_sender, event) {
-    this.log(`onSelect: ${JSON.stringify(event['value'])} (index ${event['index']})`);
+    this.log(`onSelect: ${JSON.stringify(event['value'])} (index ${event['index']}, direction ${event['direction']})`);
   },
 
   switched(sender, event) {

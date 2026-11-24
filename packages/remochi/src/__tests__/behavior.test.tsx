@@ -86,6 +86,19 @@ describe('buttons and toggles', () => {
     expect(selected.mock.calls[0]![1]).toMatchObject({ index: 1, value: 'list' });
   });
 
+  it('ViewSelectButton: onSelect carries the direction of the choice', () => {
+    const selected = vi.fn();
+    mount(
+      { kind: 'App.Screen' },
+      remochiPack,
+      withHandlers({ kind: 'remochi.ViewSelectButton', selected: 1, items: [{ content: 'Grid' }, { content: 'List' }, { content: 'Cards' }], onSelect: 'selected' }, { selected }),
+    );
+    fireEvent.click(screen.getByText('Cards'));
+    expect(selected.mock.calls[0]![1]).toMatchObject({ index: 2, direction: 'forward', from: 1, to: 2 });
+    fireEvent.click(screen.getByText('Grid'));
+    expect(selected.mock.calls[1]![1]).toMatchObject({ index: 0, direction: 'back', from: 2, to: 0 });
+  });
+
   it('Button forwards opt-in appearance ("drop" vs default "caps")', () => {
     const { root, container } = mount({
       kind: 'duyo.FittableRows',
@@ -249,6 +262,75 @@ describe('panels', () => {
     expect(stackedPanel.querySelector(':scope > .mochi-panel-body')?.textContent).toContain('Stacked body');
   });
 
+  it('RepanelStack forwards keepPast and controls, and raises onControlsAction', () => {
+    const controlled = vi.fn();
+    const { root, container } = mount(
+      { kind: 'App.Screen' },
+      remochiPack,
+      withHandlers(
+        { kind: 'remochi.RepanelStack', activeIndex: 1, controls: 'always', keepPast: false, onControlsAction: 'controlled', components: panels(3) },
+        { controlled },
+      ),
+    );
+    expect(container.querySelector('[data-keep-past="true"]')).toBeNull();
+    const forward = screen.getByRole('button', { name: /forward|next/i });
+    fireEvent.click(forward);
+    expect(controlled.mock.calls[0]![1]).toMatchObject({ action: 'forward' });
+    expect(root.$.subject!.controls).toBe('always');
+    expect(mount({ kind: 'remochi.RepanelStack', controls: 'sometimes' }).runtime.diagnostics.map((d) => d.code)).toContain('DUYO_PROP_002');
+  });
+
+  it('RepanelStack: upcoming names a child panel that waits as a peek until it is opened', () => {
+    const opened = vi.fn();
+    const { root } = mount(
+      { kind: 'App.Screen' },
+      remochiPack,
+      withHandlers(
+        {
+          kind: 'remochi.RepanelStack',
+          activeIndex: 0,
+          upcoming: 'p1',
+          onUpcomingOpen: 'opened',
+          components: [
+            { kind: 'remochi.Repanel', name: 'p0', components: [{ content: 'Panel 0' }] },
+            { kind: 'remochi.Repanel', name: 'p1', hint: 'Next', peekLabel: 'Folders', components: [{ content: 'Panel 1' }] },
+          ],
+        },
+        { opened },
+      ),
+    );
+    const peek = screen.getByRole('button', { name: 'Open Folders, Next' });
+    expect(root.$.subject!.children.length).toBe(2);
+
+    fireEvent.click(peek);
+    expect(opened).toHaveBeenCalledTimes(1);
+    expect(opened.mock.calls[0]![1]).toMatchObject({ upcoming: 'p1', reason: 'tap', panelCount: 1 });
+    expect(root.$.subject!.upcoming).toBe('');
+    expect(root.$.subject!.activeIndex).toBe(1);
+    expect(root.$.p1!.showing).toBe(true);
+    expect(screen.getByText('Panel 1')).toBeTruthy();
+  });
+
+  it('Repanel forwards hint, sequence and peekLabel for the peek', () => {
+    mount({
+      kind: 'remochi.RepanelStack',
+      activeIndex: 0,
+      upcoming: 'p1',
+      components: [
+        { kind: 'remochi.Repanel', name: 'p0', components: [{ content: 'Panel 0' }] },
+        {
+          kind: 'remochi.Repanel',
+          name: 'p1',
+          sequence: { index: 2, label: 'Messages' },
+          components: [{ kind: 'remochi.Header', content: 'Messages' }, { content: 'Panel 1' }],
+        },
+      ],
+    });
+    // With no peekLabel the peek is named after the panel's Header.
+    expect(screen.getByRole('button', { name: 'Open Messages' })).toBeTruthy();
+    expect(document.body.textContent).toContain('02');
+  });
+
   it('Collapsable draws its title and reveals Duyo children', () => {
     const toggled = vi.fn();
     const { root } = mount(
@@ -370,6 +452,31 @@ describe('dialogs', () => {
 });
 
 describe('theming and layout', () => {
+  it('ThemeWrapper forwards motion, contrast, transparency and ground', () => {
+    const { root, container } = mount(
+      { kind: 'remochi.ThemeWrapper', syncHtml: true, motion: 'reduced', contrast: 'more', transparency: 'reduced', ground: 'vignette' },
+      createRemochiPack({ theme: false }),
+    );
+    const html = document.documentElement;
+    expect(html.getAttribute('data-motion')).toBe('reduced');
+    expect(html.getAttribute('data-mochi-contrast')).toBe('more');
+    expect(html.getAttribute('data-mochi-transparency')).toBe('reduced');
+    expect(container.querySelector('.mochi-ground--vignette')).toBeTruthy();
+
+    act(() => root.setMotion('off'));
+    act(() => root.setGround('plain'));
+    expect(html.getAttribute('data-motion')).toBe('off');
+    expect(container.querySelector('.mochi-ground--vignette')).toBeNull();
+    expect(mount({ kind: 'remochi.ThemeWrapper', motion: 'fast' }, createRemochiPack({ theme: false })).runtime.diagnostics.map((d) => d.code)).toContain('DUYO_PROP_002');
+  });
+
+  it('FloatingPanel forwards fullBleed', () => {
+    const { root, container } = mount({ kind: 'remochi.FloatingPanel', fullBleed: true, components: [{ content: 'Body' }] });
+    expect(container.querySelector('[class*="full-bleed"], [data-full-bleed]')).toBeTruthy();
+    act(() => root.setFullBleed(false));
+    expect(container.querySelector('[class*="full-bleed"], [data-full-bleed]')).toBeNull();
+  });
+
   it('mounts Remochi ThemeWrapper from the pack, with options', () => {
     const light = createRemochiPack({
       theme: {
@@ -401,6 +508,20 @@ describe('theming and layout', () => {
   it('keeps unknown values out: variant is validated by Duyo before Remochi sees it', () => {
     const { runtime } = mount({ kind: 'remochi.Button', variant: 'neon' });
     expect(runtime.diagnostics.map((d) => d.code)).toContain('DUYO_PROP_002');
+  });
+
+  it('Header forwards size ("header" or "display") and rejects unknown sizes', () => {
+    const { root, container } = mount({ kind: 'remochi.Header', content: 'Settings', size: 'display' });
+    const header = container.querySelector('.mochi-header')!;
+    expect(header.className).toContain('display');
+    act(() => root.setSize('header'));
+    expect(header.className).not.toContain('display');
+    expect(mount({ kind: 'remochi.Header', size: 'huge' }).runtime.diagnostics.map((d) => d.code)).toContain('DUYO_PROP_002');
+  });
+
+  it('Label draws its content as a heading', () => {
+    mount({ kind: 'remochi.Label', content: 'Section' });
+    expect(screen.getByRole('heading', { name: 'Section' })).toBeTruthy();
   });
 
   it('Header forwards customClasses onto the Remochi header', () => {

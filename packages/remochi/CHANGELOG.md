@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.2.0 — 2026-11-24
+
+Part of Duyo 1.2.0, published as `@duyojs/duyo` (`@duyojs/duyo/remochi`; see the repository CHANGELOG).
+
+- Bumped `remochi` requirement to `^0.6.0`.
+- New kind `remochi.Label`; new properties `Header.size`, `FloatingPanel.fullBleed`, `ThemeWrapper.motion` / `contrast` / `transparency` / `ground`, `RepanelStack.keepPast` / `controls` / `upcoming` and events `onControlsAction` / `onUpcomingOpen`, `Repanel.hint` / `sequence` / `peekLabel`; `ViewSelectButton`'s `onSelect` event carries `direction`, `from` and `to`. `RepanelStack.upcoming` names a child `Repanel` to wait as a peek.
+- Re-exported `useWidthClass`, `SCREEN_NARROW`, `SCREEN_WIDE` and `waterdropRadius`; regenerated `kinds.gen.ts`.
+
 ## 1.1.3 — 2026-11-15
 
 Part of Duyo 1.1.3, published as `@duyojs/duyo` (`@duyojs/duyo/remochi`; see the repository CHANGELOG).

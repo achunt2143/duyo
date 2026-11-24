@@ -186,6 +186,9 @@ export interface Remochi_FloatingPanel extends ControlMembers {
   look: "default" | "shadow";
   getLook: () => ("default" | "shadow");
   setLook: (value: "default" | "shadow") => void;
+  fullBleed: boolean;
+  getFullBleed: () => boolean;
+  setFullBleed: (value: boolean) => void;
 }
 
 /** remochi.GridList */
@@ -214,6 +217,9 @@ export interface Remochi_GridListImageItem extends ControlMembers {
 
 /** remochi.Header */
 export interface Remochi_Header extends ControlMembers {
+  size: "header" | "display";
+  getSize: () => ("header" | "display");
+  setSize: (value: "header" | "display") => void;
   customClasses: string;
   getCustomClasses: () => string;
   setCustomClasses: (value: string) => void;
@@ -272,6 +278,13 @@ export interface Remochi_Item extends ControlMembers {
   getVariant: () => ("default" | "compact" | "detailed");
   setVariant: (value: "default" | "compact" | "detailed") => void;
   doIconTap: (event?: ComponentEvent) => boolean;
+}
+
+/** remochi.Label */
+export interface Remochi_Label extends ControlMembers {
+  level: number;
+  getLevel: () => number;
+  setLevel: (value: number) => void;
 }
 
 /** remochi.List */
@@ -423,6 +436,15 @@ export interface Remochi_Repanel extends ControlMembers {
   handle: boolean;
   getHandle: () => boolean;
   setHandle: (value: boolean) => void;
+  hint: string;
+  getHint: () => string;
+  setHint: (value: string) => void;
+  sequence: unknown;
+  getSequence: () => unknown;
+  setSequence: (value: unknown) => void;
+  peekLabel: string;
+  getPeekLabel: () => string;
+  setPeekLabel: (value: string) => void;
 }
 
 /** remochi.RepanelStack */
@@ -463,8 +485,19 @@ export interface Remochi_RepanelStack extends ControlMembers {
   narrowBehavior: "single" | "stack" | "overlay";
   getNarrowBehavior: () => ("single" | "stack" | "overlay");
   setNarrowBehavior: (value: "single" | "stack" | "overlay") => void;
+  keepPast: boolean;
+  getKeepPast: () => boolean;
+  setKeepPast: (value: boolean) => void;
+  controls: "auto" | "always" | "never";
+  getControls: () => ("auto" | "always" | "never");
+  setControls: (value: "auto" | "always" | "never") => void;
+  upcoming: string;
+  getUpcoming: () => string;
+  setUpcoming: (value: string) => void;
   doActiveIndexChange: (event?: ComponentEvent) => boolean;
   doRevealChange: (event?: ComponentEvent) => boolean;
+  doControlsAction: (event?: ComponentEvent) => boolean;
+  doUpcomingOpen: (event?: ComponentEvent) => boolean;
   next: (...args: any[]) => any;
   previous: (...args: any[]) => any;
 }
@@ -677,6 +710,18 @@ export interface Remochi_ThemeWrapper extends ControlMembers {
   fontFamily: string;
   getFontFamily: () => string;
   setFontFamily: (value: string) => void;
+  motion: "system" | "full" | "reduced" | "off";
+  getMotion: () => ("system" | "full" | "reduced" | "off");
+  setMotion: (value: "system" | "full" | "reduced" | "off") => void;
+  contrast: "system" | "standard" | "more";
+  getContrast: () => ("system" | "standard" | "more");
+  setContrast: (value: "system" | "standard" | "more") => void;
+  transparency: "system" | "standard" | "reduced";
+  getTransparency: () => ("system" | "standard" | "reduced");
+  setTransparency: (value: "system" | "standard" | "reduced") => void;
+  ground: "plain" | "vignette";
+  getGround: () => ("plain" | "vignette");
+  setGround: (value: "plain" | "vignette") => void;
   tokens: Record<string, unknown>;
   getTokens: () => Record<string, unknown>;
   setTokens: (value: Record<string, unknown>) => void;
@@ -821,6 +866,7 @@ declare module '@duyo/core' {
     "remochi.Header": Remochi_Header;
     "remochi.Input": Remochi_Input;
     "remochi.Item": Remochi_Item;
+    "remochi.Label": Remochi_Label;
     "remochi.List": Remochi_List;
     "remochi.ListHeader": Remochi_ListHeader;
     "remochi.ListItem": Remochi_ListItem;

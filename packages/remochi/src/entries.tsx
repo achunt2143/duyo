@@ -27,9 +27,50 @@ type Props = Record<string, unknown>;
 const label = (node: Component, ctx: AdaptContext) =>
   node.get('content') !== '' ? node.get('content') : ctx.childNodes.length > 0 ? ctx.children : undefined;
 
-/** Panels rendered by `RepanelStack`, omitting hidden ones (`showing: false`). */
-const visiblePanels = (panels: readonly Component[]): readonly Component[] =>
-  panels.filter((panel) => panel.get('showing') !== false);
+/** The panel a stack's `upcoming` names: a child `Repanel` kept out of the stack until it is opened. */
+const upcomingPanel = (stack: Component, panels: readonly Component[]): Component | undefined => {
+  const name = stack.get('upcoming');
+  return typeof name === 'string' && name !== '' ? panels.find((panel) => panel.name === name) : undefined;
+};
+
+/** A real `Repanel` for a panel component: the stack inspects and decorates its children. */
+const repanelElement = (panel: Component, ctx: AdaptContext) => (
+  <R.Repanel
+    key={panel.id}
+    data-duyo-id={panel.id}
+    {...repanelProps(panel)}
+    className={String(panel.get('classes') ?? '') || undefined}
+  >
+    {ctx.renderChildren(panel)}
+  </R.Repanel>
+);
+
+/** The stack's `upcoming` element, or null when no panel is named. */
+const upcomingElement = (stack: Component, ctx: AdaptContext) => {
+  const panel = upcomingPanel(stack, ctx.childNodes);
+  return panel ? repanelElement(panel, ctx) : null;
+};
+
+/** Panels rendered by `RepanelStack`, omitting hidden ones (`showing: false`) and the `upcoming` one. */
+const visiblePanels = (panels: readonly Component[], stack?: Component): readonly Component[] => {
+  const upcoming = stack ? upcomingPanel(stack, panels) : undefined;
+  return panels.filter((panel) => panel.get('showing') !== false && panel !== upcoming);
+};
+
+/** The peek's name for a panel: its `peekLabel`, else its first `Header`'s content (Remochi cannot see through Duyo's wrappers). */
+const peekName = (panel: Component): string | undefined => {
+  const header = panel.children.find((child) => child.kind === 'remochi.Header');
+  return String(panel.get('peekLabel') || (header ? header.get('content') : '') || '') || undefined;
+};
+
+/** The `Repanel` props a panel's published properties map to (not `handle`: a stack decides that itself). */
+const repanelProps = (panel: Component): Props => ({
+  width: panel.get('width'),
+  style: panel.get('look'),
+  hint: panel.get('hint') || undefined,
+  sequence: panel.get('sequence'),
+  peekLabel: peekName(panel),
+});
 
 /**
  * Closes an overlay locally (delivering `onClose` on the overlay itself without bubbling
@@ -119,9 +160,10 @@ export const buttons: PackEntry[] = [
         ...item,
         active: index === node.selected,
       })),
-      onSelect: (item: { value?: unknown }, index: number) => {
+      // `direction` is 'forward', 'back' or null (the same segment), so content can enter from that side.
+      onSelect: (item: { value?: unknown }, index: number, detail?: { direction: string | null; from: number; to: number }) => {
         node.setSelected(index);
-        node.doSelect({ index, item, value: item.value });
+        node.doSelect({ index, item, value: item.value, direction: detail?.direction ?? null, from: detail?.from, to: detail?.to });
       },
     }),
   }),
@@ -424,11 +466,19 @@ export const display: PackEntry[] = [
   adapt({
     name: 'remochi.Header',
     component: R.Header,
-    published: { customClasses: '' },
+    published: { size: { default: 'header', allowed: ['header', 'display'] }, customClasses: '' },
     props: (node): Props => ({
       content: node.content,
+      size: node.size,
       customClasses: node.customClasses || undefined,
     }),
+  }),
+
+  adapt({
+    name: 'remochi.Label',
+    component: R.Label,
+    published: { level: 3 },
+    props: (node, ctx): Props => ({ content: node.content !== '' ? node.content : undefined, level: node.level, children: label(node, ctx) }),
   }),
 
   adapt({
@@ -607,17 +657,25 @@ export const panels: PackEntry[] = [
   adapt({
     name: 'remochi.Repanel',
     component: R.Repanel,
-    published: { width: 100, look: { default: 'default', allowed: LOOKS }, handle: false },
+    published: {
+      width: 100,
+      look: { default: 'default', allowed: LOOKS },
+      handle: false,
+      // What a `RepanelStack` shows while this panel is its `upcoming` peek.
+      hint: '',
+      sequence: undefined,
+      peekLabel: '',
+    },
     // Remochi's `style` is the variant, so Duyo's style goes on a wrapper.
     hostStyle: { height: '100%' },
-    props: (node, ctx): Props => ({ width: node.width, style: node.look, handle: node.handle, children: label(node, ctx) }),
+    props: (node, ctx): Props => ({ ...repanelProps(node), handle: node.handle, children: label(node, ctx) }),
   }),
 
   adapt({
     name: 'remochi.FloatingPanel',
     component: R.FloatingPanel,
-    published: { look: { default: 'default', allowed: LOOKS } },
-    props: (node, ctx): Props => ({ style: node.look, children: label(node, ctx) }),
+    published: { look: { default: 'default', allowed: LOOKS }, fullBleed: false },
+    props: (node, ctx): Props => ({ style: node.look, fullBleed: node.fullBleed, children: label(node, ctx) }),
   }),
 
   adapt({
@@ -636,18 +694,22 @@ export const panels: PackEntry[] = [
       narrowFit: true,
       narrowFitWidth: 768,
       narrowBehavior: { default: 'single', allowed: ['single', 'stack', 'overlay'] },
+      keepPast: true,
+      controls: { default: 'auto', allowed: ['auto', 'always', 'never'] },
+      // The name of a child `Repanel` that waits as a peek at the right edge; opening it adds it to the stack.
+      upcoming: '',
     },
-    events: { onActiveIndexChange: '', onRevealChange: '' },
+    events: { onActiveIndexChange: '', onRevealChange: '', onControlsAction: '', onUpcomingOpen: '' },
     hostStyle: { height: '100%' },
     members: {
       /** Moves the front panel forward one, as Enyo's Panels `next()`. */
       next() {
-        const last = visiblePanels(this.children).length - 1;
+        const last = visiblePanels(this.children, this).length - 1;
         if (last < 0) return;
         this.setActiveIndex(Math.min((this.activeIndex ?? last) + 1, last));
       },
       previous() {
-        const last = visiblePanels(this.children).length - 1;
+        const last = visiblePanels(this.children, this).length - 1;
         if (last < 0) return;
         this.setActiveIndex(Math.min(Math.max((this.activeIndex ?? last) - 1, 0), last));
       },
@@ -665,6 +727,20 @@ export const panels: PackEntry[] = [
       narrowFit: node.narrowFit,
       narrowFitWidth: node.narrowFitWidth,
       narrowBehavior: node.narrowBehavior,
+      keepPast: node.keepPast,
+      controls: node.controls,
+      onControlsAction: (action: string) => node.doControlsAction({ action }),
+      // Remochi takes the peek as one keyed `Repanel` element, so it is built from the named child.
+      upcoming: upcomingElement(node, ctx),
+      onUpcomingOpen: ({ upcoming: _element, ...detail }: { upcoming: unknown }) => {
+        const opened = upcomingPanel(node, ctx.childNodes);
+        if (!opened) return;
+        // The panel joins the stack and the peek is spent; a handler can name the next one.
+        opened.set('showing', true);
+        node.set('upcoming', '');
+        node.setActiveIndex(visiblePanels(ctx.childNodes, node).length - 1);
+        node.doUpcomingOpen({ upcoming: opened.name, ...detail });
+      },
       onActiveIndexChange: (index: number, detail: object) => {
         node.setActiveIndex(index);
         node.doActiveIndexChange({ index, ...detail });
@@ -675,17 +751,7 @@ export const panels: PackEntry[] = [
       },
       // The stack inspects its children and decorates `Repanel`s, so it must receive
       // real `Repanel` elements rather than Duyo's per-component wrappers.
-      children: visiblePanels(ctx.childNodes).map((panel) => (
-        <R.Repanel
-          key={panel.id}
-          data-duyo-id={panel.id}
-          width={panel.get('width') as number | undefined}
-          style={panel.get('look') as 'default' | 'shadow'}
-          className={String(panel.get('classes') ?? '') || undefined}
-        >
-          {ctx.renderChildren(panel)}
-        </R.Repanel>
-      )),
+      children: visiblePanels(ctx.childNodes, node).map((panel) => repanelElement(panel, ctx)),
     }),
   }),
 
@@ -992,6 +1058,10 @@ export const theme: PackEntry[] = [
       storageKey: null,
       syncHtml: undefined,
       fontFamily: 'Prelude',
+      motion: { default: 'system', allowed: ['system', 'full', 'reduced', 'off'] },
+      contrast: { default: 'system', allowed: ['system', 'standard', 'more'] },
+      transparency: { default: 'system', allowed: ['system', 'standard', 'reduced'] },
+      ground: { default: 'plain', allowed: ['plain', 'vignette'] },
       tokens: {},
       /** Read-only: what `theme` resolved to. */
       resolvedTheme: undefined,
@@ -1009,6 +1079,10 @@ export const theme: PackEntry[] = [
       storageKey: node.storageKey,
       syncHtml: node.syncHtml,
       fontFamily: node.fontFamily,
+      motion: node.motion,
+      contrast: node.contrast,
+      transparency: node.transparency,
+      ground: node.ground,
       tokens: node.tokens,
       onThemeChange: (value: string, resolved: string) => {
         node.setTheme(value);

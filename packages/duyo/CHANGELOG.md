@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.2.0 — 2026-11-24
+
+- Version bump for Duyo `1.2.0` (`remochi@^0.6.0`).
+
 ## 1.1.3 — 2026-11-15
 
 Patch release of `@duyojs/duyo` updating the `remochi` optional peer dependency to `^0.5.1` and exposing `remochi.Dialog.tone` (`'normal' | 'warning' | 'error'`) in `@duyojs/duyo/remochi` with regenerated `kinds.gen.ts` types. See the repository [CHANGELOG.md](https://github.com/achunt2143/duyo/blob/main/CHANGELOG.md) for full details.
