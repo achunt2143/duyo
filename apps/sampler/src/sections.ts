@@ -21,9 +21,9 @@ export interface SectionInfo {
 export const SECTIONS: SectionInfo[] = [
   { key: 'buttons', title: 'Buttons', subtitle: 'Button, ViewSelectButton, Toggle, Checkbox, Radio', kind: 'Sampler.Buttons' },
   { key: 'fields', title: 'Fields', subtitle: 'Input, TextArea, RichText, Dropdown, NumberInput, Slider, DateInput', kind: 'Sampler.Fields' },
-  { key: 'display', title: 'Display', subtitle: 'ProgressBar, Spinner, Badge, Header, Subheader, Divider, NubbinDivider', kind: 'Sampler.Display' },
+  { key: 'display', title: 'Display', subtitle: 'ProgressBar, Spinner, Badge, Avatar, Header, Subheader, Divider, NubbinDivider', kind: 'Sampler.Display' },
   { key: 'lists', title: 'Lists and data', subtitle: 'List, Item, ListItem, GridList, Table, Pagination', kind: 'Sampler.Lists' },
-  { key: 'panels', title: 'Panels', subtitle: 'RepanelStack, Repanel, FloatingPanel (and fullBleed), Collapsable', kind: 'Sampler.Panels' },
+  { key: 'panels', title: 'Panels', subtitle: 'RepanelStack, Repanel, FloatingPanel (shape and fullBleed), Collapsable', kind: 'Sampler.Panels' },
   { key: 'peeks', title: 'Type and peeks', subtitle: 'Label, Header size, RepanelStack keepPast and upcoming, Repanel hint and doors', kind: 'Sampler.Peeks' },
   { key: 'overlays', title: 'Menus and overlays', subtitle: 'SlidingMenu, Dialog, PopupPanel', kind: 'Sampler.Overlays' },
   { key: 'flow', title: 'Media and flow', subtitle: 'Video, Wizard', kind: 'Sampler.Flow' },
@@ -136,6 +136,19 @@ kind({
       { kind: 'remochi.Badge', content: 'Error', variant: 'error' },
       { kind: 'remochi.Badge', content: 'Info', variant: 'info' },
       { kind: 'remochi.Badge', content: 'Inbox', count: 7 },
+    ]),
+    caption('Avatar: sizes, an image, initials, and a broken image'),
+    row([
+      { kind: 'remochi.Avatar', size: 'sm', content: 'Ada Lovelace' },
+      { kind: 'remochi.Avatar', size: 'md', content: 'Ada Lovelace' },
+      { kind: 'remochi.Avatar', size: 'lg', content: 'Ada Lovelace' },
+      { kind: 'remochi.Avatar', size: 'xl', content: 'Ada Lovelace' },
+    ]),
+    row([
+      { kind: 'remochi.Avatar', size: 'lg', src: swatch('#357099', 'Ada'), alt: 'Ada Lovelace' },
+      { kind: 'remochi.Avatar', size: 'lg', content: 'Grace Hopper' },
+      { kind: 'remochi.Avatar', size: 'lg', src: 'data:image/png;base64,AAAA', content: 'Alan Turing' },
+      { kind: 'remochi.Avatar', size: 'lg', components: [{ tag: 'span', content: '?' }] },
     ]),
     caption('Header and Subheader'),
     { kind: 'remochi.Header', content: 'A Header' },
@@ -255,13 +268,19 @@ kind({
         ],
       })),
     },
-    caption('FloatingPanel: the waterdrop, and fullBleed'),
+    caption('FloatingPanel: round, shape drop, and fullBleed'),
     row([
       {
         kind: 'remochi.FloatingPanel',
         look: 'shadow',
         style: 'width: 280px;',
-        components: [{ style: 'padding: 16px;', content: 'A floating panel with the shadow look and the waterdrop corner.' }],
+        components: [{ style: 'padding: 16px;', content: 'A floating panel with the shadow look and the default round corner.' }],
+      },
+      {
+        kind: 'remochi.FloatingPanel',
+        shape: 'drop',
+        style: 'width: 280px;',
+        components: [{ style: 'padding: 16px;', content: 'shape drop: the waterdrop accent corner.' }],
       },
       {
         kind: 'remochi.FloatingPanel',

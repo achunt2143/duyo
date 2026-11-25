@@ -5,7 +5,7 @@
 Part of Duyo 1.2.0, published as `@duyojs/duyo` (`@duyojs/duyo/remochi`; see the repository CHANGELOG).
 
 - Bumped `remochi` requirement to `^0.6.0`.
-- New kind `remochi.Label`; new properties `Header.size`, `FloatingPanel.fullBleed`, `ThemeWrapper.motion` / `contrast` / `transparency` / `ground`, `RepanelStack.keepPast` / `upcoming` and event `onUpcomingOpen`, `Repanel.hint` / `sequence` / `peekLabel`; `ViewSelectButton`'s `onSelect` event carries `direction`, `from` and `to`. `RepanelStack.upcoming` names a child `Repanel` to wait as a peek. A peek or left sliver is a door and shows only the panel's first `Header` (passed to Remochi as a direct child). `NubbinDivider.nubbinOffset` is honoured.
+- New kinds `remochi.Label` and `remochi.Avatar` (`src`, `alt`, `size` of `'sm' | 'md' | 'lg' | 'xl'`; the initials and accessible name are `content`, since `name` is the component's own identity; children are the `icon`, drawn when there is no image and no `content`; a failed image falls back to the initials); new properties `Header.size`, `FloatingPanel.shape` (`'round' | 'drop'`; the waterdrop is an accent in remochi 0.6.0) and `FloatingPanel.fullBleed`, `ThemeWrapper.motion` / `contrast` / `transparency` / `ground`, `RepanelStack.keepPast` / `upcoming` and event `onUpcomingOpen`, `Repanel.hint` / `sequence` / `peekLabel`; `ViewSelectButton`'s `onSelect` event carries `direction`, `from` and `to`. `RepanelStack.upcoming` names a child `Repanel` to wait as a peek. A peek or left sliver is a door and shows only the panel's first `Header` (passed to Remochi as a direct child). `NubbinDivider.nubbinOffset` is honoured.
 - Re-exported `useWidthClass`, `SCREEN_NARROW`, `SCREEN_WIDE` and `waterdropRadius`; regenerated `kinds.gen.ts`.
 
 ## 1.1.3 — 2026-11-15

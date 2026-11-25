@@ -17,6 +17,7 @@ HTMLCanvasElement.prototype.getContext = (() => ({
   moveTo() {},
   lineTo() {},
   arc() {},
+  arcTo() {},
   fill() {},
   stroke() {},
   save() {},

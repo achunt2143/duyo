@@ -21,6 +21,8 @@ describe('mochi kind types', () => {
       const size: 'header' | 'display' = ({} as Instance<'remochi.Header'>).size;
       const keepPast: boolean = ({} as Instance<'remochi.RepanelStack'>).keepPast;
       const ground: 'plain' | 'vignette' = ({} as Instance<'remochi.ThemeWrapper'>).ground;
+      const avatarSize: 'sm' | 'md' | 'lg' | 'xl' = ({} as Instance<'remochi.Avatar'>).size;
+      const shape: 'round' | 'drop' = ({} as Instance<'remochi.FloatingPanel'>).shape;
       // @ts-expect-error a toggle's value is a boolean
       toggle.setValue('yes');
       // @ts-expect-error a button's variant is a closed set
@@ -29,12 +31,16 @@ describe('mochi kind types', () => {
       ({} as Instance<'remochi.Dialog'>).setTone('urgent');
       // @ts-expect-error a header's size is a closed set
       ({} as Instance<'remochi.Header'>).setSize('huge');
+      // @ts-expect-error an avatar's size is a closed set
+      ({} as Instance<'remochi.Avatar'>).setSize('huge');
+      // @ts-expect-error a floating panel's shape is a closed set
+      ({} as Instance<'remochi.FloatingPanel'>).setShape('square');
       // @ts-expect-error a stack's upcoming is the name of a panel
       ({} as Instance<'remochi.RepanelStack'>).setUpcoming(3);
       ({} as Instance<'remochi.Label'>).setContent('Section');
       // Inherited from duyo.Control
       toggle.setContent('Wi-Fi');
-      return [value, variant, tone, size, keepPast, ground];
+      return [value, variant, tone, size, keepPast, ground, avatarSize, shape];
     };
     expect(typed).toBeTypeOf('function');
   });

@@ -489,6 +489,38 @@ describe('theming and layout', () => {
     expect(container.querySelector('[class*="full-bleed"], [data-full-bleed]')).toBeNull();
   });
 
+  it('FloatingPanel forwards shape', () => {
+    const { root, container } = mount({ kind: 'remochi.FloatingPanel', components: [{ content: 'Body' }] });
+    expect(container.querySelector('.mochi-floating-panel--drop')).toBeNull();
+    act(() => root.setShape('drop'));
+    expect(container.querySelector('.mochi-floating-panel--drop')).toBeTruthy();
+  });
+
+  it('Avatar shows initials from content, with the waterdrop scaled to its size', () => {
+    const { root } = mount({ kind: 'remochi.Avatar', content: 'Ada Lovelace', size: 'lg' });
+    const avatar = screen.getByRole('img', { name: 'Ada Lovelace' });
+    expect(avatar.textContent).toBe('AL');
+    expect(avatar.style.width).toBe('56px');
+    expect(avatar.style.borderRadius).toBe('16px 4px 16px 16px');
+    act(() => root.setSize('sm'));
+    expect(avatar.style.width).toBe('24px');
+    expect(avatar.style.borderRadius).not.toBe('16px 4px 16px 16px');
+  });
+
+  it('Avatar draws an image with its alt, and falls back to the initials when it fails', () => {
+    const { container } = mount({ kind: 'remochi.Avatar', src: 'data:image/png;base64,AAAA', alt: 'Ada', content: 'Ada Lovelace' });
+    const image = container.querySelector('img')!;
+    expect(image.getAttribute('alt')).toBe('Ada');
+    fireEvent.error(image);
+    expect(container.querySelector('img')).toBeNull();
+    expect(screen.getByRole('img', { name: 'Ada' }).textContent).toBe('AL');
+  });
+
+  it('Avatar draws its children as the icon when there is no image and no content', () => {
+    const { container } = mount({ kind: 'remochi.Avatar', components: [{ tag: 'span', content: '?' }] });
+    expect(container.querySelector('.mochi-avatar')!.textContent).toBe('?');
+  });
+
   it('mounts Remochi ThemeWrapper from the pack, with options', () => {
     const light = createRemochiPack({
       theme: {

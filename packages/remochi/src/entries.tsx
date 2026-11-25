@@ -483,6 +483,22 @@ export const display: PackEntry[] = [
   }),
 
   adapt({
+    name: 'remochi.Avatar',
+    component: R.Avatar,
+    // Remochi's `name` is the Duyo component's own identity, so the initials and accessible name are the
+    // `content`; an `icon` is a Duyo child, drawn when there is no image and no `content`.
+    published: { src: '', alt: '', size: { default: 'md', allowed: ['sm', 'md', 'lg', 'xl'] } },
+    hostStyle: { display: 'inline-block' },
+    props: (node, ctx): Props => ({
+      src: node.src || undefined,
+      alt: node.alt || undefined,
+      name: node.content !== '' ? node.content : undefined,
+      icon: ctx.childNodes.length > 0 ? ctx.children : undefined,
+      size: node.size,
+    }),
+  }),
+
+  adapt({
     name: 'remochi.Header',
     component: R.Header,
     published: { size: { default: 'header', allowed: ['header', 'display'] }, customClasses: '' },
@@ -689,8 +705,8 @@ export const panels: PackEntry[] = [
   adapt({
     name: 'remochi.FloatingPanel',
     component: R.FloatingPanel,
-    published: { look: { default: 'default', allowed: LOOKS }, fullBleed: false },
-    props: (node, ctx): Props => ({ style: node.look, fullBleed: node.fullBleed, children: label(node, ctx) }),
+    published: { look: { default: 'default', allowed: LOOKS }, shape: { default: 'round', allowed: ['round', 'drop'] }, fullBleed: false },
+    props: (node, ctx): Props => ({ style: node.look, shape: node.shape, fullBleed: node.fullBleed, children: label(node, ctx) }),
   }),
 
   adapt({

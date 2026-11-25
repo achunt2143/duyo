@@ -51,7 +51,7 @@ component the pack does not cover.
 | --- | --- |
 | Buttons | `Button`, `ViewSelectButton`, `Toggle`, `Checkbox`, `Radio` |
 | Fields | `Input`, `TextArea`, `RichText`, `Dropdown`, `NumberInput`, `Slider`, `DateInput` |
-| Display | `ProgressBar`, `Spinner`, `Badge`, `Header`, `Label`, `Subheader`, `Divider`, `NubbinDivider` |
+| Display | `ProgressBar`, `Spinner`, `Badge`, `Avatar`, `Header`, `Label`, `Subheader`, `Divider`, `NubbinDivider` |
 | Lists and data | `Item`, `List`, `ListHeader`, `ListItem`, `GridList`, `GridListImageItem`, `Table`, `Pagination` |
 | Panels | `Repanel`, `FloatingPanel`, `RepanelStack`, `Collapsable`, `CollapsableHeader`, `CollapsableItem`, `CollapsableFooter` |
 | Sliding menu | `SlidingMenu`, `SlidingMenuContentShifter`, `SlidingMenuItem`, `SlidingMenuItemGroup` |
@@ -81,7 +81,8 @@ control writes back to: `value`, `checked`, `selected`, `expanded`, `open`, `act
 
 Additional Remochi customization props exposed on kinds: `Button.appearance` (`'caps' | 'drop'`),
 `Header.customClasses`, `Header.size` (`'header' | 'display'`), `Wizard.step`, `Dialog.tone`
-(`'normal' | 'warning' | 'error'`), `FloatingPanel.fullBleed`, and `ThemeWrapper.tokens`
+(`'normal' | 'warning' | 'error'`), `FloatingPanel.shape` (`'round' | 'drop'`), `FloatingPanel.fullBleed`, `Avatar.size`
+(`'sm' | 'md' | 'lg' | 'xl'`; its initials come from `content`, its icon from children), and `ThemeWrapper.tokens`
 (`Record<string, string | number>` for `--mochi-*` custom property overrides). `ThemeWrapper` also
 takes `motion` (`'system' | 'full' | 'reduced' | 'off'`), `contrast` (`'system' | 'standard' | 'more'`),
 `transparency` (`'system' | 'standard' | 'reduced'`) and `ground` (`'plain' | 'vignette'`).

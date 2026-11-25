@@ -7,13 +7,13 @@ All notable changes to Duyo. Versions follow [Semantic Versioning](https://semve
 ### Remochi pack (`@duyo/remochi`, `@duyojs/duyo/remochi`)
 
 - **Remochi 0.6.0 alignment (`remochi: ^0.6.0`):** Updated `remochi` peer/dev requirements on `@duyojs/duyo` (`@duyojs/duyo/remochi`) and `@duyo/remochi` to `^0.6.0`.
-- **New kind:** `remochi.Label`.
-- **New properties and events:** `Header.size` (`'header' | 'display'`), `FloatingPanel.fullBleed`, `ThemeWrapper.motion` / `contrast` / `transparency` / `ground`, `RepanelStack.keepPast` / `upcoming` with `onUpcomingOpen`, `Repanel.hint` / `sequence` / `peekLabel`, and `direction`, `from` and `to` on `ViewSelectButton`'s `onSelect`. `RepanelStack.upcoming` is the name of a child `Repanel` that waits as a peek until it is opened, then joins the stack. While a panel is a peek or the left sliver it is a door and shows only its first `remochi.Header` (and the hint), so give such panels a Header.
+- **New kinds:** `remochi.Label` and `remochi.Avatar` (a picture in the waterdrop shape: `src`, `alt`, `size` `'sm' | 'md' | 'lg' | 'xl'`, `content` for the initials and accessible name, children as the icon; a failed image falls back to the initials).
+- **New properties and events:** `Header.size` (`'header' | 'display'`), `FloatingPanel.shape` (`'round' | 'drop'`; the waterdrop is an accent, not the corner of every floating surface) and `FloatingPanel.fullBleed`, `ThemeWrapper.motion` / `contrast` / `transparency` / `ground`, `RepanelStack.keepPast` / `upcoming` with `onUpcomingOpen`, `Repanel.hint` / `sequence` / `peekLabel`, and `direction`, `from` and `to` on `ViewSelectButton`'s `onSelect`. `RepanelStack.upcoming` is the name of a child `Repanel` that waits as a peek until it is opened, then joins the stack. While a panel is a peek or the left sliver it is a door and shows only its first `remochi.Header` (and the hint), so give such panels a Header.
 - Re-exported `useWidthClass`, `SCREEN_NARROW`, `SCREEN_WIDE` and `waterdropRadius`, and regenerated `kinds.gen.ts`.
 
 ### Sampler (`duyo-sampler`)
 
-- Shows what is new in remochi 0.6.0: a Type and peeks section (`Label`, `Header` `size="display"`, a `RepanelStack` with `keepPast` and an `upcoming` peek), `FloatingPanel` `fullBleed`, `ViewSelectButton` direction, and shell toggles for motion, contrast, transparency and ground. Dropped the `body` font workaround, since 0.6.0 portaled surfaces use the Mochi font.
+- Shows what is new in remochi 0.6.0: a Type and peeks section (`Label`, `Header` `size="display"`, a `RepanelStack` with `keepPast` and an `upcoming` peek), `Avatar` (sizes, an image, initials and a broken image), `FloatingPanel` `shape="drop"` beside the round one and `fullBleed`, `ViewSelectButton` direction, and shell toggles for motion, contrast, transparency and ground. Dropped the `body` font workaround, since 0.6.0 portaled surfaces use the Mochi font.
 
 ## 1.1.3 — 2026-11-15
 
