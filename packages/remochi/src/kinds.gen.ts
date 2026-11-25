@@ -570,6 +570,15 @@ export interface Remochi_SlidingMenu extends ControlMembers {
   position: "left" | "right" | "top" | "bottom";
   getPosition: () => ("left" | "right" | "top" | "bottom");
   setPosition: (value: "left" | "right" | "top" | "bottom") => void;
+  title: unknown;
+  getTitle: () => unknown;
+  setTitle: (value: unknown) => void;
+  subtitle: unknown;
+  getSubtitle: () => unknown;
+  setSubtitle: (value: unknown) => void;
+  showCloseButton: boolean;
+  getShowCloseButton: () => boolean;
+  setShowCloseButton: (value: boolean) => void;
   duration: number;
   getDuration: () => number;
   setDuration: (value: number) => void;

@@ -116,7 +116,9 @@ plain data:
 - `Wizard`: its children are `remochi.WizardStep`s, whose own children are the step content. A
   step's `onNext` handler that returns `true` holds the wizard on that step.
 - `SlidingMenuContentShifter`: `menu: 'nav'` names the `remochi.SlidingMenu` it moves aside
-  for, and follows its open state, position and timing. `SlidingMenu` has `toggle()`.
+  for, and follows its open state, position and timing. `SlidingMenu` has `toggle()`, and takes
+  `title`, `subtitle` and `showCloseButton`; it is a modal sheet that closes on Escape, with
+  Escape closing only the topmost overlay.
 - `PopupPanel`: `anchor: 'moreButton'` names the component it points at.
 - `Dialog` / `PopupPanel` `actions` are `{ label, action?, type? }` and raise `onAction`.
 - `Table` takes plain `columns` and `rows` (or `data`).

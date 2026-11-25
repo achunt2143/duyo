@@ -399,10 +399,18 @@ kind({
   kind: 'Sampler.Section',
   components: [
     caption('SlidingMenu and its content shifter'),
-    row([{ kind: 'remochi.Button', content: 'Open the menu', ontap: 'toggleMenu' }]),
+    row([
+      { kind: 'remochi.Button', content: 'Open the menu', ontap: 'toggleMenu' },
+      { kind: 'remochi.Button', content: 'From the left', ontap: 'menuLeft' },
+      { kind: 'remochi.Button', content: 'Bottom sheet', ontap: 'menuBottom' },
+      { kind: 'remochi.Button', content: 'Dialog with a dropdown', ontap: 'openPicker' },
+    ]),
     {
       kind: 'remochi.SlidingMenu',
       name: 'nav',
+      title: 'Mailbox',
+      subtitle: 'ann@example.com',
+      showCloseButton: true,
       onOpenChange: 'menuChanged',
       components: [
         {
@@ -412,6 +420,8 @@ kind({
           components: [
             { kind: 'remochi.SlidingMenuItem', name: 'home', content: 'Home', icon: '🏠', active: true, ontap: 'went' },
             { kind: 'remochi.SlidingMenuItem', name: 'mail', content: 'Mail', icon: '✉️', badge: 3, ontap: 'went' },
+            { kind: 'remochi.SlidingMenuItem', name: 'drafts', content: 'Drafts', icon: '📝', ontap: 'went' },
+            { kind: 'remochi.SlidingMenuItem', name: 'archive', content: 'Archive (offline)', icon: '🗄️', disabled: true, ontap: 'went' },
           ],
         },
         {
@@ -448,6 +458,26 @@ kind({
       onCancel: 'cancelled',
       components: [{ content: 'This cannot be undone.' }],
     },
+    {
+      kind: 'remochi.Dialog',
+      name: 'picker',
+      title: 'Pick a folder',
+      showCloseButton: true,
+      components: [
+        {
+          kind: 'remochi.Dropdown',
+          label: 'Folder',
+          options: [
+            { label: 'Inbox', value: 'inbox' },
+            { label: 'Drafts', value: 'drafts' },
+            { divider: true },
+            { sectionLabel: 'Elsewhere' },
+            { label: 'Archive', value: 'archive', disabled: true },
+            { label: 'Trash', value: 'trash' },
+          ],
+        },
+      ],
+    },
     { kind: 'remochi.Dialog', name: 'prompt', title: 'Rename', dialogType: 'prompt', onConfirm: 'confirmed', onCancel: 'cancelled' },
     { kind: 'remochi.Dialog', name: 'alert', title: 'Heads up', dialogType: 'alert', onConfirm: 'confirmed', components: [{ content: 'Something happened.' }] },
     {
@@ -480,11 +510,23 @@ kind({
   toggleMenu() {
     this.$.nav!.toggle();
   },
+  menuLeft() {
+    this.$.nav!.setPosition('left');
+    this.$.nav!.setOpen(true);
+  },
+  menuBottom() {
+    this.$.nav!.setPosition('bottom');
+    this.$.nav!.setOpen(true);
+  },
+  openPicker() {
+    this.$.picker!.setOpen(true);
+  },
   menuChanged(_sender: Component, event: ComponentEvent) {
     this.log(`onOpenChange: ${value(event)}`);
   },
   went(sender: Component) {
     this.log(`ontap: ${sender.name}`);
+    for (const name of ['home', 'mail', 'drafts']) this.$[name]!.setActive(name === sender.name);
     this.$.nav!.setOpen(false);
   },
   openConfirm() {

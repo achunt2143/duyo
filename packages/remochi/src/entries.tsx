@@ -822,6 +822,9 @@ export const menus: PackEntry[] = [
     published: {
       open: false,
       position: { default: 'left', allowed: EDGES },
+      title: undefined,
+      subtitle: undefined,
+      showCloseButton: false,
       duration: 300,
       closeOnEscape: true,
       closeOnBackdropClick: true,
@@ -838,6 +841,9 @@ export const menus: PackEntry[] = [
     props: (node): Props => ({
       isOpen: node.open,
       position: node.position,
+      title: node.title,
+      subtitle: node.subtitle,
+      showCloseButton: node.showCloseButton,
       duration: node.duration,
       closeOnEscape: node.closeOnEscape,
       closeOnBackdropClick: node.closeOnBackdropClick,

@@ -124,7 +124,7 @@ describe('sliding menu', () => {
 
   it('opens and closes from code, and the content shifter follows the menu it names', () => {
     const { root, container } = screenWith(menu(), { opened: vi.fn(), go: vi.fn() });
-    const nav = () => container.ownerDocument.querySelector<HTMLElement>('[role="navigation"]')!;
+    const nav = () => container.ownerDocument.querySelector<HTMLElement>('.mochi-sliding-menu')!;
     const shifter = () => screen.getByText('Main content').parentElement!;
     const closedShifter = shifter().getAttribute('style');
     expect(nav().getAttribute('aria-hidden')).toBe('true');
@@ -145,6 +145,21 @@ describe('sliding menu', () => {
     fireEvent.click(screen.getByText('Mail'));
     expect(go).toHaveBeenCalledTimes(1);
     expect(go.mock.calls[0]![0]).toBe(root.$.mail);
+  });
+
+  it('publishes title, subtitle and showCloseButton, and the close button closes it', () => {
+    const opened = vi.fn();
+    const { root } = screenWith(menu({ open: true, title: 'Mailbox', subtitle: 'ann@example.com', showCloseButton: true }), { opened, go: vi.fn() });
+    expect(screen.getByText('Mailbox')).toBeTruthy();
+    expect(screen.getByText('ann@example.com')).toBeTruthy();
+    expect(root.$.nav!.title).toBe('Mailbox');
+    expect(root.$.nav!.subtitle).toBe('ann@example.com');
+    expect(root.$.nav!.showCloseButton).toBe(true);
+    act(() => root.$.nav!.setTitle('Inbox'));
+    expect(screen.getByText('Inbox')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: /close/i }));
+    expect(root.$.nav!.open).toBe(false);
+    expect(opened.mock.calls.at(-1)![1]).toMatchObject({ value: false });
   });
 
   it('Escape closes it and reports through onOpenChange', () => {
