@@ -10,10 +10,12 @@ afterEach(cleanup);
 
 /** Remochi exports that are aliases of, or support for, a component already covered. */
 const NOT_KINDS = new Set([
+  'MochiAvatar', // Avatar
   'MochiBadge', // Badge
   'MochiSlidingMenu', 'MochiSlidingMenuContentShifter', 'MochiSlidingMenuItem', 'MochiSlidingMenuItemGroup',
   'MochiStackedPanels', 'StackedMochiPanels', // RepanelStack
   'MochiFloatingPanel', // FloatingPanel
+  'SCREEN_NARROW', 'SCREEN_WIDE', 'useWidthClass', 'waterdropRadius',
   'useTheme', 'ThemeContext', 'DARK_THEME_COLORS', 'LIGHT_THEME_COLORS',
 ]);
 

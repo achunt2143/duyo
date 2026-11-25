@@ -9,7 +9,7 @@ export { remochiEntries, wizardStepKind } from './entries.js';
 /** Types of every mochi kind, and the registration that types `this.$.name` in views. */
 export type * from './kinds.gen.js';
 /** For hand-written bindings that need Remochi's theme. */
-export { useTheme, DARK_THEME_COLORS, LIGHT_THEME_COLORS } from 'remochi';
+export { useTheme, DARK_THEME_COLORS, LIGHT_THEME_COLORS, useWidthClass, SCREEN_NARROW, SCREEN_WIDE, waterdropRadius } from 'remochi';
 
 export interface RemochiPackOptions {
   /**

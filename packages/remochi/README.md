@@ -9,7 +9,7 @@ framework only through public exports, and is optional: nothing in `@duyojs/duyo
 `@duyojs/duyo/layout` or `@duyojs/duyo/react` knows it exists. See [docs/writing-a-pack.md](../../docs/writing-a-pack.md)
 to build one for another library.
 
-Requires `remochi` ^0.5.0, a peer dependency, so your app chooses the version:
+Requires `remochi` ^0.6.0, a peer dependency, so your app chooses the version:
 
 ```bash
 npm install @duyojs/duyo remochi
@@ -44,14 +44,14 @@ renderInto(runtime.create({ kind: 'App.Settings' }), createRenderer(packs), docu
 
 ## Kinds
 
-All 43 Remochi components, plus `remochi.WizardStep`. A test fails if Remochi exports a
+All 44 Remochi components, plus `remochi.WizardStep`. A test fails if Remochi exports a
 component the pack does not cover.
 
 | Group | Kinds |
 | --- | --- |
 | Buttons | `Button`, `ViewSelectButton`, `Toggle`, `Checkbox`, `Radio` |
 | Fields | `Input`, `TextArea`, `RichText`, `Dropdown`, `NumberInput`, `Slider`, `DateInput` |
-| Display | `ProgressBar`, `Spinner`, `Badge`, `Header`, `Subheader`, `Divider`, `NubbinDivider` |
+| Display | `ProgressBar`, `Spinner`, `Badge`, `Avatar`, `Header`, `Label`, `Subheader`, `Divider`, `NubbinDivider` |
 | Lists and data | `Item`, `List`, `ListHeader`, `ListItem`, `GridList`, `GridListImageItem`, `Table`, `Pagination` |
 | Panels | `Repanel`, `FloatingPanel`, `RepanelStack`, `Collapsable`, `CollapsableHeader`, `CollapsableItem`, `CollapsableFooter` |
 | Sliding menu | `SlidingMenu`, `SlidingMenuContentShifter`, `SlidingMenuItem`, `SlidingMenuItemGroup` |
@@ -80,8 +80,17 @@ control writes back to: `value`, `checked`, `selected`, `expanded`, `open`, `act
 `step`, `currentPage`, `theme`. Set it from code and the control follows.
 
 Additional Remochi customization props exposed on kinds: `Button.appearance` (`'caps' | 'drop'`),
-`Header.customClasses`, `Wizard.step`, and `ThemeWrapper.tokens` (`Record<string, string | number>`
-for `--mochi-*` custom property overrides).
+`Header.customClasses`, `Header.size` (`'header' | 'display'`), `Wizard.step`, `Dialog.tone`
+(`'normal' | 'warning' | 'error'`), `FloatingPanel.shape` (`'round' | 'drop'`), `FloatingPanel.fullBleed`, `Avatar.size`
+(`'sm' | 'md' | 'lg' | 'xl'`; its initials come from `content`, its icon from children), and `ThemeWrapper.tokens`
+(`Record<string, string | number>` for `--mochi-*` custom property overrides). `ThemeWrapper` also
+takes `motion` (`'system' | 'full' | 'reduced' | 'off'`), `contrast` (`'system' | 'standard' | 'more'`),
+`transparency` (`'system' | 'standard' | 'reduced'`) and `ground` (`'plain' | 'vignette'`).
+`RepanelStack` takes `keepPast` and `upcoming`, and raises `onUpcomingOpen`; `Repanel` takes
+`hint`, `sequence` (`{ index, label? }`) and `peekLabel`. A panel that is the right peek or the left
+sliver is a door: it shows only its `Header` (and, on the right, the hint), so give a panel a
+`remochi.Header` to label it. `ViewSelectButton`'s `onSelect` event also
+carries `direction` (`'forward' | 'back' | null`), `from` and `to`.
 
 **Renamed so they cannot collide with Duyo:**
 
@@ -99,10 +108,17 @@ for `--mochi-*` custom property overrides).
 plain data:
 
 - `RepanelStack`: its children are `remochi.Repanel`s; `next()` / `previous()` move the front panel.
+  Its `upcoming` is the name of one of those child panels, which waits as a peek at the right
+  edge instead of joining the stack. Opening the peek (tap, drag, `next()` or the ▶ control) shows
+  that panel, makes it the front panel, clears `upcoming` and raises `onUpcomingOpen`, where a
+  handler can name the next one. The peek is named after the panel's `peekLabel`, else its
+  first `remochi.Header`.
 - `Wizard`: its children are `remochi.WizardStep`s, whose own children are the step content. A
   step's `onNext` handler that returns `true` holds the wizard on that step.
 - `SlidingMenuContentShifter`: `menu: 'nav'` names the `remochi.SlidingMenu` it moves aside
-  for, and follows its open state, position and timing. `SlidingMenu` has `toggle()`.
+  for, and follows its open state, position and timing. `SlidingMenu` has `toggle()`, and takes
+  `title`, `subtitle` and `showCloseButton`; it is a modal sheet that closes on Escape, with
+  Escape closing only the topmost overlay.
 - `PopupPanel`: `anchor: 'moreButton'` names the component it points at.
 - `Dialog` / `PopupPanel` `actions` are `{ label, action?, type? }` and raise `onAction`.
 - `Table` takes plain `columns` and `rows` (or `data`).
@@ -115,7 +131,7 @@ are re-exported for hand-written bindings.
 
 ## Remochi notes
 
-Found by building and testing the pack. Checked against remochi 0.5.0; the pack works
+Found by building and testing the pack. Checked against remochi 0.6.0; the pack works
 around the ones that affect it.
 
 - **`remochi.d.ts` note:** `remochi.d.ts` still declares `Dropdown.searchable`, which the source no
@@ -131,10 +147,6 @@ around the ones that affect it.
   `.mochi-richtext-placeholder` inside `.mochi-richtext`, but `RichText.jsx` renders it as a
   sibling before that element, so the rule never matches. It shows as plain text above the
   box. (Found in the sampler, in Edge.)
-- **Portaled components lose the Remochi font.** `ThemeWrapper` puts theme colours on `:root`
-  so portaled components get them, but the font only on the wrapper element. `Dialog`,
-  `PopupPanel` and `Dropdown`'s menu are portaled to `<body>` and fall back to the browser's
-  serif. The sampler works around it with a `body` font rule.
 - `Toggle` is pointer- and keyboard-driven (press and release, Space, Enter, arrows), not
   `click`. `Dialog` stays mounted and hides with `aria-hidden`. `Pagination` buttons are
   named by `aria-label` ("Page 2").

@@ -21,9 +21,10 @@ export interface SectionInfo {
 export const SECTIONS: SectionInfo[] = [
   { key: 'buttons', title: 'Buttons', subtitle: 'Button, ViewSelectButton, Toggle, Checkbox, Radio', kind: 'Sampler.Buttons' },
   { key: 'fields', title: 'Fields', subtitle: 'Input, TextArea, RichText, Dropdown, NumberInput, Slider, DateInput', kind: 'Sampler.Fields' },
-  { key: 'display', title: 'Display', subtitle: 'ProgressBar, Spinner, Badge, Header, Subheader, Divider, NubbinDivider', kind: 'Sampler.Display' },
+  { key: 'display', title: 'Display', subtitle: 'ProgressBar, Spinner, Badge, Avatar, Header, Subheader, Divider, NubbinDivider', kind: 'Sampler.Display' },
   { key: 'lists', title: 'Lists and data', subtitle: 'List, Item, ListItem, GridList, Table, Pagination', kind: 'Sampler.Lists' },
-  { key: 'panels', title: 'Panels', subtitle: 'RepanelStack, Repanel, FloatingPanel, Collapsable', kind: 'Sampler.Panels' },
+  { key: 'panels', title: 'Panels', subtitle: 'RepanelStack, Repanel, FloatingPanel (shape and fullBleed), Collapsable', kind: 'Sampler.Panels' },
+  { key: 'peeks', title: 'Type and peeks', subtitle: 'Label, Header size, RepanelStack keepPast and upcoming, Repanel hint and doors', kind: 'Sampler.Peeks' },
   { key: 'overlays', title: 'Menus and overlays', subtitle: 'SlidingMenu, Dialog, PopupPanel', kind: 'Sampler.Overlays' },
   { key: 'flow', title: 'Media and flow', subtitle: 'Video, Wizard', kind: 'Sampler.Flow' },
   { key: 'onyx', title: 'Onyx controls', subtitle: 'Button, RadioGroup, Checkbox, ToggleButton, Input, Slider, ProgressBar, Toolbar...', kind: 'Sampler.OnyxControls' },
@@ -41,6 +42,9 @@ const row = (components: ComponentDefinition[]): ComponentDefinition => ({ kind:
 
 /** A small text label. */
 const text = (content: string, name?: string) => ({ tag: 'span', content, ...(name ? { name } : {}) });
+
+/** Body text for a panel in a stack. */
+const panelText = (content: string): ComponentDefinition => ({ kind: 'duyo.Control', style: 'padding: 12px;', content });
 
 /** A coloured square as an image, so the sampler needs no assets. */
 const swatch = (colour: string, label: string) =>
@@ -132,6 +136,19 @@ kind({
       { kind: 'remochi.Badge', content: 'Error', variant: 'error' },
       { kind: 'remochi.Badge', content: 'Info', variant: 'info' },
       { kind: 'remochi.Badge', content: 'Inbox', count: 7 },
+    ]),
+    caption('Avatar: sizes, an image, initials, and a broken image'),
+    row([
+      { kind: 'remochi.Avatar', size: 'sm', content: 'Ada Lovelace' },
+      { kind: 'remochi.Avatar', size: 'md', content: 'Ada Lovelace' },
+      { kind: 'remochi.Avatar', size: 'lg', content: 'Ada Lovelace' },
+      { kind: 'remochi.Avatar', size: 'xl', content: 'Ada Lovelace' },
+    ]),
+    row([
+      { kind: 'remochi.Avatar', size: 'lg', src: swatch('#357099', 'Ada'), alt: 'Ada Lovelace' },
+      { kind: 'remochi.Avatar', size: 'lg', content: 'Grace Hopper' },
+      { kind: 'remochi.Avatar', size: 'lg', src: 'data:image/png;base64,AAAA', content: 'Alan Turing' },
+      { kind: 'remochi.Avatar', size: 'lg', components: [{ tag: 'span', content: '?' }] },
     ]),
     caption('Header and Subheader'),
     { kind: 'remochi.Header', content: 'A Header' },
@@ -251,13 +268,27 @@ kind({
         ],
       })),
     },
-    caption('FloatingPanel'),
-    {
-      kind: 'remochi.FloatingPanel',
-      look: 'shadow',
-      style: 'max-width: 360px;',
-      components: [{ style: 'padding: 16px;', content: 'A floating panel with the shadow look.' }],
-    },
+    caption('FloatingPanel: round, shape drop, and fullBleed'),
+    row([
+      {
+        kind: 'remochi.FloatingPanel',
+        look: 'shadow',
+        style: 'width: 280px;',
+        components: [{ style: 'padding: 16px;', content: 'A floating panel with the shadow look and the default round corner.' }],
+      },
+      {
+        kind: 'remochi.FloatingPanel',
+        shape: 'drop',
+        style: 'width: 280px;',
+        components: [{ style: 'padding: 16px;', content: 'shape drop: the waterdrop accent corner.' }],
+      },
+      {
+        kind: 'remochi.FloatingPanel',
+        fullBleed: true,
+        style: 'width: 280px;',
+        components: [{ style: 'padding: 16px;', content: 'fullBleed: square, with no edge and no shadow.' }],
+      },
+    ]),
     caption('Collapsable'),
     row([{ kind: 'remochi.Button', content: 'Open and close from code', ontap: 'toggleDetails' }]),
     {
@@ -308,14 +339,78 @@ kind({
 // ---------------------------------------------------------------------------
 
 kind({
+  name: 'Sampler.Peeks',
+  kind: 'Sampler.Section',
+  components: [
+    caption('Label'),
+    { kind: 'remochi.Label', content: 'Section label' },
+    caption('Header, size "header" and "display" (display: at most once per screen)'),
+    { kind: 'remochi.Header', content: 'A Header' },
+    { kind: 'remochi.Header', content: 'Display', size: 'display' },
+    caption('RepanelStack: keepPast and an upcoming peek (a peek or sliver is a door: it shows only its Header)'),
+    row([
+      { kind: 'remochi.Toggle', name: 'keepPast', value: true, onChange: 'keepPastChanged' },
+      text('keepPast'),
+      { kind: 'remochi.Button', content: 'Start over', ontap: 'startOver' },
+    ]),
+    {
+      kind: 'remochi.RepanelStack',
+      name: 'stack',
+      activeIndex: 1,
+      upcoming: 'messages',
+      style: 'height: 360px;',
+      onActiveIndexChange: 'stackMoved',
+      onUpcomingOpen: 'peekOpened',
+      components: [
+        { kind: 'remochi.Repanel', name: 'accounts', components: [{ kind: 'remochi.Header', content: 'Accounts' }, panelText('Accounts holds the sign-ins for every mailbox. Tap the sliver on the right or drag the grabber to move between panels. Collapsed to the left, this panel shows only the start of its Header, beside the front panel.')] },
+        { kind: 'remochi.Repanel', name: 'folders', components: [{ kind: 'remochi.Header', content: 'Folders' }, panelText('Folders lists the folders in the selected account. The next panel waits at the right edge as a door: its Header and a short hint, and no body until you open it.')] },
+        // Held out of the stack by `upcoming` until it is opened; `hint` is the clue on its peek.
+        { kind: 'remochi.Repanel', name: 'messages', showing: false, hint: '12 new', components: [{ kind: 'remochi.Header', content: 'Messages' }, panelText('Messages lists what is in the folder. Its body only appears now that the peek is open, and opening a peek names the next one: this one is followed by a sequence panel.')] },
+        // `sequence` shows the index as numerals above the label on its peek.
+        { kind: 'remochi.Repanel', name: 'message', showing: false, sequence: { index: 4, label: 'Message' }, components: [{ kind: 'remochi.Header', content: 'Message' }, panelText('The last panel: nothing is upcoming now.')] },
+      ],
+    },
+  ],
+  keepPastChanged(_sender: Component, event: ComponentEvent) {
+    this.$.stack!.setKeepPast(event['value']);
+    this.log(`set from code: stack.keepPast = ${value(event)}`);
+  },
+  startOver() {
+    this.$.messages!.setShowing(false);
+    this.$.message!.setShowing(false);
+    this.$.stack!.setUpcoming('messages');
+    this.$.stack!.setActiveIndex(1);
+    this.log('set from code: stack.upcoming = messages');
+  },
+  stackMoved(_sender: Component, event: ComponentEvent) {
+    this.log(`onActiveIndexChange: ${event['index']} (${event['reason']})`);
+  },
+  // Remochi has added the opened panel; name the one that follows it, if any.
+  peekOpened(_sender: Component, event: ComponentEvent) {
+    this.log(`onUpcomingOpen: ${event['upcoming']} (${event['reason']})`);
+    this.$.stack!.setUpcoming(event['upcoming'] === 'messages' ? 'message' : '');
+  },
+});
+
+// ---------------------------------------------------------------------------
+
+kind({
   name: 'Sampler.Overlays',
   kind: 'Sampler.Section',
   components: [
     caption('SlidingMenu and its content shifter'),
-    row([{ kind: 'remochi.Button', content: 'Open the menu', ontap: 'toggleMenu' }]),
+    row([
+      { kind: 'remochi.Button', content: 'Open the menu', ontap: 'toggleMenu' },
+      { kind: 'remochi.Button', content: 'From the left', ontap: 'menuLeft' },
+      { kind: 'remochi.Button', content: 'Bottom sheet', ontap: 'menuBottom' },
+      { kind: 'remochi.Button', content: 'Dialog with a dropdown', ontap: 'openPicker' },
+    ]),
     {
       kind: 'remochi.SlidingMenu',
       name: 'nav',
+      title: 'Mailbox',
+      subtitle: 'ann@example.com',
+      showCloseButton: true,
       onOpenChange: 'menuChanged',
       components: [
         {
@@ -325,6 +420,8 @@ kind({
           components: [
             { kind: 'remochi.SlidingMenuItem', name: 'home', content: 'Home', icon: '🏠', active: true, ontap: 'went' },
             { kind: 'remochi.SlidingMenuItem', name: 'mail', content: 'Mail', icon: '✉️', badge: 3, ontap: 'went' },
+            { kind: 'remochi.SlidingMenuItem', name: 'drafts', content: 'Drafts', icon: '📝', ontap: 'went' },
+            { kind: 'remochi.SlidingMenuItem', name: 'archive', content: 'Archive (offline)', icon: '🗄️', disabled: true, ontap: 'went' },
           ],
         },
         {
@@ -361,6 +458,26 @@ kind({
       onCancel: 'cancelled',
       components: [{ content: 'This cannot be undone.' }],
     },
+    {
+      kind: 'remochi.Dialog',
+      name: 'picker',
+      title: 'Pick a folder',
+      showCloseButton: true,
+      components: [
+        {
+          kind: 'remochi.Dropdown',
+          label: 'Folder',
+          options: [
+            { label: 'Inbox', value: 'inbox' },
+            { label: 'Drafts', value: 'drafts' },
+            { divider: true },
+            { sectionLabel: 'Elsewhere' },
+            { label: 'Archive', value: 'archive', disabled: true },
+            { label: 'Trash', value: 'trash' },
+          ],
+        },
+      ],
+    },
     { kind: 'remochi.Dialog', name: 'prompt', title: 'Rename', dialogType: 'prompt', onConfirm: 'confirmed', onCancel: 'cancelled' },
     { kind: 'remochi.Dialog', name: 'alert', title: 'Heads up', dialogType: 'alert', onConfirm: 'confirmed', components: [{ content: 'Something happened.' }] },
     {
@@ -393,11 +510,23 @@ kind({
   toggleMenu() {
     this.$.nav!.toggle();
   },
+  menuLeft() {
+    this.$.nav!.setPosition('left');
+    this.$.nav!.setOpen(true);
+  },
+  menuBottom() {
+    this.$.nav!.setPosition('bottom');
+    this.$.nav!.setOpen(true);
+  },
+  openPicker() {
+    this.$.picker!.setOpen(true);
+  },
   menuChanged(_sender: Component, event: ComponentEvent) {
     this.log(`onOpenChange: ${value(event)}`);
   },
   went(sender: Component) {
     this.log(`ontap: ${sender.name}`);
+    for (const name of ['home', 'mail', 'drafts']) this.$[name]!.setActive(name === sender.name);
     this.$.nav!.setOpen(false);
   },
   openConfirm() {

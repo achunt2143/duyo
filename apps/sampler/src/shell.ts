@@ -4,6 +4,16 @@ import { SECTIONS } from './sections.js';
 
 const LOG_LINES = 8;
 
+/** A ThemeWrapper mode switch: its label, the property it sets, and the choices (the first is `system`/default). */
+const MODES = [
+  { property: 'motion', label: 'Motion', choices: ['system', 'full', 'reduced', 'off'] },
+  { property: 'contrast', label: 'Contrast', choices: ['system', 'more'] },
+  { property: 'transparency', label: 'Transparency', choices: ['system', 'reduced'] },
+  { property: 'ground', label: 'Ground', choices: ['plain', 'vignette'] },
+];
+
+const capitalised = (word: string) => word.charAt(0).toUpperCase() + word.slice(1);
+
 /**
  * The sampler itself: a themed shell with the section list on the left, the chosen section
  * on the right, and a log of every event the sections raise.
@@ -32,6 +42,23 @@ kind({
             { tag: 'span', name: 'themeLabel', content: 'Dark mode' },
             { kind: 'remochi.Toggle', name: 'themeToggle', value: true, onChange: 'themeToggled' },
           ],
+        },
+        // The ThemeWrapper's accessibility and ground modes, written to <html> as data attributes.
+        {
+          kind: 'duyo.FittableColumns',
+          align: 'center',
+          gap: 'md',
+          padding: 'md',
+          style: 'flex-wrap: wrap; padding-top: 0;',
+          components: MODES.flatMap((mode) => [
+            { kind: 'remochi.Label', content: mode.label },
+            {
+              kind: 'remochi.ViewSelectButton',
+              name: `${mode.property}Select`,
+              items: mode.choices.map((choice) => ({ content: capitalised(choice), value: choice })),
+              onSelect: 'modeSelected',
+            },
+          ]),
         },
         {
           kind: 'duyo.FittableColumns',
@@ -85,6 +112,13 @@ kind({
     const theme = event['value'] ? 'dark' : 'light';
     this.setTheme(theme);
     this.$.themeLabel!.setContent(theme === 'dark' ? 'Dark mode' : 'Light mode');
+  },
+
+  // The ThemeWrapper is this kind, so each choice is one of its own properties.
+  modeSelected(sender: Component, event: ComponentEvent) {
+    const property = String(sender.name).replace(/Select$/, '');
+    this.set(property, event['value']);
+    this.appendLog(sender, { text: `ThemeWrapper.${property} = ${event['value']}` });
   },
 
   appendLog(_sender: Component, event: ComponentEvent) {
